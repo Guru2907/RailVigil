@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+*.log
+.env.local
+
+# Project data / model artifacts
+backend/data/raw/*
+backend/data/processed/*
+backend/data/annotations/*
+backend/models/*
+backend/outputs/*
+!backend/data/**/.gitkeep
+!backend/models/.gitkeep
+!backend/outputs/.gitkeep
