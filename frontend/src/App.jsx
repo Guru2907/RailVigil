@@ -1,5 +1,5 @@
-function App() {
-  // placeholder
-}
+import AppRouter from "./router/AppRouter.jsx";
 
-export default App
+export default function App() {
+  return <AppRouter />;
+}
