@@ -311,7 +311,7 @@ export default function LandingPage() {
 
       <footer className="pb-10">
         <div className="max-w-6xl mx-auto px-6 text-xs text-white/40 font-mono">
-          PRJ_35 · CSE7102 Mini Project · Presidency University
+          
         </div>
       </footer>
     </div>

@@ -1,5 +1,11 @@
-function incidentsApi() {
-  // placeholder
+import axiosClient from "./axiosClient.js";
+
+export async function listIncidents(params = {}) {
+  const { data } = await axiosClient.get("/incidents", { params });
+  return data;
 }
 
-export default incidentsApi
+export async function getIncident(incidentId) {
+  const { data } = await axiosClient.get(`/incidents/${incidentId}`);
+  return data;
+}
