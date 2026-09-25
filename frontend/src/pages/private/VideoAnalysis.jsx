@@ -168,7 +168,7 @@ export default function VideoAnalysis() {
     : [];
 
   return (
-    <div className="min-h-screen bg-tactical-canvas text-white font-sans antialiased">
+    <div>
       <div className="max-w-6xl mx-auto px-6 py-10">
         <div className="mb-8">
           <div className="text-xs font-mono text-tactical-mint mb-2">
