@@ -12,12 +12,17 @@ dist/
 *.log
 .env.local
 
+# Database
+backend/*.db
+
 # Project data / model artifacts
 backend/data/raw/*
 backend/data/processed/*
 backend/data/annotations/*
 backend/models/*
 backend/outputs/*
+backend/uploads/*
 !backend/data/**/.gitkeep
 !backend/models/.gitkeep
 !backend/outputs/.gitkeep
+!backend/uploads/.gitkeep
