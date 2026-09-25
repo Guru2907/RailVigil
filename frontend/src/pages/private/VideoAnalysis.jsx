@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { uploadVideo, getVideo, getAnnotatedVideoUrl } from "../../api/videos.js";
+import { uploadVideo, getVideo, getAnnotatedVideoUrl, getIncidentSnapshotUrl } from "../../api/videos.js";
 import TrainLoader from "../../components/video/TrainLoader.jsx";
 
 const ACCEPTED_EXT = [".mp4", ".avi", ".mov"];
@@ -16,6 +16,23 @@ function formatDuration(sec) {
   return `${m}:${s}`;
 }
 
+function fmtTime(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const s = String(Math.floor(sec % 60)).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function fmtPct(v) {
+  return `${Math.round(v <= 1 ? v * 100 : v)}%`;
+}
+
+function sevClass(sev) {
+  const s = (sev || "").toUpperCase();
+  if (s === "HIGH" || s === "CRITICAL") return "bg-tactical-alert/15 text-tactical-alert animate-pulse";
+  if (s === "MEDIUM" || s === "MED") return "bg-amber-100 text-amber-700";
+  return "bg-emerald-100 text-emerald-700";
+}
+
 export default function VideoAnalysis() {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -25,14 +42,19 @@ export default function VideoAnalysis() {
   const [dragging, setDragging] = useState(false);
   const [points, setPoints] = useState([]); // normalized 0..1 relative to the video frame
   const [drawing, setDrawing] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [videoId, setVideoId] = useState(null);
   const [job, setJob] = useState(null);
+  const [selected, setSelected] = useState(null);
   const inputRef = useRef(null);
+  const evidenceRef = useRef(null);
 
   const zoneReady = !drawing && points.length >= 3;
   const analysisStarted = Boolean(videoId);
   const finished = job?.status === "done" || job?.status === "failed";
+  const incidents = [...(job?.incidents ?? [])].sort((a, b) => b.risk_score - a.risk_score);
+  const highRisk = incidents.filter((i) => ["HIGH", "CRITICAL"].includes((i.severity || "").toUpperCase())).length;
+  const maxRisk = incidents.reduce((m, i) => Math.max(m, i.risk_score), 0);
 
   // Poll the backend until the video is done or failed
   useEffect(() => {
@@ -91,6 +113,7 @@ export default function VideoAnalysis() {
     function handleRemove() {
       setVideoId(null);
       setJob(null);
+      setSelected(null);
       setSubmitting(false);
       setFile(null);
       setMeta(null);
@@ -486,28 +509,128 @@ export default function VideoAnalysis() {
           </div>
         )}
 
-        {job?.status === "done" && (
-          <div className="mt-6 grid lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-3 rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
-              <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
-                ANNOTATED OUTPUT
-              </div>
-              <video
-                src={getAnnotatedVideoUrl(videoId)}
-                controls
-                className="w-full bg-black"
-              />
+                {job?.status === "done" && (
+          <div className="mt-6 space-y-6">
+            {/* Metric cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                ["Confirmed incidents", incidents.length],
+                ["High-risk events", highRisk],
+                ["Max risk score", Math.round(maxRisk)],
+                ["Video duration", meta ? formatDuration(meta.duration) : "--:--"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+                  <div className="text-3xl font-semibold font-mono">{value}</div>
+                  <div className="mt-1 text-sm text-tactical-dark/60">{label}</div>
+                </div>
+              ))}
             </div>
-            <div className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
-              <h3 className="font-semibold mb-4">Results</h3>
-              <div className="rounded-2xl bg-white border border-black/5 px-4 py-4">
-                <div className="text-3xl font-semibold font-mono">
-                  {job.incidents?.length ?? 0}
+
+            {/* 60/40: annotated video + evidence */}
+            <div className="grid lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-3 rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+                <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
+                  ANNOTATED OUTPUT
                 </div>
-                <div className="text-sm text-tactical-dark/60">
-                  Confirmed incidents
-                </div>
+                <video src={getAnnotatedVideoUrl(videoId)} controls className="w-full bg-black" />
               </div>
+
+              <div
+                ref={evidenceRef}
+                className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50 scroll-mt-24"
+              >
+                <h3 className="font-semibold mb-4">Evidence</h3>
+                {!selected ? (
+                  <p className="text-sm text-tactical-dark/60">
+                    Select an incident from the table below to see its snapshot and details.
+                  </p>
+                ) : (
+                  <div>
+                    <div className="rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                      <img
+                        key={selected.id}
+                        src={getIncidentSnapshotUrl(selected.id)}
+                        alt={`Evidence for track ${selected.track_id}`}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextSibling.style.display = "block";
+                        }}
+                      />
+                      <span style={{ display: "none" }} className="text-xs font-mono text-white/60 px-4 text-center">
+                        No snapshot available
+                      </span>
+                    </div>
+                    <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      {[
+                        ["Object", `${selected.object_class} #${selected.track_id}`],
+                        ["Event", selected.event_type],
+                        ["Window", `${fmtTime(selected.start_ts)} – ${fmtTime(selected.end_ts)}`],
+                        ["Dwell", `${selected.dwell_time_sec.toFixed(1)}s`],
+                        ["Max penetration", fmtPct(selected.max_penetration)],
+                        ["Risk score", Math.round(selected.risk_score)],
+                      ].map(([k, v]) => (
+                        <div key={k} className="rounded-2xl bg-white border border-black/5 px-3 py-2">
+                          <dt className="text-[11px] text-tactical-dark/50">{k}</dt>
+                          <dd className="font-mono font-medium truncate">{v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Incident table */}
+            <div className="rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Confirmed incidents</h3>
+                <span className="text-xs font-mono text-emerald-600">{incidents.length} total · sorted by risk</span>
+              </div>
+              {incidents.length === 0 ? (
+                <p className="text-sm text-tactical-dark/60">
+                  No confirmed incidents. Nothing stayed in the safety zone long enough to count.
+                </p>
+              ) : (
+                <div className="max-h-96 overflow-auto rounded-2xl bg-white border border-black/5">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-white text-left text-[11px] font-mono text-tactical-dark/50">
+                      <tr>
+                        {["TIME", "OBJECT", "TYPE", "DWELL", "PENETRATION", "RISK", "SEVERITY", ""].map((h) => (
+                          <th key={h} className="px-4 py-3 font-normal">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono">
+                      {incidents.map((i) => (
+                        <tr
+                          key={i.id}
+                          onClick={() => {
+                            setSelected(i);
+                            evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }}
+                          className={`cursor-pointer border-t border-black/5 hover:bg-emerald-50 transition-all duration-200 ${
+                            selected?.id === i.id ? "bg-emerald-100/70" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-3">{fmtTime(i.start_ts)}</td>
+                          <td className="px-4 py-3">{i.object_class} #{i.track_id}</td>
+                          <td className="px-4 py-3">{i.event_type}</td>
+                          <td className="px-4 py-3">{i.dwell_time_sec.toFixed(1)}s</td>
+                          <td className="px-4 py-3">{fmtPct(i.max_penetration)}</td>
+                          <td className="px-4 py-3">{Math.round(i.risk_score)}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${sevClass(i.severity)}`}>
+                              {(i.severity || "").toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-emerald-600">View</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}

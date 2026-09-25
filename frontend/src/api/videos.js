@@ -18,3 +18,7 @@ export async function getVideo(videoId) {
 export function getAnnotatedVideoUrl(videoId) {
   return `${API_BASE_URL}/videos/${videoId}/file`;
 }
+
+export function getIncidentSnapshotUrl(incidentId) {
+  return `${API_BASE_URL}/incidents/${incidentId}/snapshot`;
+}

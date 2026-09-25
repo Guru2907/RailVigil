@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, Query
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -21,3 +24,11 @@ def list_incidents(
 @router.get("/{incident_id}", response_model=IncidentOut)
 def get_incident(incident_id: str, db: Session = Depends(get_db)):
     return incident_controller.get_incident_detail(db, incident_id)
+
+
+@router.get("/{incident_id}/snapshot")
+def get_incident_snapshot(incident_id: str, db: Session = Depends(get_db)):
+    incident = incident_controller.get_incident_detail(db, incident_id)
+    if not incident.snapshot_path or not Path(incident.snapshot_path).exists():
+        raise HTTPException(status_code=404, detail="No snapshot for this incident")
+    return FileResponse(incident.snapshot_path)
