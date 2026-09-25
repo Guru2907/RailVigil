@@ -22,3 +22,8 @@ export function getAnnotatedVideoUrl(videoId) {
 export function getIncidentSnapshotUrl(incidentId) {
   return `${API_BASE_URL}/incidents/${incidentId}/snapshot`;
 }
+
+export async function listVideos() {
+  const { data } = await axiosClient.get("/videos");
+  return data;
+}

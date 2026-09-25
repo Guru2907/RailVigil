@@ -39,9 +39,9 @@ function ChevronIcon(props) {
 
 // soon: true = page not built yet, shown as a muted non-link item
 export const navItems = [
+  { to: "/dashboard", label: "Dashboard", Icon: GridIcon },
   { to: "/upload", label: "Video Analysis", Icon: VideoIcon },
   { to: "/incidents", label: "Incidents", Icon: AlertIcon },
-  { to: "/dashboard", label: "Dashboard", Icon: GridIcon, soon: true },
 ];
 
 const STORAGE_KEY = "rv-sidebar-collapsed";
