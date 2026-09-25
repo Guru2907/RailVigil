@@ -19,3 +19,4 @@ Pillow
 httpx
 pytest
 pytest-asyncio
+imageio-ffmpeg

@@ -9,8 +9,11 @@ Video Upload -> video_service -> video_processor (THIS FILE) ->
     -> snapshots -> incident_service -> database
 """
 
+import subprocess
 import time
 from pathlib import Path
+
+import imageio_ffmpeg
 
 import cv2
 import numpy as np
@@ -31,6 +34,24 @@ def _zone_mask(zone_poly: np.ndarray, frame_shape) -> np.ndarray:
     mask = np.zeros((h, w), dtype=np.uint8)
     cv2.fillPoly(mask, [zone_poly], 1)
     return mask
+
+
+def _make_browser_playable(path: str) -> None:
+    """Re-encode the OpenCV output to H.264 so browsers can play it.
+    If ffmpeg fails, the original file is kept."""
+    src = Path(path)
+    tmp = src.with_name("annotated_h264.mp4")
+    try:
+        ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+        subprocess.run(
+            [ffmpeg, "-y", "-i", str(src), "-c:v", "libx264", "-pix_fmt", "yuv420p",
+             "-preset", "veryfast", "-movflags", "+faststart", "-an", str(tmp)],
+            check=True, capture_output=True,
+        )
+        tmp.replace(src)
+    except Exception as exc:  # noqa: BLE001
+        print(f"H.264 conversion skipped: {exc}")
+        tmp.unlink(missing_ok=True)
 
 
 def process_video(video_path: str, zone_points: list, video_id: str,
@@ -87,6 +108,7 @@ def process_video(video_path: str, zone_points: list, video_id: str,
 
     cap.release()
     writer.release()
+    _make_browser_playable(output_video_path)
 
     elapsed = time.time() - t0
     print(f"Processed {frame_idx} frames in {elapsed:.1f}s")
