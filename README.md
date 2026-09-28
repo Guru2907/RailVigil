@@ -30,4 +30,4 @@ npm run dev
 
 ## Notes
 
-This repository is a structural scaffold. Modules contain placeholder functions/classes only; implementation is intentionally left for the development phase.
+This repository is a structural scaffold. Some Modules contain placeholder functions/classes only; implementation is intentionally left for the development phase(Ongoing).
