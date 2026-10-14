@@ -22,8 +22,14 @@ class Video(Base):
     filename = Column(String, nullable=False)           # stored filename on disk
     original_filename = Column(String, nullable=True)   # what the user uploaded
 
-    status = Column(String, default="uploaded")  # uploaded | processing | done | failed
-    error = Column(Text, nullable=True)
+    # Lifecycle:  queued -> processing -> done | failed
+    # A video is `queued` from the moment the upload is accepted. If the
+    # server dies mid-job the row stays `processing`; startup recovery puts
+    # it back to `queued` (see services/job_queue.py).
+    status = Column(String, nullable=False, default="queued", index=True)
+    progress = Column(Float, nullable=False, default=0.0)   # 0-100, written at most every PROGRESS_UPDATE_SEC
+    attempts = Column(Integer, nullable=False, default=0)   # times processing has STARTED; capped by MAX_JOB_ATTEMPTS
+    error = Column(Text, nullable=True)                     # short, user-safe message; full traceback is only in the log
 
     zone_json = Column(Text, nullable=True)       # safety-zone polygon, as JSON text
     camera_label = Column(String, nullable=True)

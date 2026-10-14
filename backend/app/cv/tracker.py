@@ -19,6 +19,19 @@ class Tracker:
         self.model = self.detector.model
         self.class_names = self.detector.class_names
 
+    def reset(self) -> None:
+        """Forget all tracking state, ready for a NEW video.
+
+        `model.track(persist=True)` keeps ByteTrack's memory (which boxes
+        belong to which id) on the model's `predictor` between calls. That
+        is what we want within ONE video, but if a worker reuses this
+        Tracker for the next video, ids and half-tracked objects from the
+        previous video would leak into it. Dropping the predictor makes
+        Ultralytics build a fresh one (with a fresh ByteTrack) on the next
+        call. The loaded weights live on `model.model`, so this is cheap:
+        nothing is re-read from disk."""
+        self.model.predictor = None
+
     def track(self, frame) -> list[dict]:
         """Runs detection + tracking together on one frame. Same shape
         of output as Detector.detect(), but each dict now also has a

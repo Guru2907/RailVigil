@@ -30,25 +30,27 @@ CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.35"))
 # outside this set is ignored (e.g. "chair", "clock" from COCO).
 RELEVANT_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle"}
 
-# How each object class weighs into the risk score (0-1). A truck
-# encroaching is riskier than a person, all else equal.
-CLASS_RISK_WEIGHT = {
-    "person": 0.6,
-    "bicycle": 0.5,
-    "motorcycle": 0.75,
-    "car": 0.85,
-    "truck": 0.95,
-    "bus": 0.9,
-}
-
 # --- frame sampling / confirmation -----------------------------------
 # Only run YOLO on every Nth frame — keeps CPU-only inference usable at
-# something close to real time.
+# something close to real time. The frames in between are still drawn
+# (zone + last known boxes) so the output video doesn't flicker; they
+# just don't get fresh detections. Lower = smoother tracking, slower.
 FRAME_SAMPLE_INTERVAL = int(os.getenv("FRAME_SAMPLE_INTERVAL", "3"))
 
-# An object must be seen inside the zone for this many CONSECUTIVE
-# sampled frames before it's confirmed as a real event (anti-flicker).
-CONSECUTIVE_FRAMES_THRESHOLD = int(os.getenv("CONSECUTIVE_FRAMES_THRESHOLD", "5"))
+# An object must stay inside the zone for at least this many SECONDS of
+# video time before it's confirmed as a real event (anti-flicker: a
+# one-off false detection never becomes an incident). Measured in
+# seconds — NOT sampled frames — so behaviour is the same whatever the
+# video's fps or FRAME_SAMPLE_INTERVAL happen to be.
+CONFIRM_DWELL_SEC = float(os.getenv("CONFIRM_DWELL_SEC", "0.6"))
+
+# When a tracked object stops being seen inside the zone we do NOT close
+# its event immediately. A single missed detection (brief occlusion, a
+# frame where YOLO simply didn't fire) must not split one real intrusion
+# into several incidents. The event is closed only once the object has
+# been missing for longer than this. Dwell time still only counts up to
+# the last real sighting, so the grace window itself is never added.
+MISS_GRACE_SEC = float(os.getenv("MISS_GRACE_SEC", "1.0"))
 
 # --- temporal reasoning -------------------------------------------------
 # Dwell time above this = "persistent" encroachment, not just passing
@@ -57,13 +59,76 @@ CONSECUTIVE_FRAMES_THRESHOLD = int(os.getenv("CONSECUTIVE_FRAMES_THRESHOLD", "5"
 PERSISTENT_DWELL_THRESHOLD_SEC = float(os.getenv("PERSISTENT_DWELL_THRESHOLD_SEC", "8.0"))
 
 # --- risk scoring ---------------------------------------------------
-# R = w_penetration * penetration + w_dwell * dwell_norm + w_class * class_weight
 # Rule-based, not learned — documented honestly as a heuristic.
+#
+#   base  = w_penetration * max_penetration + w_dwell * min(dwell / RISK_DWELL_NORM_SEC, 1)
+#   score = 100 * base * CLASS_RISK_FACTOR[object_class]
+#
+# `base` (0-1) is the spatiotemporal part: how deep into the zone and
+# for how long. The class factor then SCALES it. That ordering matters:
+#   - a truck that barely clips the zone edge for a moment is still
+#     "low" (the object type alone can't produce a high score), and
+#   - a person standing fully inside the zone for a long time can
+#     still reach "critical" (person factor 0.8 -> max score 80).
+# The earlier additive formula (+ w_class * class_weight) handed out
+# 15-24 points just for existing, which made "low" unreachable for
+# vehicles and pushed almost every incident to "medium" or above.
 RISK_WEIGHTS = {
-    "penetration": float(os.getenv("RISK_WEIGHT_PENETRATION", "0.45")),
-    "dwell": float(os.getenv("RISK_WEIGHT_DWELL", "0.30")),
-    "class": float(os.getenv("RISK_WEIGHT_CLASS", "0.25")),
+    "penetration": float(os.getenv("RISK_WEIGHT_PENETRATION", "0.6")),
+    "dwell": float(os.getenv("RISK_WEIGHT_DWELL", "0.4")),
 }
+# Dwell time at which the dwell term saturates (= full weight).
 RISK_DWELL_NORM_SEC = float(os.getenv("RISK_DWELL_NORM_SEC", "15.0"))
 
+# Per-class multiplier on the spatiotemporal base (0-1). A truck on the
+# track is a bigger hazard than a person, all else equal. Keep the top
+# class at 1.0 so the 0-100 scale is actually reachable.
+CLASS_RISK_FACTOR = {
+    "person": 0.8,
+    "bicycle": 0.75,
+    "motorcycle": 0.85,
+    "car": 0.9,
+    "bus": 0.95,
+    "truck": 1.0,
+}
+
+# Severity bands on the 0-100 score. Chosen so that, with the factors
+# above, every band is reachable for every class (see tests/cv/test_risk_engine.py).
+SEVERITY_THRESHOLDS = {"critical": 70, "high": 40, "medium": 20}
+
 DEFAULT_CAMERA_LABEL = os.getenv("DEFAULT_CAMERA_LABEL", "Camera-1 (demo)")
+
+# --- logging -------------------------------------------------------------
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# --- upload validation ---------------------------------------------------
+# Checked while the file is being streamed to disk, so an oversized upload
+# is rejected without ever holding the whole file in memory.
+MAX_UPLOAD_MB = float(os.getenv("MAX_UPLOAD_MB", "500"))
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+# Reject very long videos up front: CPU inference runs at roughly real
+# time or slower, so a 3-hour upload would block the queue for hours.
+MAX_VIDEO_SEC = float(os.getenv("MAX_VIDEO_SEC", "600"))
+MAX_ZONE_POINTS = int(os.getenv("MAX_ZONE_POINTS", "50"))
+MAX_CAMERA_LABEL_LEN = 100
+
+# --- background processing ----------------------------------------------
+# Number of videos processed at the same time. Each worker loads its OWN
+# copy of the YOLO model (tracker state lives on the model, so sharing one
+# between concurrent workers would mix up track ids). Keep at 1 unless the
+# machine has the RAM/GPU for more.
+WORKER_COUNT = int(os.getenv("WORKER_COUNT", "1"))
+
+# Uploads are refused (HTTP 429) while this many videos are already waiting
+# or being processed, so a burst of uploads can't fill the disk with videos
+# that will take hours to get through.
+MAX_QUEUED_JOBS = int(os.getenv("MAX_QUEUED_JOBS", "20"))
+
+# How many times a video may START processing before we give up on it.
+# Protects against a video that crashes the whole server (e.g. out of
+# memory) being retried forever after every restart.
+MAX_JOB_ATTEMPTS = int(os.getenv("MAX_JOB_ATTEMPTS", "3"))
+
+# Progress is written to the database at most this often, so a fast
+# video doesn't turn into hundreds of tiny DB writes.
+PROGRESS_UPDATE_SEC = float(os.getenv("PROGRESS_UPDATE_SEC", "2.0"))

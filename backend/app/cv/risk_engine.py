@@ -3,36 +3,51 @@ Converts raw spatial + temporal measurements into an interpretable
 risk score and severity label. Deliberately RULE-BASED, not learned --
 say so plainly in the paper. We're not claiming "AI learned the risk,"
 we're saying "a documented weighted formula combines the factors that
-matter." That's an honest, defensible scope for a mini project.
+matter." That's an honest, defensible scope.
 
-R = w_penetration * penetration + w_dwell * dwell_norm + w_class * class_weight
+    base  = w_penetration * max_penetration + w_dwell * dwell_norm     (0-1)
+    score = 100 * base * class_factor                                  (0-100)
+
+The class factor MULTIPLIES the spatiotemporal base rather than adding
+to it, so the object type can only scale a real intrusion up or down --
+it can't manufacture a score on its own. See config.py for the weights
+and the reasoning behind the calibration.
 """
 
 from app.core import config
 
+# Which COCO classes count as "a person" vs "a vehicle" for event
+# labelling. A bicycle is treated as a person because what's at risk is
+# the rider, not the bike.
+HUMAN_LIKE = {"person", "bicycle"}
+VEHICLE_LIKE = {"car", "truck", "bus", "motorcycle"}
+
 
 def compute_risk_score(max_penetration: float, dwell_time_sec: float, object_class: str) -> float:
     """Returns a score from 0-100."""
-    dwell_norm = min(dwell_time_sec / config.RISK_DWELL_NORM_SEC, 1.0)
-    class_weight = config.CLASS_RISK_WEIGHT.get(object_class, 0.5)
+    penetration = min(max(max_penetration, 0.0), 1.0)
+    dwell_norm = min(max(dwell_time_sec, 0.0) / config.RISK_DWELL_NORM_SEC, 1.0)
 
     w = config.RISK_WEIGHTS
-    score = (
-        w["penetration"] * max_penetration
-        + w["dwell"] * dwell_norm
-        + w["class"] * class_weight
-    )
-    return round(min(1.0, score) * 100, 1)
+    base = w["penetration"] * penetration + w["dwell"] * dwell_norm
+    base = min(base, 1.0)  # guards against someone setting weights that sum > 1
+
+    # Unknown class (only possible if RELEVANT_CLASSES is extended without
+    # adding a factor) -> treat like a person rather than crash.
+    class_factor = config.CLASS_RISK_FACTOR.get(object_class, config.CLASS_RISK_FACTOR["person"])
+
+    return round(base * class_factor * 100, 1)
 
 
 def severity_from_score(score: float) -> str:
-    """Turns the 0-100 number into the label your scaffold's UI expects
-    (Incident #RV-0042, Severity: High, etc.)."""
-    if score >= 70:
+    """Turns the 0-100 number into the label the UI expects
+    (low / medium / high / critical)."""
+    t = config.SEVERITY_THRESHOLDS
+    if score >= t["critical"]:
         return "critical"
-    if score >= 40:
+    if score >= t["high"]:
         return "high"
-    if score >= 20:
+    if score >= t["medium"]:
         return "medium"
     return "low"
 
@@ -44,11 +59,12 @@ def is_persistent(dwell_time_sec: float) -> bool:
 
 
 def classify_event_type(object_class: str, persistent: bool) -> str:
-    vehicle_like = {"car", "truck", "bus", "motorcycle"}
-    if object_class == "person":
+    if object_class in HUMAN_LIKE:
         return "persistent_human_presence" if persistent else "human_intrusion"
-    if object_class in vehicle_like:
+    if object_class in VEHICLE_LIKE:
+        # Vehicles don't get a "persistent" variant: a car on the track is
+        # an obstruction the moment it's there, however briefly.
         return "vehicle_intrusion"
-    if object_class == "bicycle":
-        return "human_intrusion"
+    # Only reachable if config.RELEVANT_CLASSES is extended with a class
+    # that isn't listed above (e.g. "cow" from a custom model).
     return "persistent_encroachment" if persistent else "obstruction"
