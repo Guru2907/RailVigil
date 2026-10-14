@@ -9,6 +9,7 @@ Video Upload -> video_service -> video_processor (THIS FILE) ->
     -> snapshots -> incident_service -> database
 """
 
+import logging
 import subprocess
 import time
 from pathlib import Path
@@ -22,25 +23,17 @@ from app.core import config
 from app.cv.tracker import Tracker
 from app.cv.temporal_engine import TemporalEngine
 from app.cv.frame_processor import FrameProcessor
+from app.cv.zone_engine import zone_mask
 from app.cv.risk_engine import compute_risk_score, is_persistent, classify_event_type, severity_from_score
 
-
-def _build_zone_polygon(zone_points: list) -> np.ndarray:
-    return np.array(zone_points, dtype=np.int32)
-
-
-def _zone_mask(zone_poly: np.ndarray, frame_shape) -> np.ndarray:
-    h, w = frame_shape[:2]
-    mask = np.zeros((h, w), dtype=np.uint8)
-    cv2.fillPoly(mask, [zone_poly], 1)
-    return mask
+logger = logging.getLogger(__name__)
 
 
 def _make_browser_playable(path: str) -> None:
     """Re-encode the OpenCV output to H.264 so browsers can play it.
-    If ffmpeg fails, the original file is kept."""
+    If ffmpeg fails, the original (mp4v) file is kept."""
     src = Path(path)
-    tmp = src.with_name("annotated_h264.mp4")
+    tmp = src.with_name("annotated_h264.mp4")  # lives in this video's own folder, so no clashes
     try:
         ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
         subprocess.run(
@@ -50,7 +43,7 @@ def _make_browser_playable(path: str) -> None:
         )
         tmp.replace(src)
     except Exception as exc:  # noqa: BLE001
-        print(f"H.264 conversion skipped: {exc}")
+        logger.warning("H.264 conversion skipped: %s", exc)
         tmp.unlink(missing_ok=True)
 
 
@@ -61,7 +54,7 @@ def process_video(video_path: str, zone_points: list, video_id: str,
     dicts -- one per confirmed incident -- ready to be handed to
     incident_service for saving to the database."""
 
-    zone_poly = _build_zone_polygon(zone_points)
+    zone_poly = np.array(zone_points, dtype=np.int32)
     tracker = Tracker()
     temporal_engine = TemporalEngine()
 
@@ -73,7 +66,7 @@ def process_video(video_path: str, zone_points: list, video_id: str,
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    zmask = _zone_mask(zone_poly, (height, width))
+    zmask = zone_mask(zone_poly, (height, width))  # rasterized once, reused every frame
 
     frame_processor = FrameProcessor(tracker, zone_poly, zmask, zone_label, temporal_engine, video_id)
 
@@ -91,11 +84,11 @@ def process_video(video_path: str, zone_points: list, video_id: str,
 
         ts_sec = frame_idx / fps
 
-        # Only run the (expensive) detection+tracking on every Nth frame.
-        # Frames in between are written to the output unmodified -- fine
-        # since a few unannotated frames aren't noticeable at video speed.
-        if frame_idx % config.FRAME_SAMPLE_INTERVAL == 0:
-            frame = frame_processor.process(frame, frame_idx, ts_sec)
+        # Expensive detection+tracking only on every Nth frame; the frames
+        # in between still get the overlay (zone + last boxes) so the
+        # output video doesn't flicker.
+        run_detection = frame_idx % config.FRAME_SAMPLE_INTERVAL == 0
+        frame = frame_processor.process(frame, frame_idx, ts_sec, run_detection)
 
         writer.write(frame)
         frame_idx += 1
@@ -111,7 +104,7 @@ def process_video(video_path: str, zone_points: list, video_id: str,
     _make_browser_playable(output_video_path)
 
     elapsed = time.time() - t0
-    print(f"Processed {frame_idx} frames in {elapsed:.1f}s")
+    logger.info("video %s: processed %d frames in %.1fs", video_id, frame_idx, elapsed)
 
     # Turn each closed TrackState into a plain dict ready for the database
     incidents = []
