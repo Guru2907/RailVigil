@@ -29,6 +29,12 @@ from app.cv.risk_engine import compute_risk_score, is_persistent, classify_event
 logger = logging.getLogger(__name__)
 
 
+class ProcessingAborted(Exception):
+    """Raised inside process_video when `abort_cb()` says to stop (e.g. the
+    server is shutting down). It is not an error: the caller puts the video
+    back in the queue so it is processed again after the restart."""
+
+
 def _make_browser_playable(path: str) -> None:
     """Re-encode the OpenCV output to H.264 so browsers can play it.
     If ffmpeg fails, the original (mp4v) file is kept."""
@@ -49,13 +55,22 @@ def _make_browser_playable(path: str) -> None:
 
 def process_video(video_path: str, zone_points: list, video_id: str,
                    output_video_path: str, zone_label: str = "safety-zone",
-                   progress_cb=None) -> list[dict]:
+                   progress_cb=None, tracker: Tracker | None = None,
+                   abort_cb=None) -> list[dict]:
     """Runs the full pipeline on one video. Returns a list of plain
     dicts -- one per confirmed incident -- ready to be handed to
-    incident_service for saving to the database."""
+    incident_service for saving to the database.
+
+    tracker:   pass a long-lived Tracker (one per worker) to avoid reloading
+               the YOLO weights for every video. Its state is reset here, so
+               it is always safe to reuse. If omitted, a new one is created.
+    abort_cb:  optional callable checked once per frame; when it returns True
+               we stop and raise ProcessingAborted.
+    """
 
     zone_poly = np.array(zone_points, dtype=np.int32)
-    tracker = Tracker()
+    tracker = tracker or Tracker()
+    tracker.reset()  # never inherit ids from a previous video
     temporal_engine = TemporalEngine()
 
     cap = cv2.VideoCapture(video_path)
@@ -77,30 +92,38 @@ def process_video(video_path: str, zone_points: list, video_id: str,
     frame_idx = 0
     t0 = time.time()
 
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
+    # try/finally so the video file and the writer are always released, even
+    # if detection throws halfway through. Before this, a crash left both
+    # open (on Windows that also keeps the files locked).
+    try:
+        while True:
+            if abort_cb is not None and abort_cb():
+                raise ProcessingAborted(video_id)
 
-        ts_sec = frame_idx / fps
+            ok, frame = cap.read()
+            if not ok:
+                break
 
-        # Expensive detection+tracking only on every Nth frame; the frames
-        # in between still get the overlay (zone + last boxes) so the
-        # output video doesn't flicker.
-        run_detection = frame_idx % config.FRAME_SAMPLE_INTERVAL == 0
-        frame = frame_processor.process(frame, frame_idx, ts_sec, run_detection)
+            ts_sec = frame_idx / fps
 
-        writer.write(frame)
-        frame_idx += 1
+            # Expensive detection+tracking only on every Nth frame; the frames
+            # in between still get the overlay (zone + last boxes) so the
+            # output video doesn't flicker.
+            run_detection = frame_idx % config.FRAME_SAMPLE_INTERVAL == 0
+            frame = frame_processor.process(frame, frame_idx, ts_sec, run_detection)
 
-        if progress_cb and frame_idx % 30 == 0:
-            progress_cb(frame_idx, total_frames)
+            writer.write(frame)
+            frame_idx += 1
+
+            if progress_cb and frame_idx % 30 == 0:
+                progress_cb(frame_idx, total_frames)
+    finally:
+        cap.release()
+        writer.release()
 
     # video ended -- close out anything still active
     temporal_engine.finalize_all()
 
-    cap.release()
-    writer.release()
     _make_browser_playable(output_video_path)
 
     elapsed = time.time() - t0

@@ -97,3 +97,38 @@ CLASS_RISK_FACTOR = {
 SEVERITY_THRESHOLDS = {"critical": 70, "high": 40, "medium": 20}
 
 DEFAULT_CAMERA_LABEL = os.getenv("DEFAULT_CAMERA_LABEL", "Camera-1 (demo)")
+
+# --- logging -------------------------------------------------------------
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# --- upload validation ---------------------------------------------------
+# Checked while the file is being streamed to disk, so an oversized upload
+# is rejected without ever holding the whole file in memory.
+MAX_UPLOAD_MB = float(os.getenv("MAX_UPLOAD_MB", "500"))
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+# Reject very long videos up front: CPU inference runs at roughly real
+# time or slower, so a 3-hour upload would block the queue for hours.
+MAX_VIDEO_SEC = float(os.getenv("MAX_VIDEO_SEC", "600"))
+MAX_ZONE_POINTS = int(os.getenv("MAX_ZONE_POINTS", "50"))
+MAX_CAMERA_LABEL_LEN = 100
+
+# --- background processing ----------------------------------------------
+# Number of videos processed at the same time. Each worker loads its OWN
+# copy of the YOLO model (tracker state lives on the model, so sharing one
+# between concurrent workers would mix up track ids). Keep at 1 unless the
+# machine has the RAM/GPU for more.
+WORKER_COUNT = int(os.getenv("WORKER_COUNT", "1"))
+
+# Uploads are refused (HTTP 429) while this many videos are already waiting
+# or being processed, so a burst of uploads can't fill the disk with videos
+# that will take hours to get through.
+MAX_QUEUED_JOBS = int(os.getenv("MAX_QUEUED_JOBS", "20"))
+
+# How many times a video may START processing before we give up on it.
+# Protects against a video that crashes the whole server (e.g. out of
+# memory) being retried forever after every restart.
+MAX_JOB_ATTEMPTS = int(os.getenv("MAX_JOB_ATTEMPTS", "3"))
+
+# Progress is written to the database at most this often, so a fast
+# video doesn't turn into hundreds of tiny DB writes.
+PROGRESS_UPDATE_SEC = float(os.getenv("PROGRESS_UPDATE_SEC", "2.0"))

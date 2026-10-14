@@ -1,75 +1,67 @@
-"""
-Orchestrates the whole "someone uploaded a video" workflow:
+"""Handles "someone uploaded a video":
 
-1. Create a Video row (status="uploaded")
-2. Run process_video() in a BACKGROUND THREAD -- so the upload request
-   returns immediately with a video id, instead of the browser hanging
-   for however long YOLO takes to chew through the whole video
-3. On success: bulk-save the incidents, mark the video "done"
-4. On failure: mark it "failed" with the error message, so the
-   frontend can show that instead of hanging forever
+1. Validate everything cheap BEFORE touching the disk (label, zone shape,
+   file type), then stream the file to disk with a size cap.
+2. Open it to check it is really a video and that the zone fits its frame.
+3. Create the Video row as `queued` and hand its id to the job queue.
+
+The request returns as soon as that is done. The slow part (YOLO) runs
+later in a worker -- see job_queue.py (threads) and job_runner.py (the job).
+Any failure after the file was saved deletes the file again, so rejected
+uploads never pile up on disk.
 """
 
-import threading
-import traceback
+import json
+import logging
 from pathlib import Path
 
+from fastapi import UploadFile
+from sqlalchemy.orm import Session
+
 from app.core import config
-from app.cv.video_processor import process_video
-from app.db.repositories import video_repository, incident_repository
-from app.db.database import SessionLocal
+from app.core.errors import AppError, ValidationFailed
+from app.db.models.video import Video
+from app.db.repositories import video_repository
+from app.services import job_queue
+from app.utils.file_utils import check_extension, save_upload, delete_quietly
+from app.utils.video_utils import probe_video
+from app.utils.zone_validation import parse_zone_points, validate_zone_in_frame
+
+logger = logging.getLogger(__name__)
 
 
-def _output_video_path(video_id: str) -> str:
-    return str(Path(config.OUTPUTS_DIR) / video_id / "annotated.mp4")
+def _clean_label(label: str | None) -> str | None:
+    label = (label or "").strip()
+    if len(label) > config.MAX_CAMERA_LABEL_LEN:
+        raise ValidationFailed(f"camera_label is too long (maximum {config.MAX_CAMERA_LABEL_LEN} characters).")
+    return label or None
 
 
-def _run_processing(video_id: str, video_path: str, zone_points: list):
-    """This function runs INSIDE the background thread. It makes its
-    OWN database session -- SQLAlchemy sessions aren't safe to share
-    across threads, so we can't reuse the session from the route that
-    kicked this off."""
-    db = SessionLocal()
+def ingest_upload(db: Session, upload: UploadFile, zone_raw: str, camera_label: str | None) -> Video:
+    label = _clean_label(camera_label)
+    zone_points = parse_zone_points(zone_raw)       # shape only; frame bounds are checked below
+    suffix = check_extension(upload.filename)
+
+    if video_repository.count_unfinished(db) >= config.MAX_QUEUED_JOBS:
+        raise AppError("The server has too many videos waiting to be processed. Please try again later.", 429)
+
+    path = save_upload(upload, suffix)
     try:
-        video_repository.update_video_status(db, video_id, "processing")
-
-        output_path = _output_video_path(video_id)
-        incidents = process_video(
-            video_path=video_path,
-            zone_points=zone_points,
-            video_id=video_id,
-            output_video_path=output_path,
+        meta = probe_video(path)
+        zone = validate_zone_in_frame(zone_points, meta.width, meta.height)
+        video = video_repository.create_video(
+            db,
+            filename=Path(path).name,
+            original_filename=(upload.filename or "")[:255],
+            zone_json=json.dumps({"points": zone}),
+            camera_label=label,
+            fps=meta.fps, width=meta.width, height=meta.height, duration_sec=meta.duration_sec,
         )
+    except BaseException:
+        delete_quietly(path)   # a rejected upload must not leave its file behind
+        raise
 
-        if incidents:
-            incident_repository.bulk_create(db, video_id, incidents)
-
-        video_repository.update_video_status(db, video_id, "done", output_video_path=output_path)
-
-    except Exception as exc:  # noqa: BLE001 -- any pipeline failure gets recorded, not swallowed
-        video_repository.update_video_status(
-            db, video_id, "failed", error=f"{exc}\n{traceback.format_exc()}"
-        )
-    finally:
-        db.close()
-
-
-def start_video_processing(db, video_path: str, original_filename: str,
-                            zone_points: list, zone_json: str, camera_label: str | None = None):
-    """Called by the API route. Creates the Video row SYNCHRONOUSLY (so
-    the route can return a real video id right away), then hands off
-    the slow part to a background thread."""
-    filename = Path(video_path).name
-    video = video_repository.create_video(
-        db, filename=filename, original_filename=original_filename,
-        zone_json=zone_json, camera_label=camera_label,
-    )
-
-    thread = threading.Thread(
-        target=_run_processing,
-        args=(video.id, video_path, zone_points),
-        daemon=True,
-    )
-    thread.start()
-
+    job_queue.get_queue().submit(video.id)
+    logger.info("video %s queued (%dx%d, %s)", video.id, meta.width, meta.height,
+                f"{meta.duration_sec:.1f}s" if meta.duration_sec else "length unknown")
     return video
