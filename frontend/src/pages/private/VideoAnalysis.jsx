@@ -447,17 +447,18 @@ export default function VideoAnalysis() {
                     )}
                     <ul className="space-y-2 text-sm font-mono">
                       {[
-                        ["uploaded", "Video uploaded"],
+                        ["queued", "Video uploaded, waiting in queue"],
                         ["processing", "Detecting and tracking"],
                         ["done", "Incidents confirmed"],
                       ].map(([key, label]) => {
+                        // Backend lifecycle: queued -> processing -> done | failed
                         const order = {
-                          uploaded: 0,
+                          queued: 0,
                           processing: 1,
                           done: 2,
                           failed: 1,
                         };
-                        const cur = order[job?.status ?? "uploaded"];
+                        const cur = order[job?.status ?? "queued"];
                         const mine = order[key];
                         const state =
                           mine < cur || job?.status === "done"
@@ -485,6 +486,11 @@ export default function VideoAnalysis() {
                               }
                             >
                               {label}
+                              {/* live percentage while this step is running */}
+                              {key === "processing" &&
+                                state === "active" &&
+                                job?.status === "processing" &&
+                                ` ${Math.round(job.progress ?? 0)}%`}
                             </span>
                           </li>
                         );
