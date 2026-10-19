@@ -41,18 +41,6 @@ def list_videos(db: Session) -> list[Video]:
     return db.query(Video).order_by(Video.created_at.desc()).all()
 
 
-def update_video_status(db: Session, video_id: str, status: str, **fields) -> Video | None:
-    video = get_video(db, video_id)
-    if video is None:
-        return None
-    video.status = status
-    for key, value in fields.items():
-        setattr(video, key, value)
-    db.commit()
-    db.refresh(video)
-    return video
-
-
 # --- job-state transitions ---------------------------------------------------
 
 def claim_video(db: Session, video_id: str) -> bool:
@@ -103,14 +91,15 @@ def mark_failed(db: Session, video_id: str, message: str) -> None:
     db.commit()
 
 
-def mark_done(db: Session, video_id: str, output_video_path: str, commit: bool = True) -> None:
-    db.execute(
+def mark_done(db: Session, video_id: str, output_video_path: str, commit: bool = True) -> bool:
+    result = db.execute(
         update(Video)
-        .where(Video.id == video_id)
+        .where(Video.id == video_id, Video.status == "processing")
         .values(status="done", progress=100.0, error=None, output_video_path=output_video_path)
     )
     if commit:
         db.commit()
+    return result.rowcount == 1
 
 
 def count_unfinished(db: Session) -> int:

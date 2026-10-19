@@ -17,11 +17,12 @@ router = APIRouter(prefix="/videos", tags=["videos"])
 @router.post("", response_model=VideoOut)
 def upload_video(
     video: UploadFile = File(...),
-    zone_points: str = Form(...),          # JSON string: "[[10,10],[200,10],[200,150],[10,150]]"
+    zone_points: str | None = Form(None),  # JSON string in video pixel coordinates
+    zone_sidecar: str | None = Form(None),
     camera_label: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    return video_controller.upload_video(db, video, zone_points, camera_label)
+    return video_controller.upload_video(db, video, zone_points, camera_label, zone_sidecar)
 
 
 @router.get("", response_model=list[VideoOut])

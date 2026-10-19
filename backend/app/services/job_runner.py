@@ -21,7 +21,7 @@ from pathlib import Path
 
 from app.core import config
 from app.core.errors import AppError
-from app.cv.video_processor import process_video, ProcessingAborted
+from app.cv.intrusion.video_processor import process_video, ProcessingAborted
 from app.db.database import SessionLocal
 from app.db.repositories import video_repository, incident_repository
 from app.utils.file_utils import raw_video_path
@@ -95,7 +95,8 @@ def complete_video(db, video_id: str, incidents: list[dict], output_path: str) -
     it and insert them a second time. In one transaction it's all-or-nothing,
     and replace_for_video clears any earlier attempt's incidents anyway."""
     incident_repository.replace_for_video(db, video_id, incidents, commit=False)
-    video_repository.mark_done(db, video_id, output_path, commit=False)
+    if not video_repository.mark_done(db, video_id, output_path, commit=False):
+        raise RuntimeError(f"video {video_id} was not processing at completion time")
     db.commit()
 
 
@@ -118,16 +119,17 @@ def run_job(video_id: str, get_tracker, should_abort) -> None:
         video = video_repository.get_video(db, video_id)
         logger.info("video %s: processing started (attempt %d)", video_id, video.attempts)
         try:
-            zone_points = json.loads(video.zone_json)["points"]
+            zone_record = json.loads(video.zone_json) if video.zone_json else None
             _discard_output(video_id)
             out_path = output_video_path(video_id)
 
             incidents = process_video(
                 video_path=str(raw_video_path(video.filename)),
-                zone_points=zone_points,
+                zone_points=zone_record,
                 video_id=video_id,
                 output_video_path=out_path,
                 zone_label=video.camera_label or "safety-zone",
+                camera_label=video.camera_label,
                 progress_cb=ProgressReporter(db, video_id),
                 tracker=get_tracker(),
                 abort_cb=should_abort,

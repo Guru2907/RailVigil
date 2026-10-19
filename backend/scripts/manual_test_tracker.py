@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, ".")
 
 import cv2
-from app.cv.tracker import Tracker
+from app.cv.common.tracker import Tracker
 
 cap = cv2.VideoCapture("data/raw/any_video.mp4")
 tracker = Tracker()  # one Tracker for the whole video -- this matters, see below

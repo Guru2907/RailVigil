@@ -32,7 +32,9 @@ def files_on_disk() -> set[str]:
 
 
 def upload(client, path, zone=SQUARE, name="clip.mp4", **form):
-    data = {"zone_points": zone if isinstance(zone, str) else json.dumps(zone), **form}
+    data = dict(form)
+    if zone is not None:
+        data["zone_points"] = zone if isinstance(zone, str) else json.dumps(zone)
     with open(path, "rb") as f:
         return client.post("/api/videos", files={"video": (name, f, "video/mp4")}, data=data)
 
@@ -52,8 +54,48 @@ def test_valid_upload_is_accepted_and_queued(client, synthetic_video):
     assert (video.width, video.height) == (320, 240)      # read from the real file
     assert video.fps == pytest.approx(10, abs=0.5)
     assert video.duration_sec == pytest.approx(2, abs=0.3)
-    assert json.loads(video.zone_json)["points"] == SQUARE
+    zone = json.loads(video.zone_json)
+    assert zone["format"] == "normalized"
+    assert zone["source"] == "manual"
+    assert zone["points"][0] == [10 / 320, 10 / 240]
     assert (raw_dir() / video.filename).exists()
+
+
+def test_upload_accepts_sidecar_zone_when_manual_zone_is_absent(client, synthetic_video):
+    sidecar = {"format": "normalized", "points": [[0.1, 0.1], [0.8, 0.1], [0.8, 0.8], [0.1, 0.8]]}
+
+    response = upload(client, synthetic_video(), zone=None, zone_sidecar=json.dumps(sidecar))
+
+    assert response.status_code == 200
+    stored = json.loads(get_video(response.json()["id"]).zone_json)
+    assert stored["source"] == "sidecar"
+    assert stored["format"] == "normalized"
+
+
+def test_upload_uses_camera_zone_when_manual_and_sidecar_are_absent(
+    client, synthetic_video, monkeypatch
+):
+    monkeypatch.setenv(
+        "CAMERA_ZONES",
+        json.dumps({"Platform 2": {"format": "normalized", "points": [[0.1, 0.1], [0.8, 0.1], [0.8, 0.8]]}}),
+    )
+
+    response = upload(client, synthetic_video(), zone=None, camera_label="Platform 2")
+
+    assert response.status_code == 200
+    stored = json.loads(get_video(response.json()["id"]).zone_json)
+    assert stored["source"] == "camera"
+
+
+def test_upload_without_any_zone_source_is_rejected(client, synthetic_video, monkeypatch):
+    monkeypatch.delenv("CAMERA_ZONES", raising=False)
+    before = files_on_disk()
+
+    response = upload(client, synthetic_video(), zone=None)
+
+    assert response.status_code == 422
+    assert "No railway safety zone" in response.json()["detail"]
+    assert files_on_disk() == before
 
 
 def test_status_endpoint_reports_progress_field(client, synthetic_video):

@@ -11,7 +11,7 @@ from sqlalchemy import update
 
 from app.core import config
 from app.core.errors import ValidationFailed
-from app.cv.video_processor import ProcessingAborted
+from app.cv.intrusion.video_processor import ProcessingAborted
 from app.db.database import SessionLocal
 from app.db.models.video import Video
 from app.db.repositories import video_repository
@@ -91,7 +91,7 @@ def test_progress_callback_and_tracker_are_passed_to_pipeline(fake_pipeline):
     assert kwargs["tracker"] is sentinel
     assert callable(kwargs["progress_cb"])
     assert callable(kwargs["abort_cb"])
-    assert kwargs["zone_points"] == [[0, 0], [100, 0], [100, 100]]
+    assert kwargs["zone_points"] == {"points": [[0, 0], [100, 0], [100, 100]]}
 
 
 # --- claiming -------------------------------------------------------------------
@@ -111,6 +111,17 @@ def test_job_that_is_not_queued_is_skipped(fake_pipeline):
         vid = make_video_row(filename=f"{status}.mp4", status=status)
         run(vid)
     assert fake_pipeline.calls == []
+
+
+def test_mark_done_does_not_transition_a_queued_video():
+    vid = make_video_row()
+    db = SessionLocal()
+    try:
+        assert video_repository.mark_done(db, vid, "output.mp4") is False
+    finally:
+        db.close()
+
+    assert get_video(vid).status == "queued"
 
 
 def test_unknown_video_id_is_skipped(fake_pipeline):

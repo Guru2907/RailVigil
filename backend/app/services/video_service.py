@@ -20,12 +20,13 @@ from sqlalchemy.orm import Session
 
 from app.core import config
 from app.core.errors import AppError, ValidationFailed
+from app.cv.common.zones import ZoneResolver
 from app.db.models.video import Video
 from app.db.repositories import video_repository
 from app.services import job_queue
 from app.utils.file_utils import check_extension, save_upload, delete_quietly
 from app.utils.video_utils import probe_video
-from app.utils.zone_validation import parse_zone_points, validate_zone_in_frame
+from app.utils.zone_validation import parse_zone_points
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,10 @@ def _clean_label(label: str | None) -> str | None:
     return label or None
 
 
-def ingest_upload(db: Session, upload: UploadFile, zone_raw: str, camera_label: str | None) -> Video:
+def ingest_upload(db: Session, upload: UploadFile, zone_raw: str | None,
+                  camera_label: str | None, zone_sidecar: str | None = None) -> Video:
     label = _clean_label(camera_label)
-    zone_points = parse_zone_points(zone_raw)       # shape only; frame bounds are checked below
+    zone_points = parse_zone_points(zone_raw) if zone_raw and zone_raw.strip() else None
     suffix = check_extension(upload.filename)
 
     if video_repository.count_unfinished(db) >= config.MAX_QUEUED_JOBS:
@@ -48,12 +50,15 @@ def ingest_upload(db: Session, upload: UploadFile, zone_raw: str, camera_label: 
     path = save_upload(upload, suffix)
     try:
         meta = probe_video(path)
-        zone = validate_zone_in_frame(zone_points, meta.width, meta.height)
+        zone = ZoneResolver().resolve(
+            meta.width, meta.height, manual_zone=zone_points,
+            sidecar_data=zone_sidecar, camera_label=label,
+        )
         video = video_repository.create_video(
             db,
             filename=Path(path).name,
             original_filename=(upload.filename or "")[:255],
-            zone_json=json.dumps({"points": zone}),
+            zone_json=json.dumps(zone.as_record()),
             camera_label=label,
             fps=meta.fps, width=meta.width, height=meta.height, duration_sec=meta.duration_sec,
         )

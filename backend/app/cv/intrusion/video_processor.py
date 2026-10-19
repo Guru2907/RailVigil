@@ -20,11 +20,12 @@ import cv2
 import numpy as np
 
 from app.core import config
-from app.cv.tracker import Tracker
-from app.cv.temporal_engine import TemporalEngine
-from app.cv.frame_processor import FrameProcessor
-from app.cv.zone_engine import zone_mask
-from app.cv.risk_engine import compute_risk_score, is_persistent, classify_event_type, severity_from_score
+from app.cv.common.tracker import Tracker
+from app.cv.common.zone_geometry import zone_mask
+from app.cv.common.zones import ZoneResolver
+from app.cv.intrusion.temporal_engine import TemporalEngine
+from app.cv.intrusion.frame_processor import FrameProcessor
+from app.cv.intrusion.risk_engine import compute_risk_score, is_persistent, classify_event_type, severity_from_score
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +54,11 @@ def _make_browser_playable(path: str) -> None:
         tmp.unlink(missing_ok=True)
 
 
-def process_video(video_path: str, zone_points: list, video_id: str,
+def process_video(video_path: str, zone_points: list | dict | None, video_id: str,
                    output_video_path: str, zone_label: str = "safety-zone",
                    progress_cb=None, tracker: Tracker | None = None,
-                   abort_cb=None) -> list[dict]:
+                   abort_cb=None, zone_format: str = "pixel",
+                   camera_label: str | None = None) -> list[dict]:
     """Runs the full pipeline on one video. Returns a list of plain
     dicts -- one per confirmed incident -- ready to be handed to
     incident_service for saving to the database.
@@ -68,11 +70,6 @@ def process_video(video_path: str, zone_points: list, video_id: str,
                we stop and raise ProcessingAborted.
     """
 
-    zone_poly = np.array(zone_points, dtype=np.int32)
-    tracker = tracker or Tracker()
-    tracker.reset()  # never inherit ids from a previous video
-    temporal_engine = TemporalEngine()
-
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"Could not open video: {video_path}")
@@ -81,6 +78,19 @@ def process_video(video_path: str, zone_points: list, video_id: str,
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    try:
+        zone = ZoneResolver().resolve(
+            width, height, manual_zone=zone_points, manual_format=zone_format,
+            sidecar_path=video_path, camera_label=camera_label,
+        )
+        zone_poly = np.array(zone.to_pixels(width, height), dtype=np.int32)
+    except BaseException:
+        cap.release()
+        raise
+
+    tracker = tracker or Tracker(class_filter=config.RELEVANT_CLASSES)
+    tracker.reset()  # never inherit ids from a previous video
+    temporal_engine = TemporalEngine()
     zmask = zone_mask(zone_poly, (height, width))  # rasterized once, reused every frame
 
     frame_processor = FrameProcessor(tracker, zone_poly, zmask, zone_label, temporal_engine, video_id)

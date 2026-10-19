@@ -3,10 +3,13 @@
 
 import sqlite3
 
+import pytest
 from alembic import command
 from alembic.config import Config
+from sqlalchemy import create_engine, text
 
 from app.core import config
+from app.db.database import ensure_migration_history
 
 
 def _alembic_config(db_url: str) -> Config:
@@ -45,3 +48,18 @@ def test_downgrade_then_upgrade_round_trips(tmp_path):
     command.upgrade(cfg, "head")
     command.downgrade(cfg, "base")
     command.upgrade(cfg, "head")
+
+
+def test_existing_unversioned_database_is_not_reset(tmp_path):
+    db_file = tmp_path / "legacy.db"
+    engine = create_engine(f"sqlite:///{db_file.as_posix()}")
+    with engine.begin() as connection:
+        connection.execute(text("CREATE TABLE legacy_data (value TEXT)"))
+        connection.execute(text("INSERT INTO legacy_data VALUES ('preserve me')"))
+
+    with pytest.raises(RuntimeError, match="no Alembic migration history"):
+        ensure_migration_history(engine)
+
+    with engine.connect() as connection:
+        assert connection.execute(text("SELECT value FROM legacy_data")).scalar_one() == "preserve me"
+    engine.dispose()

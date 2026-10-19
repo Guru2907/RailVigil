@@ -2,7 +2,7 @@
 server needed. Swap DATABASE_URL in .env to a Postgres URL later;
 nothing else in the codebase has to change."""
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.core import config
@@ -37,6 +37,17 @@ def get_db():
         db.close()
 
 
+def ensure_migration_history(db_engine):
+    """Refuse to migrate an existing unversioned database automatically."""
+    tables = set(inspect(db_engine).get_table_names())
+    if tables and "alembic_version" not in tables:
+        raise RuntimeError(
+            "This database already contains tables but has no Alembic migration "
+            "history (`alembic_version`). Startup stopped without changing it. "
+            "Back up the database and migrate it explicitly; it will not be reset automatically."
+        )
+
+
 def init_db():
     """Called once on app startup. Brings the database up to the latest
     schema by running Alembic migrations (alembic/versions/).
@@ -57,4 +68,5 @@ def init_db():
     # ConfigParser treats "%" specially, so escape it (matters for URLs with
     # percent-encoded passwords).
     cfg.set_main_option("sqlalchemy.url", config.DATABASE_URL.replace("%", "%%"))
+    ensure_migration_history(engine)
     command.upgrade(cfg, "head")

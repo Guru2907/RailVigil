@@ -32,7 +32,7 @@ import threading
 import time
 
 from app.core import config
-from app.cv.tracker import Tracker
+from app.cv.common.tracker import Tracker
 from app.services import job_runner
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.cv.snapshots import save_snapshot
+from app.cv.common.snapshots import save_snapshot
 
 
 def test_snapshot_is_written_to_disk():

@@ -21,10 +21,10 @@ about one frame at a time.
 
 import cv2
 
-from app.cv.tracker import Tracker
-from app.cv.zone_engine import bbox_feet_point, point_in_zone, penetration_ratio
-from app.cv.temporal_engine import TemporalEngine
-from app.cv.snapshots import save_snapshot
+from app.cv.common.tracker import Tracker
+from app.cv.common.zone_geometry import bbox_feet_point, point_in_zone, penetration_ratio
+from app.cv.common.snapshots import save_snapshot
+from app.cv.intrusion.temporal_engine import TemporalEngine
 
 # BGR colours (OpenCV order).
 COLOR_INSIDE = (0, 0, 255)      # red: object is in the zone

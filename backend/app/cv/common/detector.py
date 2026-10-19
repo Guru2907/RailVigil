@@ -1,9 +1,4 @@
-"""
-YOLOv8 wrapper. Its only job: given a frame, tell you what objects YOLO
-sees, filtered to the classes we actually care about for railway
-encroachment. No tracking (tracker.py), no zone logic (zone_engine.py)
-here — this file does one thing.
-"""
+"""Shared YOLO wrapper with a caller-configurable class filter."""
 
 from ultralytics import YOLO
 
@@ -11,14 +6,15 @@ from app.core import config
 
 
 class Detector:
-    def __init__(self, weights_path: str | None = None):
+    def __init__(self, weights_path: str | None = None, class_filter=config.RELEVANT_CLASSES):
         self.model = YOLO(weights_path or config.MODEL_WEIGHTS)
-        self.class_names = self.model.names  # {0: "person", 1: "bicycle", ...}
+        self.class_names = self.model.names
+        self.class_filter = None if class_filter is None else frozenset(class_filter)
 
     def detect(self, frame) -> list[dict]:
         """Single-frame detection, no track IDs. Returns a list of dicts:
         {class_name, confidence, bbox: (x1, y1, x2, y2)}
-        filtered to config.RELEVANT_CLASSES and config.CONF_THRESHOLD."""
+        filtered to `class_filter` and `config.CONF_THRESHOLD`."""
         results = self.model.predict(
             frame, conf=config.CONF_THRESHOLD, verbose=False
         )
@@ -34,7 +30,7 @@ class Detector:
 
         for box, cid, conf in zip(boxes, cls_ids, confs):
             cls_name = self.class_names.get(int(cid), str(cid))
-            if cls_name not in config.RELEVANT_CLASSES:
+            if self.class_filter is not None and cls_name not in self.class_filter:
                 continue
             x1, y1, x2, y2 = box.tolist()
             detections.append({

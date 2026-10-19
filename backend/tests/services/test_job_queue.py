@@ -8,7 +8,7 @@ import pytest
 
 from app.services import job_runner
 from app.services.job_queue import JobQueue
-from app.cv.video_processor import ProcessingAborted
+from app.cv.intrusion.video_processor import ProcessingAborted
 from conftest import get_video, make_video_row
 
 

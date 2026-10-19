@@ -32,8 +32,7 @@ def compute_risk_score(max_penetration: float, dwell_time_sec: float, object_cla
     base = w["penetration"] * penetration + w["dwell"] * dwell_norm
     base = min(base, 1.0)  # guards against someone setting weights that sum > 1
 
-    # Unknown class (only possible if RELEVANT_CLASSES is extended without
-    # adding a factor) -> treat like a person rather than crash.
+    # Unknown classes retain a conservative default rather than failing.
     class_factor = config.CLASS_RISK_FACTOR.get(object_class, config.CLASS_RISK_FACTOR["person"])
 
     return round(base * class_factor * 100, 1)
@@ -65,6 +64,4 @@ def classify_event_type(object_class: str, persistent: bool) -> str:
         # Vehicles don't get a "persistent" variant: a car on the track is
         # an obstruction the moment it's there, however briefly.
         return "vehicle_intrusion"
-    # Only reachable if config.RELEVANT_CLASSES is extended with a class
-    # that isn't listed above (e.g. "cow" from a custom model).
-    return "persistent_encroachment" if persistent else "obstruction"
+    return "other_intrusion"

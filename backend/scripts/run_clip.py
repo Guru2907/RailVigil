@@ -3,13 +3,14 @@ Run the full CV pipeline on one video file from the command line and
 print the incidents it produces -- no server, no database, no browser.
 Handy for checking a change to the temporal/risk logic on real footage.
 
-    python scripts/run_clip.py path/to/clip.mp4
+    python scripts/run_clip.py path/to/clip.mp4  # requires path/to/clip.zone.json
     python scripts/run_clip.py path/to/clip.mp4 --zone "[[420,720],[990,720],[650,230],[590,230]]"
     python scripts/run_clip.py path/to/clip.mp4 --out outputs/_manual
 
-Zone points are in PIXELS of the video frame, same as the API expects.
-If --zone is omitted a preset is used when the file name matches one
-below, otherwise the whole frame becomes the zone.
+Zone points default to PIXELS of the video frame; pass --zone-format normalized
+for normalized coordinates.
+If --zone is omitted, a sibling <video>.zone.json sidecar or a configured
+camera zone is required. The script never treats the whole frame as a zone.
 """
 
 import argparse
@@ -21,24 +22,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # make `app` importable
 
 from app.core import config  # noqa: E402
-from app.cv.video_processor import process_video  # noqa: E402
-
-# Rough zones for the practice clips in Desktop/railvigil-clips, drawn
-# from sampled frames. 1280x720 pixel coordinates.
-ZONE_PRESETS = {
-    # track runs from the bottom of the frame up to a vanishing point
-    "person_walking_tracks_1": [[420, 720], [990, 720], [650, 230], [590, 230]],
-    # low-angle shot, people walk along the rails in the lower band
-    "couple_walking_tracks": [[0, 720], [1280, 720], [1280, 480], [0, 480]],
-    # fixed camera, track across the lower half; a train passes mid-clip
-    "train_tracks_empty": [[0, 720], [1280, 720], [1280, 330], [0, 330]],
-}
+from app.core.errors import AppError  # noqa: E402
+from app.cv.intrusion.video_processor import process_video  # noqa: E402
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("video", help="path to an .mp4 file")
-    parser.add_argument("--zone", help="JSON list of [x, y] pixel points (>= 3)")
+    parser.add_argument("--zone", help="JSON list of zone points (>= 3)")
+    parser.add_argument("--zone-format", choices=("pixel", "normalized"), default="pixel")
+    parser.add_argument("--camera-label", help="camera label for CAMERA_ZONES lookup")
     parser.add_argument("--out", default=str(Path(config.OUTPUTS_DIR) / "_manual"),
                         help="folder for annotated.mp4 and snapshots/")
     args = parser.parse_args()
@@ -49,18 +42,10 @@ def main():
     if not video_path.exists():
         sys.exit(f"no such file: {video_path}")
 
-    if args.zone:
-        zone = json.loads(args.zone)
-    elif video_path.stem in ZONE_PRESETS:
-        zone = ZONE_PRESETS[video_path.stem]
-        print(f"using zone preset for '{video_path.stem}': {zone}")
-    else:
-        import cv2
-        cap = cv2.VideoCapture(str(video_path))
-        w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        cap.release()
-        zone = [[0, 0], [w, 0], [w, h], [0, h]]
-        print(f"no preset for '{video_path.stem}', using the whole {w}x{h} frame as the zone")
+    try:
+        zone = json.loads(args.zone) if args.zone else None
+    except ValueError:
+        parser.error("--zone must be valid JSON")
 
     video_id = video_path.stem
     out_dir = Path(args.out) / video_id
@@ -76,7 +61,8 @@ def main():
         print(f"\r  {done}/{total} frames ({pct:.0f}%)", end="", flush=True)
 
     incidents = process_video(
-        video_path=str(video_path), zone_points=zone, video_id=video_id,
+        video_path=str(video_path), zone_points=zone, zone_format=args.zone_format,
+        camera_label=args.camera_label, video_id=video_id,
         output_video_path=str(output_video), progress_cb=progress,
     )
     print()

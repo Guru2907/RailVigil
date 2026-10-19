@@ -78,7 +78,7 @@ export default function Dashboard() {
     ["Videos analyzed", videosAnalyzed],
     ["Confirmed incidents", incidents.length],
     ["High-risk incidents", highRisk],
-    ["Persistent encroachments", persistent],
+    ["Persistent intrusions", persistent],
   ];
 
   return (

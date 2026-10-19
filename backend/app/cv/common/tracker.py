@@ -10,14 +10,15 @@ so we don't want to load the weights file twice.
 """
 
 from app.core import config
-from app.cv.detector import Detector
+from app.cv.common.detector import Detector
 
 
 class Tracker:
-    def __init__(self, detector: Detector | None = None):
-        self.detector = detector or Detector()
+    def __init__(self, detector: Detector | None = None, class_filter=config.RELEVANT_CLASSES):
+        self.detector = detector or Detector(class_filter=class_filter)
         self.model = self.detector.model
         self.class_names = self.detector.class_names
+        self.class_filter = None if class_filter is None else frozenset(class_filter)
 
     def reset(self) -> None:
         """Forget all tracking state, ready for a NEW video.
@@ -56,7 +57,7 @@ class Tracker:
 
         for box, cid, conf, tid in zip(boxes, cls_ids, confs, track_ids):
             cls_name = self.class_names.get(int(cid), str(cid))
-            if cls_name not in config.RELEVANT_CLASSES:
+            if self.class_filter is not None and cls_name not in self.class_filter:
                 continue
 
             x1, y1, x2, y2 = box.tolist()

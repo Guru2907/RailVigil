@@ -24,20 +24,21 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'railvigil.db'}
 
 # --- YOLO / detection -----------------------------------------------
 MODEL_WEIGHTS = os.getenv("MODEL_WEIGHTS", str(MODELS_DIR / "yolov8n.pt"))
+# Provisional confidence threshold; validate against labeled railway footage.
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.35"))
 
-# Classes we care about for railway encroachment. Anything YOLO detects
+# Classes included in railway intrusion detection. Anything YOLO detects
 # outside this set is ignored (e.g. "chair", "clock" from COCO).
 RELEVANT_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle"}
 
 # --- frame sampling / confirmation -----------------------------------
-# Only run YOLO on every Nth frame — keeps CPU-only inference usable at
+# Provisional sampling threshold: only run YOLO on every Nth frame; this keeps CPU-only inference usable at
 # something close to real time. The frames in between are still drawn
 # (zone + last known boxes) so the output video doesn't flicker; they
 # just don't get fresh detections. Lower = smoother tracking, slower.
 FRAME_SAMPLE_INTERVAL = int(os.getenv("FRAME_SAMPLE_INTERVAL", "3"))
 
-# An object must stay inside the zone for at least this many SECONDS of
+# Provisional threshold: an object must stay inside the zone for at least this many SECONDS
 # video time before it's confirmed as a real event (anti-flicker: a
 # one-off false detection never becomes an incident). Measured in
 # seconds — NOT sampled frames — so behaviour is the same whatever the
@@ -50,13 +51,17 @@ CONFIRM_DWELL_SEC = float(os.getenv("CONFIRM_DWELL_SEC", "0.6"))
 # into several incidents. The event is closed only once the object has
 # been missing for longer than this. Dwell time still only counts up to
 # the last real sighting, so the grace window itself is never added.
+# Provisional threshold; tune against labeled footage before deployment.
 MISS_GRACE_SEC = float(os.getenv("MISS_GRACE_SEC", "1.0"))
 
 # --- temporal reasoning -------------------------------------------------
-# Dwell time above this = "persistent" encroachment, not just passing
-# through. Short for demo purposes — would be much longer in real
+# Provisional threshold; dwell above this is labeled persistent presence.
+# Short for demo purposes; this value would be much longer in real
 # deployment (documented in the paper's limitations section).
 PERSISTENT_DWELL_THRESHOLD_SEC = float(os.getenv("PERSISTENT_DWELL_THRESHOLD_SEC", "8.0"))
+
+# Optional camera-label to normalized-zone map, supplied as JSON in the environment.
+# Example: {"Platform 2":{"format":"normalized","points":[[0.2,0.5],[0.8,0.5],[0.8,1],[0.2,1]]}}
 
 # --- risk scoring ---------------------------------------------------
 # Rule-based, not learned — documented honestly as a heuristic.
@@ -73,14 +78,15 @@ PERSISTENT_DWELL_THRESHOLD_SEC = float(os.getenv("PERSISTENT_DWELL_THRESHOLD_SEC
 # The earlier additive formula (+ w_class * class_weight) handed out
 # 15-24 points just for existing, which made "low" unreachable for
 # vehicles and pushed almost every incident to "medium" or above.
+# Provisional risk weights and thresholds; calibrate on labeled footage.
 RISK_WEIGHTS = {
     "penetration": float(os.getenv("RISK_WEIGHT_PENETRATION", "0.6")),
     "dwell": float(os.getenv("RISK_WEIGHT_DWELL", "0.4")),
 }
-# Dwell time at which the dwell term saturates (= full weight).
+# Provisional dwell time at which the dwell term saturates (= full weight).
 RISK_DWELL_NORM_SEC = float(os.getenv("RISK_DWELL_NORM_SEC", "15.0"))
 
-# Per-class multiplier on the spatiotemporal base (0-1). A truck on the
+# Provisional per-class multiplier on the spatiotemporal base (0-1). A truck on the
 # track is a bigger hazard than a person, all else equal. Keep the top
 # class at 1.0 so the 0-100 scale is actually reachable.
 CLASS_RISK_FACTOR = {
@@ -92,7 +98,7 @@ CLASS_RISK_FACTOR = {
     "truck": 1.0,
 }
 
-# Severity bands on the 0-100 score. Chosen so that, with the factors
+# Provisional severity bands on the 0-100 score. Chosen so that, with the factors
 # above, every band is reachable for every class (see tests/cv/test_risk_engine.py).
 SEVERITY_THRESHOLDS = {"critical": 70, "high": 40, "medium": 20}
 

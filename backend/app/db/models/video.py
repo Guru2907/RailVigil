@@ -31,7 +31,7 @@ class Video(Base):
     attempts = Column(Integer, nullable=False, default=0)   # times processing has STARTED; capped by MAX_JOB_ATTEMPTS
     error = Column(Text, nullable=True)                     # short, user-safe message; full traceback is only in the log
 
-    zone_json = Column(Text, nullable=True)       # safety-zone polygon, as JSON text
+    zone_json = Column(Text, nullable=True)       # normalized zone points, format and source as JSON
     camera_label = Column(String, nullable=True)
 
     duration_sec = Column(Float, nullable=True)

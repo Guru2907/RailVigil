@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.cv.temporal_engine import TemporalEngine
+from app.cv.intrusion.temporal_engine import TemporalEngine
 from app.core import config
 
 # Timing helpers so the tests read in terms of the rules, not magic numbers.

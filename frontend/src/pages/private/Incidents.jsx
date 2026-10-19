@@ -48,7 +48,7 @@ export default function Incidents() {
         <div className="text-xs font-mono text-tactical-mint mb-2">INCIDENTS</div>
         <h1 className="text-3xl font-semibold tracking-tight">All recorded incidents</h1>
         <p className="mt-2 text-white/60 max-w-md">
-          Every confirmed encroachment across all analyzed videos.
+          Every confirmed railway intrusion across analyzed videos.
         </p>
       </div>
 
