@@ -1,6 +1,6 @@
 # RailVigil
 
-Automated Railway Track Encroachment Detection Using YOLOv8 Video Analytics.
+Automated railway **intrusion** detection using YOLOv8 video analytics — people, animals, and vehicles entering configured track-side safety zones. Physical encroachment (structures, vegetation, debris) is out of scope for the current pipeline.
 
 ## Project Structure
 
@@ -30,4 +30,4 @@ npm run dev
 
 ## Notes
 
-This repository is a structural scaffold. Some Modules contain placeholder functions/classes only; implementation is intentionally left for the development phase(Ongoing).
+Stage 2 focuses on **reliable intrusion detection and video processing** (queue, validation, migrations, shared zone resolution). Do not treat missing zones as the whole frame — provide a drawn zone, `.zone.json` sidecar, or `CAMERA_ZONES` config.
