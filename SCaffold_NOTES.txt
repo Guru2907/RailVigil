@@ -1,1 +1,0 @@
-RailVigil scaffold: structure and placeholder functions only. No feature implementation is included.
