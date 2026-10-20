@@ -1,6 +1,4 @@
-import json
-
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -11,15 +9,20 @@ from app.controllers import video_controller
 router = APIRouter(prefix="/videos", tags=["videos"])
 
 
+# NOTE: plain `def`, not `async def`. Saving the upload and probing it with
+# OpenCV are blocking calls. In an `async def` route they would run on the
+# event loop and freeze EVERY other request until they finished. FastAPI
+# runs plain `def` routes in a thread pool, so other requests keep working
+# while a large upload is being written.
 @router.post("", response_model=VideoOut)
-async def upload_video(
+def upload_video(
     video: UploadFile = File(...),
-    zone_points: str = Form(...),          # JSON string: "[[10,10],[200,10],[200,150],[10,150]]"
+    zone_points: str | None = Form(None),  # JSON string in video pixel coordinates
+    zone_sidecar: str | None = Form(None),
     camera_label: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    points = json.loads(zone_points)
-    return video_controller.upload_video(db, video, points, camera_label)
+    return video_controller.upload_video(db, video, zone_points, camera_label, zone_sidecar)
 
 
 @router.get("", response_model=list[VideoOut])
@@ -36,6 +39,5 @@ def get_video(video_id: str, db: Session = Depends(get_db)):
 def get_annotated_video(video_id: str, db: Session = Depends(get_db)):
     video = video_controller.get_video_status(db, video_id)
     if video.status != "done" or not video.output_video_path:
-        from fastapi import HTTPException
         raise HTTPException(status_code=409, detail=f"Video is '{video.status}', not ready yet")
     return FileResponse(video.output_video_path, media_type="video/mp4")

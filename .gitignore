@@ -14,6 +14,9 @@ dist/
 
 # Database
 backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+backend/*.db-journal
 
 # Project data / model artifacts
 backend/data/raw/*

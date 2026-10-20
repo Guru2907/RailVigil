@@ -12,7 +12,7 @@ def _uuid():
 
 
 class Incident(Base):
-    """A CONFIRMED encroachment event — produced once temporal_engine +
+    """A confirmed railway intrusion — produced once temporal_engine +
     risk_engine decide a tracked object's time inside the zone was
     significant, not just a momentary detection."""
 

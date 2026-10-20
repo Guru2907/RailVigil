@@ -51,7 +51,7 @@ const steps = [
 const log = [
   { t: "00:14:32", id: "INC-1024", msg: "Person inside corridor", sev: "HIGH" },
   { t: "00:11:05", id: "INC-1023", msg: "Vehicle near rail bed", sev: "MED" },
-  { t: "00:09:47", id: "INC-1022", msg: "Debris on track edge", sev: "LOW" },
+  { t: "00:09:47", id: "INC-1022", msg: "Person entered track zone", sev: "LOW" },
   { t: "00:04:18", id: "INC-1021", msg: "Person crossing, cleared", sev: "LOW" },
 ];
 
@@ -106,7 +106,7 @@ export default function LandingPage() {
             <span className="text-tactical-mint">Stop the risk.</span>
           </h1>
           <p className="mt-7 text-lg text-white/60 leading-relaxed max-w-xl mx-auto">
-            AI video analytics for railway right-of-way. RailVigil spots encroachment in the danger zone and
+            AI video analytics for railway right-of-way. RailVigil spots people, animals, and vehicles entering a configured track zone and
             confirms it before raising an alarm.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -297,7 +297,7 @@ export default function LandingPage() {
         <div className="rounded-3xl bg-tactical-mint text-tactical-canvas px-8 py-16 text-center shadow-lg">
           <h3 className="text-3xl sm:text-5xl font-semibold tracking-tight">Ready to watch the line?</h3>
           <p className="mt-4 text-tactical-canvas/70 max-w-md mx-auto">
-            Upload a track video and see encroachments flagged in minutes.
+            Upload a track video and see railway intrusions flagged in minutes.
           </p>
           <Link
             to="/upload"

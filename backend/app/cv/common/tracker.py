@@ -10,14 +10,28 @@ so we don't want to load the weights file twice.
 """
 
 from app.core import config
-from app.cv.detector import Detector
+from app.cv.common.detector import Detector
 
 
 class Tracker:
-    def __init__(self, detector: Detector | None = None):
-        self.detector = detector or Detector()
+    def __init__(self, detector: Detector | None = None, class_filter=config.RELEVANT_CLASSES):
+        self.detector = detector or Detector(class_filter=class_filter)
         self.model = self.detector.model
         self.class_names = self.detector.class_names
+        self.class_filter = None if class_filter is None else frozenset(class_filter)
+
+    def reset(self) -> None:
+        """Forget all tracking state, ready for a NEW video.
+
+        `model.track(persist=True)` keeps ByteTrack's memory (which boxes
+        belong to which id) on the model's `predictor` between calls. That
+        is what we want within ONE video, but if a worker reuses this
+        Tracker for the next video, ids and half-tracked objects from the
+        previous video would leak into it. Dropping the predictor makes
+        Ultralytics build a fresh one (with a fresh ByteTrack) on the next
+        call. The loaded weights live on `model.model`, so this is cheap:
+        nothing is re-read from disk."""
+        self.model.predictor = None
 
     def track(self, frame) -> list[dict]:
         """Runs detection + tracking together on one frame. Same shape
@@ -43,7 +57,7 @@ class Tracker:
 
         for box, cid, conf, tid in zip(boxes, cls_ids, confs, track_ids):
             cls_name = self.class_names.get(int(cid), str(cid))
-            if cls_name not in config.RELEVANT_CLASSES:
+            if self.class_filter is not None and cls_name not in self.class_filter:
                 continue
 
             x1, y1, x2, y2 = box.tolist()

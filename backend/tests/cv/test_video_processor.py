@@ -6,7 +6,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.cv.video_processor import process_video
+from app.core.errors import ValidationFailed
+from app.cv.intrusion.video_processor import process_video
 
 
 def _make_synthetic_video(path: str, width=320, height=240, fps=10, seconds=3):
@@ -29,14 +30,39 @@ def test_pipeline_runs_without_crashing(tmp_path):
     output_path = str(tmp_path / "annotated.mp4")
     _make_synthetic_video(video_path)
 
-    zone_points = [[0, 0], [320, 0], [320, 240], [0, 240]]  # whole frame is the zone
+    zone_points = {"points": [[0, 0], [320, 0], [320, 240], [0, 240]]}
+
+    class EmptyTracker:
+        def reset(self):
+            pass
+
+        def track(self, frame):
+            return []
 
     incidents = process_video(
         video_path=video_path,
         zone_points=zone_points,
         video_id="test123",
         output_video_path=output_path,
+        tracker=EmptyTracker(),
     )
 
     assert isinstance(incidents, list)          # doesn't crash, returns a list
     assert Path(output_path).exists()            # annotated video got written
+
+
+def test_pipeline_rejects_missing_zone_instead_of_using_full_frame(tmp_path):
+    video_path = str(tmp_path / "missing-zone.mp4")
+    _make_synthetic_video(video_path)
+
+    try:
+        process_video(
+            video_path=video_path,
+            zone_points=None,
+            video_id="missing-zone",
+            output_video_path=str(tmp_path / "annotated.mp4"),
+        )
+    except ValidationFailed as exc:
+        assert "No railway safety zone" in exc.message
+    else:
+        raise AssertionError("missing zone must not silently become the full frame")

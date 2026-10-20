@@ -23,7 +23,7 @@ function countBy(list, keyFn) {
 const statusStyle = {
   done: "bg-emerald-100 text-emerald-700",
   processing: "bg-amber-100 text-amber-700",
-  uploaded: "bg-amber-100 text-amber-700",
+  queued: "bg-amber-100 text-amber-700",
   failed: "bg-tactical-alert/15 text-tactical-alert",
 };
 
@@ -78,7 +78,7 @@ export default function Dashboard() {
     ["Videos analyzed", videosAnalyzed],
     ["Confirmed incidents", incidents.length],
     ["High-risk incidents", highRisk],
-    ["Persistent encroachments", persistent],
+    ["Persistent intrusions", persistent],
   ];
 
   return (

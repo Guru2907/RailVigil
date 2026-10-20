@@ -5,7 +5,7 @@ detected object's bounding box:
 1. Is it inside the zone at all? (point_in_zone)
 2. HOW MUCH of it is inside the zone? (penetration_ratio)
 
-Question 2 matters because two objects can both be "encroaching" but
+Question 2 matters because two objects can both be "inside" but
 very differently -- one just barely clipping the zone's edge (15%
 overlap) vs. one mostly inside it (70%). That distinction feeds
 risk_engine.py later.
