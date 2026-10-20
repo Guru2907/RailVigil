@@ -21,9 +21,9 @@ from pathlib import Path
 
 from app.core import config
 from app.core.errors import AppError
-from app.cv.intrusion.video_processor import process_video, ProcessingAborted
+from app.cv.intrusion.video_processor import ProcessingAborted, process_video
 from app.db.database import SessionLocal
-from app.db.repositories import video_repository, incident_repository
+from app.db.repositories import incident_repository, video_repository
 from app.utils.file_utils import raw_video_path
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,8 @@
-from fastapi import UploadFile, HTTPException
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app.services import video_service
 from app.db.repositories import video_repository
+from app.services import video_service
 
 
 def upload_video(db: Session, video: UploadFile, zone_raw: str | None,

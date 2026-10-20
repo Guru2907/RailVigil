@@ -11,8 +11,8 @@ overlap) vs. one mostly inside it (70%). That distinction feeds
 risk_engine.py later.
 """
 
-import numpy as np
 import cv2
+import numpy as np
 
 
 def bbox_feet_point(xyxy) -> tuple:

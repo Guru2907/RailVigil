@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, Text
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
@@ -29,7 +29,7 @@ class Video(Base):
     status = Column(String, nullable=False, default="queued", index=True)
     progress = Column(Float, nullable=False, default=0.0)   # 0-100, written at most every PROGRESS_UPDATE_SEC
     attempts = Column(Integer, nullable=False, default=0)   # times processing has STARTED; capped by MAX_JOB_ATTEMPTS
-    error = Column(Text, nullable=True)                     # short, user-safe message; full traceback is only in the log
+    error = Column(Text, nullable=True)                     # short, user-safe message; traceback only in the log
 
     zone_json = Column(Text, nullable=True)       # normalized zone points, format and source as JSON
     camera_label = Column(String, nullable=True)
@@ -41,7 +41,7 @@ class Video(Base):
 
     output_video_path = Column(String, nullable=True)   # annotated result
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
 
     detections = relationship("Detection", back_populates="video", cascade="all, delete-orphan")
     incidents = relationship("Incident", back_populates="video", cascade="all, delete-orphan")

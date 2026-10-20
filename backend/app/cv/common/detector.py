@@ -28,7 +28,7 @@ class Detector:
         cls_ids = r.boxes.cls.cpu().numpy().astype(int)
         confs = r.boxes.conf.cpu().numpy()
 
-        for box, cid, conf in zip(boxes, cls_ids, confs):
+        for box, cid, conf in zip(boxes, cls_ids, confs, strict=True):
             cls_name = self.class_names.get(int(cid), str(cid))
             if self.class_filter is not None and cls_name not in self.class_filter:
                 continue

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import health, videos, incidents
+from app.api.routes import health, incidents, videos
 
 api_router = APIRouter(prefix="/api")
 

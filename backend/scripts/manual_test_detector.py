@@ -1,7 +1,9 @@
 import sys
+
 sys.path.insert(0, ".")
 
 import cv2
+
 from app.cv.common.detector import Detector
 
 # Point this at any video you have locally, or 0 for your webcam

@@ -7,6 +7,7 @@ upload stays `queued` and these tests are deterministic.
 import json
 
 import pytest
+from conftest import get_video
 from fastapi.testclient import TestClient
 
 from app.core import config
@@ -14,7 +15,6 @@ from app.main import app
 from app.services import job_queue
 from app.services.job_queue import JobQueue
 from app.utils.file_utils import raw_dir
-from conftest import get_video
 
 SQUARE = [[10, 10], [200, 10], [200, 150], [10, 150]]   # fits the 320x240 synthetic video
 

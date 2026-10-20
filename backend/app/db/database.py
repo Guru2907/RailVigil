@@ -3,7 +3,7 @@ server needed. Swap DATABASE_URL in .env to a Postgres URL later;
 nothing else in the codebase has to change."""
 
 from sqlalchemy import create_engine, event, inspect
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core import config
 
@@ -60,8 +60,9 @@ def init_db():
         alembic revision --autogenerate -m "describe the change"
     and review the generated file before committing it.
     """
-    from alembic import command
     from alembic.config import Config
+
+    from alembic import command
 
     cfg = Config(str(config.BASE_DIR / "alembic.ini"))
     cfg.set_main_option("script_location", str(config.BASE_DIR / "alembic"))

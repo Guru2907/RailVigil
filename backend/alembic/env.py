@@ -9,13 +9,14 @@ We deliberately do NOT call logging.config.fileConfig() (the Alembic
 default). It would reset the app's logging setup every time the app starts.
 """
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from alembic import context
 from app.core import config as app_config
 from app.db.database import Base
+
 # Importing the models registers their tables on Base.metadata.
-from app.db.models import video, detection, incident, user  # noqa: F401
+from app.db.models import detection, incident, user, video  # noqa: F401
 
 alembic_config = context.config
 if not alembic_config.get_main_option("sqlalchemy.url"):

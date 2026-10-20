@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from app.controllers import incident_controller
 from app.db.database import get_db
 from app.db.schemas.incident import IncidentOut
-from app.controllers import incident_controller
 
 router = APIRouter(prefix="/incidents", tags=["incidents"])
 

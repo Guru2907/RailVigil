@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.cv.intrusion.temporal_engine import TemporalEngine
 from app.core import config
+from app.cv.intrusion.temporal_engine import TemporalEngine
 
 # Timing helpers so the tests read in terms of the rules, not magic numbers.
 CONFIRM = config.CONFIRM_DWELL_SEC

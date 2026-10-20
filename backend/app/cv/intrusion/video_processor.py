@@ -14,18 +14,17 @@ import subprocess
 import time
 from pathlib import Path
 
-import imageio_ffmpeg
-
 import cv2
+import imageio_ffmpeg
 import numpy as np
 
 from app.core import config
 from app.cv.common.tracker import Tracker
 from app.cv.common.zone_geometry import zone_mask
 from app.cv.common.zones import ZoneResolver
-from app.cv.intrusion.temporal_engine import TemporalEngine
 from app.cv.intrusion.frame_processor import FrameProcessor
-from app.cv.intrusion.risk_engine import compute_risk_score, is_persistent, classify_event_type, severity_from_score
+from app.cv.intrusion.risk_engine import classify_event_type, compute_risk_score, is_persistent, severity_from_score
+from app.cv.intrusion.temporal_engine import TemporalEngine
 
 logger = logging.getLogger(__name__)
 

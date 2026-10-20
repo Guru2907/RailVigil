@@ -4,10 +4,10 @@
 import sqlite3
 
 import pytest
-from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, text
 
+from alembic import command
 from app.core import config
 from app.db.database import ensure_migration_history
 

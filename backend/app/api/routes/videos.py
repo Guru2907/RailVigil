@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
-from app.db.schemas.video import VideoOut, VideoDetailOut
 from app.controllers import video_controller
+from app.db.database import get_db
+from app.db.schemas.video import VideoDetailOut, VideoOut
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 
