@@ -106,7 +106,7 @@ export default function LandingPage() {
             <span className="text-tactical-mint">Stop the risk.</span>
           </h1>
           <p className="mt-7 text-lg text-white/60 leading-relaxed max-w-xl mx-auto">
-            AI video analytics for railway right-of-way. RailVigil spots people, animals, and vehicles entering a configured track zone and
+            AI video analytics for railway right-of-way. RailVigil spots people and vehicles entering a configured track zone and
             confirms it before raising an alarm.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -278,15 +278,15 @@ export default function LandingPage() {
 
           <div className="rounded-3xl bg-tactical-card text-tactical-dark p-8 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300">
             <div className="text-xs font-mono text-emerald-600 mb-3">TEMPORAL CONFIRMATION</div>
-            <h3 className="text-xl font-semibold tracking-tight">No more false alarms.</h3>
+            <h3 className="text-xl font-semibold tracking-tight">Fewer one-frame false alarms.</h3>
             <p className="mt-3 text-tactical-dark/60 text-sm">An object must stay in the zone before it counts as an incident.</p>
           </div>
 
           <div className="md:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-8 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300">
-            <div className="text-xs font-mono text-emerald-600 mb-3">EVIDENCE &amp; MAP</div>
-            <h3 className="text-xl font-semibold tracking-tight">Every incident, with a snapshot and a location.</h3>
+            <div className="text-xs font-mono text-emerald-600 mb-3">EVIDENCE</div>
+            <h3 className="text-xl font-semibold tracking-tight">Every incident, with a snapshot.</h3>
             <p className="mt-3 text-tactical-dark/60 max-w-md text-sm">
-              Confirmed events are stored with evidence frames, timestamps and GPS coordinates for the incident map.
+              Confirmed events are stored with an evidence frame, timestamps, dwell time and risk score.
             </p>
           </div>
         </div>

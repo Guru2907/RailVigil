@@ -43,7 +43,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="RailVigil API",
-    description="Railway intrusion detection -- people, animals and vehicles entering configured track zones.",
+    description=(
+        "Railway right-of-way monitoring: intrusion detection in video (people and vehicles "
+        "entering configured track zones); physical encroachment detection is in development."
+    ),
     version="0.1.0",
     lifespan=lifespan,
 )
