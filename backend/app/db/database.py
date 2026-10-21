@@ -2,16 +2,40 @@
 points at it (see docs/SETUP_POSTGRES.md); otherwise a local SQLite file,
 which needs no server. Nothing else in the codebase depends on which."""
 
-from sqlalchemy import create_engine, event, inspect
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core import config
 
 IS_SQLITE = config.DATABASE_URL.startswith("sqlite")
 
-# Tables that extensions create in our schema (PostGIS adds spatial_ref_sys).
-# They are not ours: the startup guard and Alembic's model comparison skip them.
+# Tables that extensions create in our schema are not ours: the startup guard
+# and Alembic's model comparison skip them. On PostgreSQL the database itself
+# says which tables belong to an extension (extension_owned_tables); this
+# constant is the fallback for SQLite and for Alembic's offline mode.
 EXTENSION_TABLES = frozenset({"spatial_ref_sys"})
+
+# Tables that are members of an installed extension and visible through the
+# search_path -- the same set of tables SQLAlchemy and Alembic list when asked
+# for "the default schema" (they include every visible table, not only
+# `public`). Which extensions exist differs by machine: a plain PostGIS install
+# adds spatial_ref_sys and two views, while the postgis/postgis image used in
+# CI also installs postgis_topology and postgis_tiger_geocoder, which put their
+# schemas (topology, tiger) on the database search_path.
+_EXTENSION_TABLES_SQL = text("""
+    SELECT c.relname
+    FROM pg_class c
+    JOIN pg_depend d ON d.classid = 'pg_class'::regclass AND d.objid = c.oid AND d.deptype = 'e'
+    WHERE pg_table_is_visible(c.oid) AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+""")
+
+
+def extension_owned_tables(connection) -> set[str]:
+    """Names of visible tables (through the search_path) that belong to extensions."""
+    if connection.dialect.name != "postgresql":
+        return set(EXTENSION_TABLES)
+    return {row[0] for row in connection.execute(_EXTENSION_TABLES_SQL)} | set(EXTENSION_TABLES)
+
 
 if IS_SQLITE:
     engine = create_engine(config.DATABASE_URL, connect_args={"check_same_thread": False})
@@ -50,13 +74,22 @@ def get_db():
 
 
 def ensure_migration_history(db_engine):
-    """Refuse to migrate an existing unversioned database automatically."""
-    tables = set(inspect(db_engine).get_table_names()) - EXTENSION_TABLES
+    """Refuse to migrate an existing unversioned database automatically.
+
+    Looks only at the schema our migrations write to (the connection's default
+    schema). Asking for table names without a schema would also return every
+    table visible through the search_path -- in CI that includes the Tiger and
+    Topology extensions' own schemas."""
+    with db_engine.connect() as connection:
+        inspector = inspect(connection)
+        tables = set(inspector.get_table_names(schema=inspector.default_schema_name))
+        tables -= extension_owned_tables(connection)
     if tables and "alembic_version" not in tables:
         raise RuntimeError(
             "This database already contains tables but has no Alembic migration "
             "history (`alembic_version`). Startup stopped without changing it. "
-            "Back up the database and migrate it explicitly; it will not be reset automatically."
+            "Back up the database and migrate it explicitly; it will not be reset automatically. "
+            f"Unexpected tables: {', '.join(sorted(tables))}"
         )
 
 
