@@ -1,6 +1,24 @@
 # Physical encroachment module — specification
 
-Owner: Gurpreet. Code: `backend/app/cv/encroachment/` (in development). Everything below is the agreed design; sections move from *planned* to *implemented* as code lands.
+Owner: Gurpreet. Code: `backend/app/cv/encroachment/`. The first section describes what is implemented; the rest is the agreed design.
+
+## Implemented — Phase 1 baseline (images, command line)
+- **Run it:** `python scripts/run_image.py <image|folder> --zone "<points>"` from `backend/` (or a `<image>.zone.json` sidecar per image). Prints the findings and writes evidence — `annotated.jpg`, one crop per finding, `findings.json` — to `outputs/encroachment/<timestamp>/<image>/`.
+- **Pipeline** (`pipeline.analyze_image`): load image with EXIF orientation applied → zone from `ZoneResolver` (manual / sidecar / camera; no zone = rejected) → detectors → `rules.classify_finding` per detection → evidence.
+- **Zone:** only Z3, the right-of-way polygon given by the user. Z1/Z2 from detected rails come in Phase 5.
+- **Object shape:** the detection box (as a polygon). Masks replace boxes when the segmentation model exists (Phase 4); the rule does not change.
+- **Detection cut-offs:** per model, `ENC_MODEL_MIN_CONFIDENCE` — 0.25 for Open Images, 0.10 for YOLO-World, whose open-vocabulary scores run lower (on a test frame a real tarpaulin shelter scored 0.20 and was missed by a shared 0.25 cut-off).
+- **Rule** (`rules.py`): finding when `confidence ≥ ENC_MIN_CONFIDENCE` (floor 0.10) and `overlap_ratio ≥ ENC_MIN_OVERLAP` (0.2); `severity_score = ENC_CATEGORY_WEIGHT[class] × overlap_ratio`; bands critical ≥ 0.75, high ≥ 0.5, medium ≥ 0.25, else low; `vehicle_parked` capped at medium with the note "stationarity not verified"; findings below `ENC_LOW_CONFIDENCE_NOTE` (0.25) keep their severity but carry a "low detection confidence — verify" note (severity = how serious the object would be; confidence = how sure the model is). All values provisional (`core/config.py`).
+- **Models** (`cv/common/model_registry.py`; weights git-ignored in `backend/models/`; every finding records `name@version`, version = first 12 hex of the file's SHA-256):
+
+  | Name | File | Source | SHA-256 (first 12) |
+  |---|---|---|---|
+  | `oiv7-v8s` | `yolov8s-oiv7.pt` | Ultralytics release asset (Open Images V7, 601 classes) | `4663086e1b8e` |
+  | `world-v8s-railvigil` | `yolov8s-world-railvigil.pt` | built from `yolov8s-worldv2.pt` (`9b2c17ab6124`) by `scripts/build_world_model.py` with the prompts in `taxonomy.WORLD_PROMPTS` | `c7f9b27dfecf` |
+
+  Label mapping is in `taxonomy.py`; `Train` is deliberately unmapped. Duplicate detections of the same class across models (box IoU ≥ `ENC_MERGE_IOU`, 0.5) are merged.
+- **YOLO-World build:** setting text prompts needs OpenAI CLIP, which Ultralytics installs from GitHub into the venv and whose weights the script caches in `backend/models/clip/`. This is a one-time, developer-only step; the saved model carries the text embeddings, so the app needs neither CLIP nor a network connection. Rebuild when `WORLD_PROMPTS` changes.
+- **Status:** baseline with pretrained models; **accuracy not measured**. Output is for officer review only.
 
 ## Definition
 A **potential encroachment** is an object of an encroachment category that lies on railway land or inside the track clearance. The software cannot decide legality — that needs land records — so every finding is reviewed by an officer. UI, reports and the paper say "potential encroachment" until an officer verifies it.

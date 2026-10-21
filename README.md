@@ -4,18 +4,19 @@ Railway right-of-way monitoring with YOLOv8, in two separate modules:
 
 | Module | What it finds | Input | Status |
 |---|---|---|---|
-| **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **In development** — see [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
+| **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **Baseline on images** (command line, pretrained models, not yet measured) — see [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
 | **Intrusion** | People and vehicles entering a track-side safety zone in video | Video | **Working** — see [docs/INTRUSION_SPEC.md](docs/INTRUSION_SPEC.md) |
 
 Results are always *potential* encroachments or intrusions for an officer to review. Software cannot establish that something is illegal.
 
 ## What works today
 - Upload a video with a safety zone (drawn, sidecar file, or per-camera config) → background job → YOLOv8n + ByteTrack → time-based confirmation → risk score → incidents with snapshots.
-- Job queue with crash recovery, upload validation, Alembic migrations, 117 backend tests.
+- Encroachment baseline: `backend/scripts/run_image.py` finds potential encroachments in photos (pretrained YOLOv8 Open Images V7 + YOLO-World), checks how much of each object lies on the railway land you mark, and writes annotated evidence.
+- Job queue with crash recovery, upload validation, PostgreSQL + PostGIS (SQLite fallback), Alembic migrations, ~160 backend tests.
 - React pages: video analysis (upload + zone drawing), incidents list and detail, dashboard.
 
 ## Not built yet
-Encroachment detection, image uploads, the GIS map of India (PostgreSQL + PostGIS is set up, no spatial tables yet), incident reports with IDs, authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
+Encroachment in the web app (image uploads, database records, sites), a trained encroachment model, the GIS map of India (PostgreSQL + PostGIS is set up, no spatial tables yet), incident reports with IDs, authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Run locally
 
