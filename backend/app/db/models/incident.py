@@ -40,6 +40,6 @@ class Incident(Base):
     zone_label = Column(String)
     snapshot_path = Column(String, nullable=True)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     video = relationship("Video", back_populates="incidents")

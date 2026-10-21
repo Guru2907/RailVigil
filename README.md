@@ -15,7 +15,7 @@ Results are always *potential* encroachments or intrusions for an officer to rev
 - React pages: video analysis (upload + zone drawing), incidents list and detail, dashboard.
 
 ## Not built yet
-Encroachment detection, image uploads, the GIS map of India, PostgreSQL/PostGIS, incident reports with IDs, authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
+Encroachment detection, image uploads, the GIS map of India (PostgreSQL + PostGIS is set up, no spatial tables yet), incident reports with IDs, authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Run locally
 
@@ -28,7 +28,9 @@ pip install -r requirements-dev.txt
 uvicorn app.main:app --reload     # one process only: the job queue is in-process
 ```
 
-The YOLOv8n weights go in `backend/models/yolov8n.pt`. On first start, migrations create `backend/railvigil.db`. A database created before migrations existed is refused with a message; back it up and remove it.
+The YOLOv8n weights go in `backend/models/yolov8n.pt`.
+
+Database: **PostgreSQL + PostGIS** — set it up once with [docs/SETUP_POSTGRES.md](docs/SETUP_POSTGRES.md) (`backend\scripts\setup_postgres.ps1` writes `DATABASE_URL` into `backend/.env`). Without `DATABASE_URL` the app falls back to a local SQLite file, `backend/railvigil.db`. Migrations run on start-up; a database that has tables but no migration history is refused with a message.
 
 Frontend (from `frontend/`):
 
@@ -37,7 +39,7 @@ npm ci
 npm run dev
 ```
 
-Tests and checks: `pytest` and `ruff check .` in `backend/`; `npm run lint` and `npm run build` in `frontend/`.
+Tests and checks: `pytest` (SQLite) and `scripts\test_postgres.ps1` (PostgreSQL) and `ruff check .` in `backend/`; `npm run lint` and `npm run build` in `frontend/`.
 
 ## Repository layout
 - `backend/app/cv/common/` — detector, tracker, zone geometry and zone resolver shared by both modules

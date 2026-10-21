@@ -9,11 +9,11 @@ We deliberately do NOT call logging.config.fileConfig() (the Alembic
 default). It would reset the app's logging setup every time the app starts.
 """
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context
 from app.core import config as app_config
-from app.db.database import Base
+from app.db.database import EXTENSION_TABLES, Base
 
 # Importing the models registers their tables on Base.metadata.
 from app.db.models import detection, incident, user, video  # noqa: F401
@@ -30,6 +30,12 @@ target_metadata = Base.metadata
 IS_SQLITE = alembic_config.get_main_option("sqlalchemy.url").startswith("sqlite")
 
 
+def include_object(obj, name, type_, reflected, compare_to):
+    """Leave tables that belong to extensions (PostGIS) out of autogenerate
+    and `alembic check`, so they are never proposed for dropping."""
+    return not (type_ == "table" and reflected and name in EXTENSION_TABLES)
+
+
 def run_migrations_offline() -> None:
     context.configure(
         url=alembic_config.get_main_option("sqlalchemy.url"),
@@ -37,6 +43,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=IS_SQLITE,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -53,6 +60,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             render_as_batch=IS_SQLITE,
+            include_object=include_object,
         )
         with context.begin_transaction():
             context.run_migrations()

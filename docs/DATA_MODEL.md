@@ -1,6 +1,8 @@
 # Data model
 
-## Today (SQLite, Alembic revision `66db0a636847`)
+## Today (PostgreSQL + PostGIS, or SQLite fallback; Alembic head `3c9e1f7a2b10`)
+All `created_at` columns are timezone-aware (`timestamptz` on PostgreSQL) and stored as UTC.
+
 - `videos` — one upload and its job state: `status` (queued / processing / done / failed), `progress`, `attempts`, `error`, `zone_json` (normalized points + source), `camera_label`, fps/size/duration, `output_video_path`.
 - `incidents` — confirmed intrusion events per video (class, event type, severity, dwell, penetration, risk, snapshot path). Replaced as a whole when a video is re-run.
 - `detections` — defined but never written; to be removed or used in v2.

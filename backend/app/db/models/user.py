@@ -20,4 +20,4 @@ class User(Base):
     id = Column(String, primary_key=True, default=_uuid)
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))

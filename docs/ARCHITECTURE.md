@@ -12,7 +12,7 @@ React (Vite) ──HTTP──► FastAPI /api
                          ├─ GET /videos, /videos/{id}, /videos/{id}/file
                          ├─ GET /incidents, /incidents/{id}, /incidents/{id}/snapshot
                          └─ GET /health
-Storage: SQLite via SQLAlchemy + Alembic; files under backend/data/raw and backend/outputs
+Storage: PostgreSQL + PostGIS (SQLite fallback) via SQLAlchemy + Alembic; files under backend/data/raw and backend/outputs
 ```
 
 ## Target (v2)
@@ -34,7 +34,7 @@ Deployment: Docker Compose (Postgres+PostGIS, MinIO, backend, frontend)
 ## Build order
 | Phase | Deliverable |
 |---|---|
-| 0 | Docker Compose with Postgres+PostGIS and MinIO; backend on Postgres; CI and branch protection |
+| 0 | Backend on native PostgreSQL + PostGIS (setup script, timezone-aware timestamps, CI on both databases). Docker and MinIO deferred to Phase 6 |
 | 0b | Zone resolver extensions: `awaiting_zone`, zone suggestion endpoint, golden-clip tests |
 | 1 | Encroachment baseline on images: pretrained models, manual zone, `classify_finding`, evidence |
 | 2 | v2 schema, storage service, media/job API for images and videos, report numbers, site clustering |

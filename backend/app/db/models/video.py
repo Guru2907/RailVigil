@@ -41,7 +41,7 @@ class Video(Base):
 
     output_video_path = Column(String, nullable=True)   # annotated result
 
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     detections = relationship("Detection", back_populates="video", cascade="all, delete-orphan")
     incidents = relationship("Incident", back_populates="video", cascade="all, delete-orphan")
