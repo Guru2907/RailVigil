@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, make_url, text
+from sqlalchemy import create_engine, inspect, make_url, text
 
 from app.core import config
 from app.db.database import engine as suite_engine
@@ -169,3 +169,29 @@ def test_extension_owned_tables_come_from_the_database():
         owned = extension_owned_tables(connection)
     assert "spatial_ref_sys" in owned
     assert not owned & {"videos", "incidents", "detections", "users", "alembic_version"}
+
+
+@requires_postgres
+def test_guard_only_inspects_our_own_schema():
+    """Reproduces CI: the postgis/postgis image's Tiger and Topology extensions
+    add their schemas to the database search_path, and SQLAlchemy then lists
+    every *visible* table (addr, edges, topology, ...) for the default schema.
+    The guard must look only at the schema our migrations write to."""
+    ours, other = (f"guardtest_{uuid.uuid4().hex[:8]}" for _ in range(2))
+    admin = create_engine(PG_URL)
+    with admin.begin() as connection:
+        connection.execute(text(f'CREATE SCHEMA "{ours}"'))
+        connection.execute(text(f'CREATE SCHEMA "{other}"'))
+        connection.execute(text(f'CREATE TABLE "{other}".edges (id int)'))   # like tiger.edges
+    url = make_url(PG_URL).update_query_dict({"options": f"-csearch_path={ours},{other}"})
+    engine = create_engine(url.render_as_string(hide_password=False))
+    try:
+        with engine.connect() as connection:
+            assert "edges" in inspect(connection).get_table_names()   # visible: the CI situation
+        ensure_migration_history(engine)                               # must not raise
+    finally:
+        engine.dispose()
+        with admin.begin() as connection:
+            connection.execute(text(f'DROP SCHEMA "{ours}" CASCADE'))
+            connection.execute(text(f'DROP SCHEMA "{other}" CASCADE'))
+        admin.dispose()
