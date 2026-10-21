@@ -64,7 +64,26 @@ WORLD_PROMPTS = {
     "construction material": MATERIAL_DUMP,
     "bush": VEGETATION,
     "overgrown vegetation": VEGETATION,
+    # Without these, YOLO-World labelled parked auto-rickshaws "roadside stall".
+    "auto rickshaw": VEHICLE_PARKED,
+    "cycle rickshaw": VEHICLE_PARKED,
 }
+
+# Distractor prompts: legitimate railway things and people. YOLO-World gives
+# each box the best-matching prompt, so offering these lets look-alikes (a
+# platform shelter, a concrete kerb) land here instead of on an encroachment
+# prompt. They map to no class and never become findings.
+WORLD_DISTRACTORS = (
+    "train",
+    "railway platform",
+    "platform shelter",
+    "railway signal",
+    "concrete kerb",
+    "person",
+)
+
+# Order of the prompts baked into the YOLO-World model.
+WORLD_MODEL_PROMPTS = (*WORLD_PROMPTS, *WORLD_DISTRACTORS)
 
 LABEL_MAPS = {
     "oiv7-v8s": OIV7_LABELS,

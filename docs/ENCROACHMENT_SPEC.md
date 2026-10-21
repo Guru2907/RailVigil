@@ -14,11 +14,12 @@ Owner: Gurpreet. Code: `backend/app/cv/encroachment/`. The first section describ
   | Name | File | Source | SHA-256 (first 12) |
   |---|---|---|---|
   | `oiv7-v8s` | `yolov8s-oiv7.pt` | Ultralytics release asset (Open Images V7, 601 classes) | `4663086e1b8e` |
-  | `world-v8s-railvigil` | `yolov8s-world-railvigil.pt` | built from `yolov8s-worldv2.pt` (`9b2c17ab6124`) by `scripts/build_world_model.py` with the prompts in `taxonomy.WORLD_PROMPTS` | `c7f9b27dfecf` |
+  | `world-v8s-railvigil` | `yolov8s-world-railvigil.pt` | built from `yolov8s-worldv2.pt` (`9b2c17ab6124`) by `scripts/build_world_model.py` with `taxonomy.WORLD_MODEL_PROMPTS` (19 encroachment prompts + 6 distractors) | `533a607ff9f2` |
 
-  Label mapping is in `taxonomy.py`; `Train` is deliberately unmapped. Duplicate detections of the same class across models (box IoU ≥ `ENC_MERGE_IOU`, 0.5) are merged.
+  Label mapping is in `taxonomy.py`; `Train` is deliberately unmapped. **Distractor prompts** (train, railway platform, platform shelter, railway signal, concrete kerb, person) give YOLO-World somewhere to put legitimate look-alikes; they map to no class. Boxes covering ≥ `ENC_MAX_BOX_SHARE` (80 %) of the image are dropped as not-an-object. Duplicate detections of the same class across models (box IoU ≥ `ENC_MERGE_IOU`, 0.5) are merged.
 - **YOLO-World build:** setting text prompts needs OpenAI CLIP, which Ultralytics installs from GitHub into the venv and whose weights the script caches in `backend/models/clip/`. This is a one-time, developer-only step; the saved model carries the text embeddings, so the app needs neither CLIP nor a network connection. Rebuild when `WORLD_PROMPTS` changes.
 - **Status:** baseline with pretrained models; **accuracy not measured**. Output is for officer review only.
+- **Known limits seen on a 10-photo visual check** (2026-10-22; a check, not a measurement): garbage and debris are not detected at all (scores ≤ 0.03 even on heavily littered track); legitimate railway buildings such as station sheds are flagged as structures; bushes along a corridor were missed; most detections are low-confidence. These are what the Phase 4 segmentation model, trained with railway-owned structures as negatives, has to fix.
 
 ## Definition
 A **potential encroachment** is an object of an encroachment category that lies on railway land or inside the track clearance. The software cannot decide legality — that needs land records — so every finding is reviewed by an officer. UI, reports and the paper say "potential encroachment" until an officer verifies it.

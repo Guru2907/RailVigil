@@ -109,6 +109,26 @@ def test_detector_maps_filters_and_merges_across_models():
     assert detector.model_versions() == {"oiv7-v8s": "aaa", "world-v8s-railvigil": "bbb"}
 
 
+def test_distractor_prompts_never_map_to_a_class():
+    from app.cv.encroachment.taxonomy import WORLD_DISTRACTORS, WORLD_MODEL_PROMPTS
+    for prompt in WORLD_DISTRACTORS:
+        assert map_label("world-v8s-railvigil", prompt) is None
+    assert set(WORLD_PROMPTS) | set(WORLD_DISTRACTORS) == set(WORLD_MODEL_PROMPTS)
+    assert not set(WORLD_PROMPTS) & set(WORLD_DISTRACTORS)
+
+
+def test_box_covering_the_whole_image_is_dropped(monkeypatch):
+    monkeypatch.setattr(config, "ENC_MAX_BOX_SHARE", 0.8)
+    oiv7 = _fake_model({0: "Building", 1: "House"}, [
+        ((0, 0, 400, 400), 0, 0.9),       # the whole photo: not an object
+        ((10, 10, 110, 110), 1, 0.7),
+    ])
+    detector = EncroachmentDetector(["oiv7-v8s"], min_confidence=0.25, merge_iou=0.5,
+                                    loader={"oiv7-v8s": SimpleNamespace(version="a", model=oiv7)}.__getitem__)
+    found = detector.detect(np.zeros((400, 400, 3), dtype=np.uint8))
+    assert [d.label for d in found] == ["House"]
+
+
 def test_each_model_uses_its_own_confidence_cutoff(monkeypatch):
     used = {}
 

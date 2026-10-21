@@ -53,6 +53,8 @@ class EncroachmentDetector:
         return {name: self._loader(name).version for name in self.model_names}
 
     def detect(self, image_bgr) -> list[Detection]:
+        height, width = image_bgr.shape[:2]
+        max_box_area = config.ENC_MAX_BOX_SHARE * width * height
         found: list[Detection] = []
         for name in self.model_names:
             loaded = self._loader(name)
@@ -70,6 +72,9 @@ class EncroachmentDetector:
                 cls = map_label(name, label)
                 if cls is None:
                     continue
+                x1, y1, x2, y2 = (float(v) for v in xyxy)
+                if (x2 - x1) * (y2 - y1) >= max_box_area:
+                    continue  # a "box" around the whole photo is not an object
                 found.append(Detection(
                     cls=cls, label=label, confidence=float(conf),
                     bbox=tuple(float(v) for v in xyxy),

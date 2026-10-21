@@ -161,6 +161,9 @@ ENC_MIN_CONFIDENCE = float(os.getenv("ENC_MIN_CONFIDENCE", "0.10"))
 ENC_LOW_CONFIDENCE_NOTE = float(os.getenv("ENC_LOW_CONFIDENCE_NOTE", "0.25"))
 # Minimum share of an object's area that must lie inside the railway zone.
 ENC_MIN_OVERLAP = float(os.getenv("ENC_MIN_OVERLAP", "0.2"))
+# A box covering at least this share of the whole image is not an object (on a
+# close-up of track, Open Images returned "Building" for the entire photo).
+ENC_MAX_BOX_SHARE = float(os.getenv("ENC_MAX_BOX_SHARE", "0.8"))
 # Two models reporting the same class with at least this box IoU count as one object.
 ENC_MERGE_IOU = float(os.getenv("ENC_MERGE_IOU", "0.5"))
 # How serious each category is, 0-1. severity_score = weight * overlap.
