@@ -139,3 +139,43 @@ MAX_JOB_ATTEMPTS = int(os.getenv("MAX_JOB_ATTEMPTS", "3"))
 # Progress is written to the database at most this often, so a fast
 # video doesn't turn into hundreds of tiny DB writes.
 PROGRESS_UPDATE_SEC = float(os.getenv("PROGRESS_UPDATE_SEC", "2.0"))
+
+# --- encroachment (Phase 1 baseline) -----------------------------------------
+# Every value below is PROVISIONAL: chosen by hand for the pretrained baseline
+# models and to be replaced by values measured on the labelled test set
+# (docs/EVALUATION.md). See docs/ENCROACHMENT_SPEC.md for the rule itself.
+
+# Which registered models the image pipeline runs (cv/common/model_registry.py).
+ENC_MODELS = [m.strip() for m in os.getenv("ENC_MODELS", "oiv7-v8s,world-v8s-railvigil").split(",") if m.strip()]
+# Per-model confidence cut-off when detecting. Open-vocabulary YOLO-World gives
+# systematically lower scores than a closed-set model (on a test frame a real
+# tarpaulin shelter scored 0.20), so one shared threshold does not fit both.
+ENC_MODEL_MIN_CONFIDENCE = {
+    "oiv7-v8s": float(os.getenv("ENC_MIN_CONFIDENCE_OIV7", "0.25")),
+    "world-v8s-railvigil": float(os.getenv("ENC_MIN_CONFIDENCE_WORLD", "0.10")),
+}
+# Rule-level floor: no finding below this confidence, whichever model produced it.
+ENC_MIN_CONFIDENCE = float(os.getenv("ENC_MIN_CONFIDENCE", "0.10"))
+# Findings below this confidence keep their severity (how serious the object
+# would be) but carry a "low detection confidence" note for the reviewer.
+ENC_LOW_CONFIDENCE_NOTE = float(os.getenv("ENC_LOW_CONFIDENCE_NOTE", "0.25"))
+# Minimum share of an object's area that must lie inside the railway zone.
+ENC_MIN_OVERLAP = float(os.getenv("ENC_MIN_OVERLAP", "0.2"))
+# A box covering at least this share of the whole image is not an object (on a
+# close-up of track, Open Images returned "Building" for the entire photo).
+ENC_MAX_BOX_SHARE = float(os.getenv("ENC_MAX_BOX_SHARE", "0.8"))
+# Two models reporting the same class with at least this box IoU count as one object.
+ENC_MERGE_IOU = float(os.getenv("ENC_MERGE_IOU", "0.5"))
+# How serious each category is, 0-1. severity_score = weight * overlap.
+ENC_CATEGORY_WEIGHT = {
+    "structure_permanent": 1.0,
+    "structure_temporary": 0.9,
+    "material_dump": 0.8,
+    "debris_waste": 0.7,
+    "vehicle_parked": 0.7,
+    "vegetation": 0.6,
+}
+# Lower bounds of the severity bands on severity_score; below "medium" is "low".
+ENC_SEVERITY_BANDS = {"critical": 0.75, "high": 0.5, "medium": 0.25}
+# One photo cannot show that a vehicle is parked, so its severity is capped.
+ENC_VEHICLE_MAX_SEVERITY = "medium"
