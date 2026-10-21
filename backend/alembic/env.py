@@ -13,7 +13,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core import config as app_config
-from app.db.database import EXTENSION_TABLES, Base
+from app.db.database import EXTENSION_TABLES, Base, extension_owned_tables
 
 # Importing the models registers their tables on Base.metadata.
 from app.db.models import detection, incident, user, video  # noqa: F401
@@ -30,10 +30,13 @@ target_metadata = Base.metadata
 IS_SQLITE = alembic_config.get_main_option("sqlalchemy.url").startswith("sqlite")
 
 
-def include_object(obj, name, type_, reflected, compare_to):
-    """Leave tables that belong to extensions (PostGIS) out of autogenerate
-    and `alembic check`, so they are never proposed for dropping."""
-    return not (type_ == "table" and reflected and name in EXTENSION_TABLES)
+def make_include_object(skip_tables):
+    """An include_object hook that leaves tables belonging to extensions
+    (PostGIS and friends) out of autogenerate and `alembic check`, so they are
+    never proposed for dropping."""
+    def include_object(obj, name, type_, reflected, compare_to):
+        return not (type_ == "table" and reflected and name in skip_tables)
+    return include_object
 
 
 def run_migrations_offline() -> None:
@@ -43,7 +46,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_as_batch=IS_SQLITE,
-        include_object=include_object,
+        include_object=make_include_object(EXTENSION_TABLES),
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -56,11 +59,17 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
+        # Ask the live database which tables its extensions own. The query
+        # opens a transaction (SQLAlchemy autobegin); end it now, otherwise
+        # Alembic would join it instead of starting and committing its own,
+        # and the migration would be rolled back when the connection closes.
+        skip_tables = extension_owned_tables(connection)
+        connection.commit()
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             render_as_batch=IS_SQLITE,
-            include_object=include_object,
+            include_object=make_include_object(skip_tables),
         )
         with context.begin_transaction():
             context.run_migrations()

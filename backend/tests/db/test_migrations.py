@@ -17,7 +17,8 @@ from alembic.config import Config
 from sqlalchemy import create_engine, make_url, text
 
 from app.core import config
-from app.db.database import ensure_migration_history
+from app.db.database import engine as suite_engine
+from app.db.database import ensure_migration_history, extension_owned_tables
 
 # conftest.py picks the suite's database before the app loads backend/.env;
 # follow that choice, so plain `pytest` stays on SQLite.
@@ -73,7 +74,7 @@ def test_existing_unversioned_database_is_not_reset(tmp_path):
         connection.execute(text("CREATE TABLE legacy_data (value TEXT)"))
         connection.execute(text("INSERT INTO legacy_data VALUES ('preserve me')"))
 
-    with pytest.raises(RuntimeError, match="no Alembic migration history"):
+    with pytest.raises(RuntimeError, match="no Alembic migration history.*Unexpected tables: legacy_data"):
         ensure_migration_history(engine)
 
     with engine.connect() as connection:
@@ -157,3 +158,14 @@ def test_postgres_has_postgis_and_timezone_aware_timestamps(pg_schema_url):
         assert read_back == written  # same instant, not shifted by the IST session
     finally:
         engine.dispose()
+
+
+@requires_postgres
+def test_extension_owned_tables_come_from_the_database():
+    """PostGIS's spatial_ref_sys is reported as extension-owned by PostgreSQL
+    itself (so extra extensions, like the topology and tiger ones in CI, are
+    covered too), and none of our own tables ever are."""
+    with suite_engine.connect() as connection:
+        owned = extension_owned_tables(connection)
+    assert "spatial_ref_sys" in owned
+    assert not owned & {"videos", "incidents", "detections", "users", "alembic_version"}
