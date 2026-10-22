@@ -13,6 +13,7 @@ import {
   shortSite,
 } from "../../utils/encroachmentFormat.js";
 import { timeAgo } from "../../utils/formatDate.js";
+import { DARK_BASE } from "../../utils/mapTiles.js";
 
 const card = "rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50";
 
@@ -83,11 +84,7 @@ export default function EncroachmentDashboard() {
             </Link>
           </div>
           <MapContainer center={center} zoom={features.length ? 13 : 4} className="h-72 w-full" scrollWheelZoom={false}>
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution="&copy; OpenStreetMap contributors &copy; CARTO"
-              subdomains="abcd"
-            />
+            <TileLayer {...DARK_BASE} maxNativeZoom={DARK_BASE.maxZoom} maxZoom={19} />
             {features.map((f) => (
               <CircleMarker
                 key={f.id}

@@ -14,6 +14,7 @@ import {
   shortSite,
 } from "../../utils/encroachmentFormat.js";
 import { formatDateTime, timeAgo } from "../../utils/formatDate.js";
+import { DARK_BASE, DARK_LABELS, RAILWAYS, SATELLITE } from "../../utils/mapTiles.js";
 
 const INDIA_CENTER = [22.5, 79.0];
 const REFRESH_MS = 30000;
@@ -131,28 +132,16 @@ export default function MapView() {
       <MapContainer center={INDIA_CENTER} zoom={5} minZoom={4} className="h-full w-full rv-map" zoomControl={false}>
         <LayersControl position="bottomright">
           <LayersControl.BaseLayer checked name="Dark">
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              subdomains="abcd"
-              maxZoom={20}
-            />
+            <TileLayer {...DARK_BASE} maxNativeZoom={DARK_BASE.maxZoom} maxZoom={19} />
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Satellite">
-            <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution="Tiles &copy; Esri"
-              maxZoom={19}
-            />
+            <TileLayer {...SATELLITE} />
           </LayersControl.BaseLayer>
+          <LayersControl.Overlay checked name="Place names">
+            <TileLayer {...DARK_LABELS} maxNativeZoom={DARK_LABELS.maxZoom} maxZoom={19} />
+          </LayersControl.Overlay>
           <LayersControl.Overlay checked name="Railway lines">
-            <TileLayer
-              url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a> (CC-BY-SA)'
-              subdomains="abc"
-              maxZoom={19}
-              opacity={0.75}
-            />
+            <TileLayer {...RAILWAYS} opacity={0.75} />
           </LayersControl.Overlay>
         </LayersControl>
 

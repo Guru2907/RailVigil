@@ -15,6 +15,7 @@ import {
   statusBadge,
 } from "../../utils/encroachmentFormat.js";
 import { formatDateTime } from "../../utils/formatDate.js";
+import { DARK_BASE, RAILWAYS } from "../../utils/mapTiles.js";
 
 export default function SiteDetails() {
   const { id } = useParams();
@@ -68,12 +69,8 @@ export default function SiteDetails() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className={`${card} overflow-hidden p-0 lg:col-span-1`}>
           <MapContainer center={[site.latitude, site.longitude]} zoom={17} className="h-64 w-full" scrollWheelZoom={false}>
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution="&copy; OpenStreetMap contributors &copy; CARTO"
-              subdomains="abcd"
-            />
-            <TileLayer url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png" subdomains="abc" opacity={0.7} attribution="&copy; OpenRailwayMap" />
+            <TileLayer {...DARK_BASE} maxNativeZoom={DARK_BASE.maxZoom} maxZoom={19} />
+            <TileLayer {...RAILWAYS} opacity={0.7} />
             <CircleMarker
               center={[site.latitude, site.longitude]}
               radius={10}
