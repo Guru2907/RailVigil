@@ -188,3 +188,8 @@ ENC_VEHICLE_MAX_SEVERITY = "medium"
 ENC_SITE_RADIUS_M = float(os.getenv("ENC_SITE_RADIUS_M", "25"))
 MAX_IMAGE_MB = float(os.getenv("MAX_IMAGE_MB", "25"))
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+# Photos accepted in one POST /api/media request.
+MAX_IMAGES_PER_UPLOAD = int(os.getenv("MAX_IMAGES_PER_UPLOAD", "20"))
+# Photos analysed at the same time. Each worker holds the encroachment models
+# (~50 MB of weights plus working memory); keep at 1 on a laptop.
+IMAGE_WORKER_COUNT = int(os.getenv("IMAGE_WORKER_COUNT", "1"))

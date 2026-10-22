@@ -15,6 +15,7 @@ from backend/.env); that database's tables are emptied between tests.
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -66,6 +67,8 @@ def _clean_tables():
         db.commit()
     finally:
         db.close()
+    # stored photos and evidence from earlier tests
+    shutil.rmtree(Path(os.environ["STORAGE_DIR"]), ignore_errors=True)
     yield
 
 
