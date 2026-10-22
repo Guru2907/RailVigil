@@ -15,7 +15,7 @@ import {
 import { timeAgo } from "../../utils/formatDate.js";
 import { DARK_BASE } from "../../utils/mapTiles.js";
 
-const card = "rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50";
+const card = "rounded-2xl bg-surface text-ink p-6 shadow-none border border-line";
 
 export default function EncroachmentDashboard() {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ export default function EncroachmentDashboard() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-tactical-alert/15 text-tactical-alert text-sm font-mono px-5 py-3">
+      <div className="rounded-2xl bg-danger/15 text-danger text-sm font-mono px-5 py-3">
         Could not load data: {error}
       </div>
     );
@@ -69,8 +69,8 @@ export default function EncroachmentDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map(([label, value, alert]) => (
           <div key={label} className={`${card} hover:-translate-y-1 transition-all duration-300`}>
-            <div className={`text-3xl font-semibold font-mono ${alert && value > 0 ? "text-tactical-alert" : ""}`}>{value}</div>
-            <div className="mt-1 text-sm text-tactical-dark/60">{label}</div>
+            <div className={`text-3xl font-semibold font-mono ${alert && value > 0 ? "text-danger" : ""}`}>{value}</div>
+            <div className="mt-1 text-sm text-muted">{label}</div>
           </div>
         ))}
       </div>
@@ -79,7 +79,7 @@ export default function EncroachmentDashboard() {
         <div className={`${card} lg:col-span-3 overflow-hidden p-0`}>
           <div className="flex items-center justify-between px-6 pt-5 pb-3">
             <h3 className="font-semibold">Site map</h3>
-            <Link to="/map" className="text-sm font-medium text-emerald-700 hover:underline">
+            <Link to="/map" className="text-sm font-medium text-accent hover:underline">
               Open full map →
             </Link>
           </div>
@@ -100,27 +100,27 @@ export default function EncroachmentDashboard() {
         <div className={`${card} lg:col-span-2`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">Latest reports</h3>
-            <Link to="/reports" className="text-sm font-medium text-emerald-700 hover:underline">
+            <Link to="/reports" className="text-sm font-medium text-accent hover:underline">
               View all →
             </Link>
           </div>
           {reports.length === 0 ? (
-            <p className="text-sm text-tactical-dark/50">No reports yet.</p>
+            <p className="text-sm text-muted">No reports yet.</p>
           ) : (
             <ul className="space-y-2">
               {reports.map((r) => (
                 <li
                   key={r.report_no}
                   onClick={() => r.site_id && navigate(`/sites/${r.site_id}`)}
-                  className="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-emerald-50 cursor-pointer"
+                  className="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-surface-2 cursor-pointer"
                 >
                   <div>
                     <div className="font-mono text-xs font-semibold">{r.report_no}</div>
-                    <div className="text-xs text-tactical-dark/60">
+                    <div className="text-xs text-muted">
                       {REASON_LABEL[r.reason]} · {r.site_id ? shortSite(r.site_id) : "no location"}
                     </div>
                   </div>
-                  <span className="text-xs text-tactical-dark/50">{timeAgo(r.created_at)}</span>
+                  <span className="text-xs text-muted">{timeAgo(r.created_at)}</span>
                 </li>
               ))}
             </ul>
@@ -133,10 +133,10 @@ export default function EncroachmentDashboard() {
           <h3 className="font-semibold mb-4">Findings by severity</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={bySeverity}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip />
+              <CartesianGrid stroke="#243049" strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#8B96AD" }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#8B96AD" }} />
+              <Tooltip contentStyle={{ background: "#111723", border: "1px solid #243049", borderRadius: 8, color: "#E7ECF5" }} cursor={{ fill: "rgba(76,141,255,0.08)" }} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {bySeverity.map((d) => (
                   <Cell key={d.name} fill={SEVERITY_COLOR[d.name]} />
@@ -149,11 +149,11 @@ export default function EncroachmentDashboard() {
           <h3 className="font-semibold mb-4">Findings by class</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={byClass} layout="vertical" margin={{ left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="value" fill="#10B981" radius={[0, 6, 6, 0]} />
+              <CartesianGrid stroke="#243049" strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#8B96AD" }} />
+              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: "#8B96AD" }} />
+              <Tooltip contentStyle={{ background: "#111723", border: "1px solid #243049", borderRadius: 8, color: "#E7ECF5" }} cursor={{ fill: "rgba(76,141,255,0.08)" }} />
+              <Bar dataKey="value" fill="#4C8DFF" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -161,12 +161,12 @@ export default function EncroachmentDashboard() {
           <h3 className="font-semibold mb-4">Sites by status</h3>
           <ul className="space-y-2 text-sm">
             {Object.entries(STATUS_LABEL).map(([k, label]) => (
-              <li key={k} className="flex justify-between border-b border-tactical-dark/5 pb-1">
+              <li key={k} className="flex justify-between border-b border-line pb-1">
                 <span>{label}</span>
                 <span className="font-mono font-semibold">{stats?.sites_by_status?.[k] || 0}</span>
               </li>
             ))}
-            <li className="flex justify-between pt-2 text-tactical-dark/60">
+            <li className="flex justify-between pt-2 text-muted">
               <span>Findings without location</span>
               <span className="font-mono">{stats?.findings_without_location ?? 0}</span>
             </li>

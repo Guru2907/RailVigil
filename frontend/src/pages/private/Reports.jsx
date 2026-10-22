@@ -43,9 +43,9 @@ export default function Reports() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-3xl bg-tactical-card text-tactical-dark shadow-lg">
+      <div className="overflow-x-auto rounded-2xl bg-surface text-ink shadow-none">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-wide text-tactical-dark/50">
+          <thead className="text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               {["Report no.", "Reason", "Site", "Issued"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">
@@ -57,21 +57,21 @@ export default function Reports() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-tactical-dark/50">
+                <td colSpan={4} className="px-4 py-6 text-center text-muted">
                   Loading…
                 </td>
               </tr>
             )}
             {error && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-rose-600">
+                <td colSpan={4} className="px-4 py-6 text-center text-rose-300">
                   {error}
                 </td>
               </tr>
             )}
             {!loading && !error && reports.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-tactical-dark/50">
+                <td colSpan={4} className="px-4 py-6 text-center text-muted">
                   No reports yet.
                 </td>
               </tr>
@@ -80,7 +80,7 @@ export default function Reports() {
               <tr
                 key={r.report_no}
                 onClick={() => r.site_id && navigate(`/sites/${r.site_id}`)}
-                className={`border-t border-tactical-dark/5 ${r.site_id ? "cursor-pointer hover:bg-emerald-50" : ""}`}
+                className={`border-t border-line ${r.site_id ? "cursor-pointer hover:bg-surface-2" : ""}`}
               >
                 <td className="px-4 py-3 font-mono text-xs font-semibold">{r.report_no}</td>
                 <td className="px-4 py-3">{REASON_LABEL[r.reason] || r.reason}</td>

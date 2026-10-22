@@ -1,368 +1,328 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Camera,
+  ClipboardCheck,
+  FileText,
+  Layers,
+  Map as MapIcon,
+  MapPin,
+  ScanSearch,
+  ShieldAlert,
+  Video,
+} from "lucide-react";
 import { getStatsSummary, listReports } from "../../api/encroachment.js";
 import { listIncidents } from "../../api/incidents.js";
-import { classLabel } from "../../utils/encroachmentFormat.js";
+import { REASON_LABEL, SEVERITIES, SEVERITY_COLOR } from "../../utils/encroachmentFormat.js";
 import { shortId } from "../../utils/incidentFormat.js";
 import { timeAgo } from "../../utils/formatDate.js";
 
-const iconProps = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8 };
-
-function CameraIcon(props) {
-  return (
-    <svg {...iconProps} {...props}>
-      <path d="M23 7l-7 5 7 5V7z" />
-      <rect x="1" y="5" width="15" height="14" rx="2" />
-    </svg>
-  );
-}
-function PinIcon(props) {
-  return (
-    <svg {...iconProps} {...props}>
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-function PulseIcon(props) {
-  return (
-    <svg {...iconProps} {...props}>
-      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-    </svg>
-  );
-}
-function ShieldIcon(props) {
-  return (
-    <svg {...iconProps} {...props}>
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="M12 8v5" />
-    </svg>
-  );
-}
-function ArrowIcon(props) {
-  return (
-    <svg {...iconProps} strokeWidth="2" {...props}>
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    </svg>
-  );
-}
+const modules = [
+  {
+    Icon: Camera,
+    tag: "Encroachment · photos",
+    title: "Find what shouldn't be on railway land",
+    points: [
+      "Huts, sheds, buildings, vegetation, dumped material and parked vehicles",
+      "Severity from how much of each object lies inside the right-of-way",
+      "Repeat findings within 25 m grouped into one site with a report number",
+    ],
+    to: "/encroachment/upload",
+    cta: "Analyse photos",
+  },
+  {
+    Icon: Video,
+    tag: "Intrusion · video",
+    title: "Confirm people and vehicles entering the track zone",
+    points: [
+      "YOLOv8 detection with ByteTrack tracking across frames",
+      "Time-based confirmation filters out one-frame false alarms",
+      "Risk score from depth into the zone, dwell time and object type",
+    ],
+    to: "/upload",
+    cta: "Analyse a video",
+  },
+];
 
 const steps = [
-  { n: "01", title: "Detect", desc: "YOLOv8 finds people and vehicles in every frame.", Icon: CameraIcon },
-  { n: "02", title: "Analyze", desc: "Each detection is tested against the safety corridor.", Icon: PinIcon },
-  { n: "03", title: "Confirm", desc: "Dwell-time logic filters out one-frame false alarms.", Icon: PulseIcon },
-  { n: "04", title: "Act", desc: "Confirmed events become incidents with evidence.", Icon: ShieldIcon },
+  { Icon: Layers, title: "Upload", desc: "Photos or video, with the railway land outlined once." },
+  { Icon: ScanSearch, title: "Detect", desc: "YOLOv8-family models find candidate objects." },
+  { Icon: ShieldAlert, title: "Score", desc: "Overlap with railway land and category give a severity." },
+  { Icon: MapPin, title: "Map & review", desc: "Sites appear on the GIS map for officers to verify." },
 ];
 
-// Shown only when the backend is offline or has no data yet.
-const demoLog = [
-  { t: "00:14:32", id: "INC-1024", msg: "Person inside corridor", sev: "HIGH" },
-  { t: "00:11:05", id: "INC-1023", msg: "Vehicle near rail bed", sev: "MED" },
-  { t: "00:09:47", id: "INC-1022", msg: "Person entered track zone", sev: "LOW" },
-  { t: "00:04:18", id: "INC-1021", msg: "Person crossing, cleared", sev: "LOW" },
-];
+const stack = ["YOLOv8", "YOLO-World", "ByteTrack", "FastAPI", "PostgreSQL + PostGIS", "React", "Leaflet", "OpenRailwayMap"];
 
-const sevStyle = {
-  ENC: "bg-sky-100 text-sky-700",
-  HIGH: "bg-tactical-alert/15 text-tactical-alert animate-pulse",
-  MED: "bg-amber-100 text-amber-700",
-  LOW: "bg-emerald-100 text-emerald-700",
-};
-
-const REASON_MSG = { new_site: "New encroachment site", re_encroached: "Site re-encroached", critical_finding: "Critical encroachment" };
-
-// Latest encroachment reports and intrusion incidents, newest first.
-function useLiveLog() {
-  const [live, setLive] = useState(null);
+function useLiveData() {
+  const [data, setData] = useState(null);
+  const [offline, setOffline] = useState(false);
   useEffect(() => {
     let cancelled = false;
     Promise.all([getStatsSummary(), listReports({ limit: 4 }), listIncidents()])
       .then(([stats, reports, incidents]) => {
         if (cancelled) return;
-        const rows = [
-          ...reports.map((r) => ({ at: r.created_at, id: r.report_no, msg: REASON_MSG[r.reason] || r.reason, sev: "ENC" })),
-          ...incidents.map((i) => ({
-            at: i.created_at,
-            id: shortId(i.id),
-            msg: `${classLabel(i.event_type || "intrusion").replaceAll("_", " ")} in track zone`,
-            sev: ["HIGH", "CRITICAL"].includes((i.severity || "").toUpperCase()) ? "HIGH" : (i.severity || "").toUpperCase().startsWith("MED") ? "MED" : "LOW",
-          })),
+        const activity = [
+          ...reports.map((r) => ({ at: r.created_at, id: r.report_no, msg: REASON_LABEL[r.reason] || r.reason, kind: "Encroachment" })),
+          ...incidents.map((i) => ({ at: i.created_at, id: shortId(i.id), msg: `${i.object_class} in track zone`, kind: "Intrusion" })),
         ]
           .sort((a, b) => new Date(b.at) - new Date(a.at))
-          .slice(0, 4)
-          .map((r) => ({ ...r, t: timeAgo(r.at) }));
-        const e = stats.encroachment;
-        setLive({
-          rows,
-          totals: [
-            [String(e.sites_open), "Open sites"],
-            [String(e.reports_total), "Reports"],
-            [String(stats.intrusion.incidents_total), "Intrusions"],
-          ],
-        });
+          .slice(0, 4);
+        setData({ stats, activity });
       })
-      .catch(() => {});
+      .catch(() => !cancelled && setOffline(true));
     return () => {
       cancelled = true;
     };
   }, []);
-  return live;
+  return { data, offline };
+}
+
+function OpsPanel({ data, offline }) {
+  const enc = data?.stats.encroachment;
+  const total = enc?.findings_total || 0;
+  return (
+    <div className="rounded-2xl border border-line bg-surface/80 p-5 backdrop-blur">
+      <div className="flex items-center justify-between font-mono text-[11px] tracking-widest">
+        <span className="flex items-center gap-2 text-muted">
+          <span className={`h-1.5 w-1.5 rounded-full ${offline ? "bg-danger" : "animate-pulse bg-emerald-400"}`} />
+          {offline ? "BACKEND OFFLINE" : "LIVE OPERATIONS"}
+        </span>
+        <span className="text-muted/70">RAILVIGIL</span>
+      </div>
+
+      <div className="mt-5">
+        <div className="mb-2 text-xs text-muted">Findings by severity</div>
+        <div className="flex h-2.5 overflow-hidden rounded-full bg-surface-2">
+          {SEVERITIES.map((s) => {
+            const n = enc?.findings_by_severity?.[s] || 0;
+            return total ? <div key={s} style={{ width: `${(n / total) * 100}%`, background: SEVERITY_COLOR[s] }} /> : null;
+          })}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
+          {SEVERITIES.map((s) => (
+            <span key={s} className="flex items-center gap-1.5 capitalize">
+              <span className="h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[s] }} />
+              {s} <b className="font-mono text-ink">{enc?.findings_by_severity?.[s] ?? 0}</b>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="mb-2 text-xs text-muted">Latest activity</div>
+        {data?.activity?.length ? (
+          <ul className="divide-y divide-line">
+            {data.activity.map((a) => (
+              <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <div className="truncate text-sm text-ink first-letter:uppercase">{a.msg}</div>
+                  <div className="font-mono text-[11px] text-muted">{a.id}</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      a.kind === "Encroachment" ? "bg-accent/15 text-accent-hover" : "bg-amber-500/15 text-amber-300"
+                    }`}
+                  >
+                    {a.kind}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted">{timeAgo(a.at)}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="py-6 text-center text-sm text-muted">
+            {offline ? "Start the backend to see live data." : data ? "No activity yet. Upload a photo to begin." : "Loading…"}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function LandingPage() {
-  const live = useLiveLog();
-  const log = live?.rows?.length ? live.rows : demoLog;
-  const totals = live?.totals || [["18", "Objects"], ["3", "Incidents"], ["1", "High risk"]];
+  const { data, offline } = useLiveData();
+  const enc = data?.stats.encroachment;
+  const intr = data?.stats.intrusion;
+  const v = (x) => (data ? x ?? 0 : "—");
+  const kpis = [
+    ["Photos analysed", v(enc?.photos_by_status?.done)],
+    ["Open sites", v(enc?.sites_open)],
+    ["Reports issued", v(enc?.reports_total)],
+    ["Intrusion incidents", v(intr?.incidents_total)],
+  ];
+
   return (
-    <div className="min-h-screen bg-tactical-canvas text-white font-sans antialiased overflow-x-hidden">
-      {/* Floating pill nav */}
-      <div className="fixed top-5 inset-x-0 z-30 px-4">
-        <header className="max-w-3xl mx-auto flex items-center justify-between rounded-full border border-white/10 bg-white/5 backdrop-blur-xl pl-3 pr-2 py-2 shadow-lg">
+    <div className="min-h-screen overflow-x-hidden bg-canvas text-ink">
+      {/* Nav */}
+      <header className="sticky top-0 z-30 border-b border-line/60 bg-canvas/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-tactical-mint flex items-center justify-center font-bold text-tactical-canvas text-xs">
-              RV
-            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">RV</div>
             <span className="font-semibold tracking-tight">RailVigil</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-7 text-sm text-white/70">
-            <a href="#console" className="hover:text-white transition-all duration-200">Live console</a>
-            <a href="#pipeline" className="hover:text-white transition-all duration-200">Pipeline</a>
-            <a href="#features" className="hover:text-white transition-all duration-200">Features</a>
+          <nav className="hidden items-center gap-8 text-sm text-muted md:flex">
+            <a href="#modules" className="hover:text-ink">
+              Modules
+            </a>
+            <a href="#how" className="hover:text-ink">
+              How it works
+            </a>
+            <Link to="/map" className="hover:text-ink">
+              Live map
+            </Link>
           </nav>
-          <div className="flex items-center gap-1">
-            <Link to="/login" className="text-sm text-white/80 hover:text-white px-4 py-2 transition-all duration-200">
-              Log in
-            </Link>
-            <Link
-              to="/signup"
-              className="bg-tactical-mint text-tactical-canvas text-sm font-semibold px-5 py-2 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-            >
-              Sign up
-            </Link>
-          </div>
-        </header>
-      </div>
+          <Link to="/dashboard" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-hover">
+            Open dashboard
+          </Link>
+        </div>
+      </header>
 
       {/* Hero */}
-      <section className="relative pt-40 pb-20 px-6 text-center">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_at_top,rgba(52,211,153,0.18),transparent_65%)]" />
-        <div className="relative max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-tactical-mint/30 bg-tactical-mint/10 text-tactical-mint text-xs font-mono px-4 py-2 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-tactical-mint animate-pulse" />
-            SYSTEM ONLINE · 30 FPS
+      <section className="relative">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_70%_0%,rgba(76,141,255,0.16),transparent)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(#8B96AD_1px,transparent_1px),linear-gradient(90deg,#8B96AD_1px,transparent_1px)] [background-size:48px_48px]" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:py-28">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              Railway land monitoring · YOLOv8 + GIS
+            </div>
+            <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+              See encroachment on railway land <span className="text-accent">before it spreads.</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+              RailVigil turns track-side photos and CCTV video into geolocated, severity-ranked cases on a map of India,
+              ready for an officer to verify and act on.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/map"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-medium text-white transition hover:bg-accent-hover"
+              >
+                <MapIcon className="h-4 w-4" /> Open live map
+              </Link>
+              <Link
+                to="/encroachment/upload"
+                className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-5 py-3 font-medium text-ink transition hover:bg-surface-2"
+              >
+                Analyse a photo <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
-          <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight leading-[1.02]">
-            See the track.
-            <br />
-            <span className="text-tactical-mint">Stop the risk.</span>
-          </h1>
-          <p className="mt-7 text-lg text-white/60 leading-relaxed max-w-xl mx-auto">
-            AI video analytics for railway right-of-way. RailVigil spots people and vehicles entering a configured track zone and
-            confirms it before raising an alarm.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              to="/upload"
-              className="inline-flex items-center gap-2 bg-tactical-mint text-tactical-canvas font-semibold px-7 py-4 rounded-full shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-            >
-              Launch video studio
-              <ArrowIcon className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/dashboard"
-              className="rounded-full border border-white/20 text-white font-medium px-7 py-4 hover:bg-white/5 transition-all duration-200"
-            >
-              View dashboard
-            </Link>
-          </div>
+          <OpsPanel data={data} offline={offline} />
         </div>
       </section>
 
-      {/* Live console: 60/40 */}
-      <section id="console" className="max-w-6xl mx-auto px-6 pb-28">
-        <div className="grid lg:grid-cols-5 gap-6">
-          {/* Video 60% */}
-          <div className="lg:col-span-3 rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-                <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-                <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              </div>
-              <span>CAM-07 · KM 142.6</span>
-              <span className="flex items-center gap-1.5 text-tactical-alert">
-                <span className="w-1.5 h-1.5 rounded-full bg-tactical-alert animate-pulse" /> REC
-              </span>
-            </div>
-
-            <div className="relative aspect-video">
-              <svg viewBox="0 0 800 450" className="absolute inset-0 w-full h-full">
-                <defs>
-                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#022C22" />
-                    <stop offset="1" stopColor="#04382b" />
-                  </linearGradient>
-                </defs>
-                <rect width="800" height="450" fill="url(#sky)" />
-                {/* Ballast bed */}
-                <polygon points="200,450 355,140 445,140 600,450" fill="rgba(255,255,255,0.04)" />
-                {/* Sleepers */}
-                {[160, 185, 215, 250, 295, 350, 420].map((y) => {
-                  const k = (y - 140) / 310;
-                  const half = 45 + k * 155;
-                  return (
-                    <line key={y} x1={400 - half} x2={400 + half} y1={y} y2={y} stroke="rgba(255,255,255,0.14)" strokeWidth={1 + k * 3} />
-                  );
-                })}
-                {/* Rails */}
-                <line x1="300" y1="450" x2="385" y2="140" stroke="#34D399" strokeWidth="3" opacity="0.9" />
-                <line x1="500" y1="450" x2="415" y2="140" stroke="#34D399" strokeWidth="3" opacity="0.9" />
-                {/* Safety corridor */}
-                <polygon
-                  points="180,450 340,140 460,140 620,450"
-                  fill="rgba(225,29,72,0.12)"
-                  stroke="#E11D48"
-                  strokeWidth="2"
-                  strokeDasharray="8 6"
-                />
-                {/* Person */}
-                <circle cx="480" cy="268" r="11" fill="#fff" opacity="0.85" />
-                <rect x="467" y="282" width="26" height="70" rx="10" fill="#fff" opacity="0.85" />
-                {/* Bounding box */}
-                <rect x="450" y="248" width="60" height="118" fill="none" stroke="#E11D48" strokeWidth="2.5" />
-                <rect x="450" y="222" width="236" height="24" rx="4" fill="#E11D48" />
-                <text x="459" y="238" fill="#fff" fontSize="12" fontWeight="600" fontFamily="ui-monospace, monospace">
-                  PERSON | 94.2% | BREACH DETECTED
-                </text>
-              </svg>
-
-              {/* Timeline scrubber */}
-              <div className="absolute bottom-4 inset-x-5 flex items-center gap-3 text-[10px] font-mono text-white/50">
-                <span>00:14</span>
-                <div className="relative flex-1 h-1 rounded-full bg-white/15">
-                  <div className="absolute left-0 top-0 h-1 w-[46%] rounded-full bg-tactical-mint" />
-                  <div className="absolute left-[46%] -top-1 w-3 h-3 rounded-full bg-white" />
-                  <div className="absolute left-[30%] top-0 h-1 w-1.5 rounded-full bg-tactical-alert" />
-                  <div className="absolute left-[46%] top-0 h-1 w-1.5 rounded-full bg-tactical-alert" />
-                </div>
-                <span>00:32</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Log 40% */}
-          <div className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50 flex flex-col">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold">{live?.rows?.length ? "Live activity log" : "Live incident log"}</h3>
-              <span className="text-xs font-mono text-emerald-600">{live?.rows?.length ? "LIVE" : "DEMO"} · {log.length} events</span>
-            </div>
-            <ul className="flex-1 space-y-3">
-              {log.map((r) => (
-                <li key={r.id} className="rounded-2xl bg-white border border-black/5 p-4 hover:-translate-y-0.5 transition-all duration-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-tactical-dark/50">{r.id} · {r.t}</span>
-                    <span className={`text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full ${sevStyle[r.sev]}`}>
-                      {r.sev}
-                    </span>
-                  </div>
-                  <div className="mt-1.5 text-sm font-medium">{r.msg}</div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-              {totals.map(([v, l]) => (
-                <div key={l} className="rounded-2xl bg-emerald-100/60 py-3">
-                  <div className="text-xl font-semibold font-mono">{v}</div>
-                  <div className="text-[11px] text-tactical-dark/60">{l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pipeline timeline */}
-      <section id="pipeline" className="max-w-6xl mx-auto px-6 pb-28">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">From frame to incident</h2>
-          <p className="mt-3 text-white/60">Four stages, fully automatic.</p>
-        </div>
-        <div className="relative grid md:grid-cols-4 gap-10">
-          <div className="hidden md:block absolute top-7 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-tactical-mint/50 to-transparent" />
-          {steps.map(({ n, title, desc, Icon }) => (
-            <div key={n} className="relative text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-tactical-canvas border border-tactical-mint/40 flex items-center justify-center text-tactical-mint shadow-[0_0_0_6px_rgba(52,211,153,0.08)]">
-                <Icon className="w-6 h-6" />
-              </div>
-              <div className="mt-5 text-xs font-mono text-tactical-mint">{n}</div>
-              <div className="mt-1 text-lg font-semibold">{title}</div>
-              <p className="mt-2 text-sm text-white/60 leading-relaxed max-w-[220px] mx-auto">{desc}</p>
+      {/* KPIs */}
+      <section className="border-y border-line bg-surface/50">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 divide-line px-6 md:grid-cols-4 md:divide-x">
+          {kpis.map(([label, value]) => (
+            <div key={label} className="px-2 py-8 md:px-6">
+              <div className="font-mono text-3xl font-semibold">{value}</div>
+              <div className="mt-1 text-sm text-muted">{label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Bento features */}
-      <section id="features" className="max-w-6xl mx-auto px-6 pb-28">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-8 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300">
-            <div className="text-xs font-mono text-emerald-600 mb-3">SAFETY CORRIDORS</div>
-            <h3 className="text-2xl font-semibold tracking-tight max-w-sm">Draw the danger zone once. Watch it forever.</h3>
-            <p className="mt-3 text-tactical-dark/60 max-w-md">
-              Define a polygon around the track and RailVigil checks every detection against it, frame by frame.
-            </p>
-            <svg viewBox="0 0 400 90" className="mt-6 w-full h-20">
-              <polygon points="20,80 120,10 300,10 380,80" fill="rgba(225,29,72,0.10)" stroke="#E11D48" strokeWidth="2" strokeDasharray="6 5" />
-              <line x1="70" y1="80" x2="150" y2="10" stroke="#059669" strokeWidth="2.5" />
-              <line x1="330" y1="80" x2="270" y2="10" stroke="#059669" strokeWidth="2.5" />
-            </svg>
-          </div>
-
-          <div className="rounded-3xl bg-tactical-dark text-white p-8 shadow-lg border border-white/10 hover:-translate-y-1 transition-all duration-300">
-            <div className="text-xs font-mono text-tactical-mint mb-3">RISK SCORE</div>
-            <h3 className="text-2xl font-semibold tracking-tight">Know what matters first.</h3>
-            <p className="mt-3 text-white/60 text-sm">Every incident is scored so HIGH events rise to the top.</p>
-            <div className="mt-6 inline-block text-xs font-mono font-semibold px-3 py-1.5 rounded-full bg-tactical-alert/20 text-tactical-alert animate-pulse">
-              HIGH · 0.91
+      {/* Modules */}
+      <section id="modules" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-24">
+        <div className="max-w-2xl">
+          <div className="text-sm font-medium text-accent">Two modules, one dashboard</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">Encroachment and intrusion, side by side</h2>
+        </div>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {modules.map(({ Icon, tag, title, points, to, cta }) => (
+            <div key={tag} className="flex flex-col rounded-2xl border border-line bg-surface p-6 transition hover:border-accent/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="text-sm text-muted">{tag}</span>
+              </div>
+              <h3 className="mt-5 text-xl font-semibold">{title}</h3>
+              <ul className="mt-4 flex-1 space-y-2.5 text-sm text-muted">
+                {points.map((p) => (
+                  <li key={p} className="flex gap-2.5">
+                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+              <Link to={to} className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover">
+                {cta} <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="rounded-3xl bg-tactical-card text-tactical-dark p-8 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300">
-            <div className="text-xs font-mono text-emerald-600 mb-3">TEMPORAL CONFIRMATION</div>
-            <h3 className="text-xl font-semibold tracking-tight">Fewer one-frame false alarms.</h3>
-            <p className="mt-3 text-tactical-dark/60 text-sm">An object must stay in the zone before it counts as an incident.</p>
-          </div>
+      {/* How it works */}
+      <section id="how" className="scroll-mt-20 border-t border-line bg-surface/40">
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <div className="text-sm font-medium text-accent">How it works</div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">From photo to reviewed case</h2>
+          <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map(({ Icon, title, desc }, i) => (
+              <li key={title} className="rounded-2xl border border-line bg-surface p-6">
+                <div className="flex items-center justify-between">
+                  <Icon className="h-5 w-5 text-accent" />
+                  <span className="font-mono text-xs text-muted">0{i + 1}</span>
+                </div>
+                <h3 className="mt-4 font-semibold">{title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{desc}</p>
+              </li>
+            ))}
+          </ol>
 
-          <div className="md:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-8 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300">
-            <div className="text-xs font-mono text-emerald-600 mb-3">EVIDENCE</div>
-            <h3 className="text-xl font-semibold tracking-tight">Every incident, with a snapshot.</h3>
-            <p className="mt-3 text-tactical-dark/60 max-w-md text-sm">
-              Confirmed events are stored with an evidence frame, timestamps, dwell time and risk score.
-            </p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              [ClipboardCheck, "Human in the loop", "Every finding is a candidate. Officers verify, act on or dismiss it, and each step is logged."],
+              [FileText, "Traceable reports", "Each site gets numbered reports (RV-ENC-YYYY-NNNNNN) linked to its evidence."],
+              [MapPin, "Located on the map", "GPS from the photo, or a map pin, places each site on the railway network."],
+            ].map(([Icon, title, desc]) => (
+              <div key={title} className="flex gap-4">
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+                <div>
+                  <h3 className="font-semibold">{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="rounded-3xl bg-tactical-mint text-tactical-canvas px-8 py-16 text-center shadow-lg">
-          <h3 className="text-3xl sm:text-5xl font-semibold tracking-tight">Ready to watch the line?</h3>
-          <p className="mt-4 text-tactical-canvas/70 max-w-md mx-auto">
-            Upload a track video and see railway intrusions flagged in minutes.
-          </p>
-          <Link
-            to="/upload"
-            className="mt-8 inline-flex items-center gap-2 bg-tactical-dark text-white font-semibold px-8 py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-          >
-            Analyze a video
-            <ArrowIcon className="w-4 h-4" />
-          </Link>
+      {/* Stack + CTA */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="rounded-2xl border border-line bg-gradient-to-br from-accent/15 to-surface p-8 md:p-12">
+          <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Explore the live system</h2>
+          <p className="mt-2 max-w-xl text-muted">Open the dashboard to see current sites, reports and incidents.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link to="/dashboard" className="rounded-lg bg-accent px-5 py-3 font-medium text-white hover:bg-accent-hover">
+              Open dashboard
+            </Link>
+            <Link to="/map" className="rounded-lg border border-line bg-surface px-5 py-3 font-medium hover:bg-surface-2">
+              View map
+            </Link>
+          </div>
+          <div className="mt-10 flex flex-wrap gap-2">
+            {stack.map((s) => (
+              <span key={s} className="rounded-md border border-line bg-canvas/60 px-2.5 py-1 font-mono text-xs text-muted">
+                {s}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      <footer className="pb-10">
-        <div className="max-w-6xl mx-auto px-6 text-xs text-white/40 font-mono">
-          
+      <footer className="border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-8 text-sm text-muted md:flex-row md:items-center md:justify-between">
+          <span>RailVigil · Automated railway track encroachment detection</span>
+          <span>Detections are candidates for officer review, not legal determinations.</span>
         </div>
       </footer>
     </div>

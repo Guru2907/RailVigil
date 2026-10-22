@@ -4,7 +4,7 @@ import Navbar from "../components/layout/Navbar.jsx";
 
 export default function PrivateLayout() {
   return (
-    <div className="min-h-screen flex bg-tactical-canvas text-white font-sans antialiased">
+    <div className="min-h-screen flex bg-canvas text-white font-sans antialiased">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col">
         <Navbar />

@@ -128,7 +128,7 @@ export default function MapView() {
   const intr = stats?.intrusion;
 
   return (
-    <div className="relative m-4 mt-0 h-[calc(100vh-6.5rem)] overflow-hidden rounded-3xl border border-emerald-400/20 bg-black shadow-2xl">
+    <div className="relative m-4 mt-0 h-[calc(100vh-6.5rem)] overflow-hidden rounded-2xl border border-line bg-black shadow-2xl">
       <MapContainer center={INDIA_CENTER} zoom={5} minZoom={4} className="h-full w-full rv-map" zoomControl={false}>
         <LayersControl position="bottomright">
           <LayersControl.BaseLayer checked name="Dark">
@@ -171,8 +171,8 @@ export default function MapView() {
       <div className="pointer-events-none absolute inset-0 z-[400] rv-scanlines" />
 
       {/* HUD: title + counters */}
-      <div className="absolute left-4 top-4 z-[500] w-72 rounded-2xl border border-emerald-400/20 bg-black/70 p-4 font-mono text-white backdrop-blur-md">
-        <div className="flex items-center justify-between text-[10px] tracking-[0.2em] text-emerald-300/80">
+      <div className="absolute left-4 top-4 z-[500] w-72 rounded-2xl border border-line bg-black/70 p-4 font-mono text-white backdrop-blur-md">
+        <div className="flex items-center justify-between text-[10px] tracking-[0.2em] text-accent">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> LIVE
           </span>
@@ -271,7 +271,7 @@ export default function MapView() {
           <div className="space-y-3 p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="font-mono text-[10px] tracking-widest text-emerald-300/80">
+                <div className="font-mono text-[10px] tracking-widest text-accent">
                   {shortSite(selected.properties.site_id)}
                 </div>
                 <div className="text-base font-semibold">{classLabel(selected.properties.cls)}</div>
@@ -309,7 +309,7 @@ export default function MapView() {
             </dl>
             <Link
               to={`/sites/${selected.properties.site_id}`}
-              className="block rounded-xl bg-emerald-400 py-2 text-center text-sm font-semibold text-black hover:bg-emerald-300"
+              className="block rounded-xl bg-accent py-2 text-center text-sm font-semibold text-white hover:bg-accent-hover"
             >
               Open site case →
             </Link>

@@ -47,17 +47,17 @@ export function classLabel(cls) {
 
 export function severityBadge(sev) {
   const s = (sev || "").toLowerCase();
-  if (s === "critical") return "bg-rose-500/15 text-rose-600 ring-1 ring-rose-500/30";
-  if (s === "high") return "bg-orange-500/15 text-orange-600 ring-1 ring-orange-500/30";
-  if (s === "medium") return "bg-amber-400/20 text-amber-700 ring-1 ring-amber-500/30";
-  return "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500/30";
+  if (s === "critical") return "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30";
+  if (s === "high") return "bg-orange-500/15 text-orange-300 ring-1 ring-orange-500/30";
+  if (s === "medium") return "bg-amber-400/20 text-amber-300 ring-1 ring-amber-500/30";
+  return "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30";
 }
 
 export function statusBadge(status) {
-  if (status === "resolved") return "bg-emerald-100 text-emerald-700";
-  if (status === "false_positive") return "bg-zinc-200 text-zinc-600";
-  if (status === "reported") return "bg-rose-100 text-rose-700";
-  return "bg-sky-100 text-sky-700";
+  if (status === "resolved") return "bg-emerald-500/15 text-emerald-300";
+  if (status === "false_positive") return "bg-white/10 text-muted";
+  if (status === "reported") return "bg-rose-500/15 text-rose-300";
+  return "bg-sky-500/15 text-sky-300";
 }
 
 export function shortSite(id) {

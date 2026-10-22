@@ -40,19 +40,19 @@ export default function Incidents() {
   );
 
   const selectClass =
-    "rounded-full bg-white border border-black/10 px-4 py-2.5 text-sm font-medium text-tactical-dark focus:outline-none focus:ring-2 focus:ring-emerald-300";
+    "rounded-full bg-surface-2 border border-line px-4 py-2.5 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-accent/50";
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="mb-8">
-        <div className="text-xs font-mono text-tactical-mint mb-2">INCIDENTS</div>
+        <div className="text-xs font-mono text-accent mb-2">INCIDENTS</div>
         <h1 className="text-3xl font-semibold tracking-tight">All recorded incidents</h1>
         <p className="mt-2 text-white/60 max-w-md">
           Every confirmed railway intrusion across analyzed videos.
         </p>
       </div>
 
-      <div className="rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+      <div className="rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div className="flex flex-wrap items-center gap-3">
             <select value={eventType} onChange={(e) => setEventType(e.target.value)} className={selectClass}>
@@ -71,25 +71,25 @@ export default function Incidents() {
               ))}
             </select>
           </div>
-          <span className="text-xs font-mono text-emerald-600">
+          <span className="text-xs font-mono text-emerald-300">
             {visible.length} of {incidents.length} · sorted by risk
           </span>
         </div>
 
         {loading ? (
-          <p className="text-sm text-tactical-dark/60">Loading incidents…</p>
+          <p className="text-sm text-muted">Loading incidents…</p>
         ) : error ? (
-          <p className="text-sm font-mono text-tactical-alert">Could not load incidents: {error}</p>
+          <p className="text-sm font-mono text-danger">Could not load incidents: {error}</p>
         ) : visible.length === 0 ? (
-          <p className="text-sm text-tactical-dark/60">
+          <p className="text-sm text-muted">
             {incidents.length === 0
               ? "No incidents yet. Analyze a video to record some."
               : "No incidents match these filters."}
           </p>
         ) : (
-          <div className="max-h-[36rem] overflow-auto rounded-2xl bg-white border border-black/5">
+          <div className="max-h-[36rem] overflow-auto rounded-2xl bg-surface-2 border border-line">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white text-left text-[11px] font-mono text-tactical-dark/50">
+              <thead className="sticky top-0 bg-surface-2 text-left text-[11px] font-mono text-muted">
                 <tr>
                   {["ID", "TIME", "OBJECT", "TYPE", "DWELL", "PENETRATION", "RISK", "SEVERITY", ""].map((h) => (
                     <th key={h} className="px-4 py-3 font-normal">
@@ -103,7 +103,7 @@ export default function Incidents() {
                   <tr
                     key={i.id}
                     onClick={() => navigate(`/incidents/${i.id}`)}
-                    className="cursor-pointer border-t border-black/5 hover:bg-emerald-50 transition-all duration-200"
+                    className="cursor-pointer border-t border-line hover:bg-surface-2 transition-all duration-200"
                   >
                     <td className="px-4 py-3">{shortId(i.id)}</td>
                     <td className="px-4 py-3">{fmtTime(i.start_ts)}</td>
@@ -119,7 +119,7 @@ export default function Incidents() {
                         {(i.severity || "").toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-emerald-600">View</td>
+                    <td className="px-4 py-3 text-emerald-300">View</td>
                   </tr>
                 ))}
               </tbody>

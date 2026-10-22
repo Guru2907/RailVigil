@@ -69,9 +69,9 @@ export default function Sites() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-3xl bg-tactical-card text-tactical-dark shadow-lg">
+      <div className="overflow-x-auto rounded-2xl bg-surface text-ink shadow-none">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-wide text-tactical-dark/50">
+          <thead className="text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               {["Site", "Class", "Severity", "Status", "Findings", "Latest report", "Last seen"].map((h) => (
                 <th key={h} className="px-4 py-3 font-semibold">
@@ -83,21 +83,21 @@ export default function Sites() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-tactical-dark/50">
+                <td colSpan={7} className="px-4 py-6 text-center text-muted">
                   Loading…
                 </td>
               </tr>
             )}
             {error && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-rose-600">
+                <td colSpan={7} className="px-4 py-6 text-center text-rose-300">
                   {error}
                 </td>
               </tr>
             )}
             {!loading && !error && sites.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-tactical-dark/50">
+                <td colSpan={7} className="px-4 py-6 text-center text-muted">
                   No sites match.
                 </td>
               </tr>
@@ -106,7 +106,7 @@ export default function Sites() {
               <tr
                 key={s.id}
                 onClick={() => navigate(`/sites/${s.id}`)}
-                className="cursor-pointer border-t border-tactical-dark/5 hover:bg-emerald-50"
+                className="cursor-pointer border-t border-line hover:bg-surface-2"
               >
                 <td className="px-4 py-3 font-mono text-xs">{shortSite(s.id)}</td>
                 <td className="px-4 py-3">{classLabel(s.cls)}</td>

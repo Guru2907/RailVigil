@@ -19,16 +19,16 @@ export default function ZoneCanvas({ src, points, onChange }) {
       <img src={src} alt="Photo to mark" className="block w-full" draggable={false} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full">
         {points.length >= 3 && (
-          <polygon points={svgPoints} fill="rgba(52,211,153,0.25)" stroke="#34D399" strokeWidth="0.4" />
+          <polygon points={svgPoints} fill="rgba(34,211,238,0.22)" stroke="#22D3EE" strokeWidth="0.4" />
         )}
         {points.length > 0 && points.length < 3 && (
-          <polyline points={svgPoints} fill="none" stroke="#34D399" strokeWidth="0.4" />
+          <polyline points={svgPoints} fill="none" stroke="#22D3EE" strokeWidth="0.4" />
         )}
       </svg>
       {points.map(([x, y], i) => (
         <span
           key={i}
-          className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-emerald-400"
+          className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-cyan-400"
           style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
         />
       ))}

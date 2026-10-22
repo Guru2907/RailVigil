@@ -10,9 +10,9 @@ export function fmtPct(v) {
 
 export function sevClass(sev) {
   const s = (sev || "").toUpperCase();
-  if (s === "HIGH" || s === "CRITICAL") return "bg-tactical-alert/15 text-tactical-alert animate-pulse";
-  if (s === "MEDIUM" || s === "MED") return "bg-amber-100 text-amber-700";
-  return "bg-emerald-100 text-emerald-700";
+  if (s === "HIGH" || s === "CRITICAL") return "bg-danger/15 text-danger animate-pulse";
+  if (s === "MEDIUM" || s === "MED") return "bg-amber-500/15 text-amber-300";
+  return "bg-emerald-500/15 text-emerald-300";
 }
 
 export function shortId(id) {

@@ -34,14 +34,14 @@ export default function IncidentDetails() {
       </Link>
 
       {error ? (
-        <div className="rounded-2xl bg-tactical-alert/15 text-tactical-alert text-sm font-mono px-5 py-3">{error}</div>
+        <div className="rounded-2xl bg-danger/15 text-danger text-sm font-mono px-5 py-3">{error}</div>
       ) : !incident ? (
         <p className="text-white/60 text-sm">Loading incident…</p>
       ) : (
         <>
           <div className="mb-8 flex flex-wrap items-center gap-4">
             <div>
-              <div className="text-xs font-mono text-tactical-mint mb-2">INCIDENT DETAILS</div>
+              <div className="text-xs font-mono text-accent mb-2">INCIDENT DETAILS</div>
               <h1 className="text-3xl font-semibold tracking-tight font-mono">{shortId(incident.id)}</h1>
             </div>
             <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${sevClass(incident.severity)}`}>
@@ -51,7 +51,7 @@ export default function IncidentDetails() {
 
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Evidence 60% */}
-            <div className="lg:col-span-3 rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+            <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
               <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">EVIDENCE SNAPSHOT</div>
               <div className="aspect-video bg-black flex items-center justify-center">
                 {noImage ? (
@@ -68,7 +68,7 @@ export default function IncidentDetails() {
             </div>
 
             {/* Details 40% */}
-            <div className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+            <div className="lg:col-span-2 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
               <h3 className="font-semibold mb-4">Incident data</h3>
               <dl className="space-y-3">
                 {[
@@ -84,8 +84,8 @@ export default function IncidentDetails() {
                   ["Zone", incident.zone_label],
                   ["Recorded", formatDateTime(incident.created_at)],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between rounded-2xl bg-white border border-black/5 px-4 py-3">
-                    <dt className="text-sm text-tactical-dark/60">{k}</dt>
+                  <div key={k} className="flex items-center justify-between rounded-2xl bg-surface-2 border border-line px-4 py-3">
+                    <dt className="text-sm text-muted">{k}</dt>
                     <dd className="text-sm font-mono font-medium truncate max-w-[60%]">{v}</dd>
                   </div>
                 ))}
@@ -94,7 +94,7 @@ export default function IncidentDetails() {
           </div>
 
           {/* Annotated video */}
-          <div className="mt-6 rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+          <div className="mt-6 rounded-2xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
             <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
               ANNOTATED VIDEO · jump to {fmtTime(incident.start_ts)}
             </div>

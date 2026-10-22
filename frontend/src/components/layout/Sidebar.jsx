@@ -111,13 +111,13 @@ export default function Sidebar() {
         collapsed ? "w-24" : "w-72"
       }`}
     >
-      <div className="h-full flex flex-col rounded-3xl bg-tactical-card text-tactical-dark shadow-lg border border-emerald-200/50 p-3">
+      <div className="h-full flex flex-col rounded-2xl bg-surface text-ink shadow-none border border-line p-3">
         {/* Logo */}
         <Link
           to="/"
           className={`flex items-center gap-3 mb-4 mt-2 ${collapsed ? "justify-center" : "px-2"}`}
         >
-          <div className="w-9 h-9 shrink-0 rounded-full bg-tactical-dark flex items-center justify-center font-bold text-tactical-mint text-sm">
+          <div className="w-9 h-9 shrink-0 rounded-full bg-accent flex items-center justify-center font-bold text-white text-sm">
             RV
           </div>
           {!collapsed && <span className="text-lg font-semibold tracking-tight">RailVigil</span>}
@@ -127,7 +127,7 @@ export default function Sidebar() {
         <nav className="space-y-1">
           {navItems.map(({ to, label, Icon, soon, section }) => [
             section && !collapsed && (
-              <div key={`s-${section}`} className="px-4 pt-3 pb-1 text-[10px] font-mono uppercase tracking-widest text-tactical-dark/40">
+              <div key={`s-${section}`} className="px-4 pt-3 pb-1 text-[10px] font-mono uppercase tracking-widest text-muted/80">
                 {section}
               </div>
             ),
@@ -135,13 +135,13 @@ export default function Sidebar() {
               <div
                 key={to}
                 title={collapsed ? `${label} (soon)` : undefined}
-                className={`${itemBase} ${itemPad} text-tactical-dark/30 cursor-not-allowed`}
+                className={`${itemBase} ${itemPad} text-muted/60 cursor-not-allowed`}
               >
                 <Icon className="w-5 h-5 shrink-0" />
                 {!collapsed && (
                   <>
                     <span>{label}</span>
-                    <span className="ml-auto text-[10px] font-mono border border-tactical-dark/15 rounded-full px-2 py-0.5">
+                    <span className="ml-auto text-[10px] font-mono border border-line rounded-full px-2 py-0.5">
                       SOON
                     </span>
                   </>
@@ -155,8 +155,8 @@ export default function Sidebar() {
                 className={({ isActive }) =>
                   `${itemBase} ${itemPad} font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-tactical-dark text-white"
-                      : "text-tactical-dark/70 hover:bg-tactical-dark/5 hover:text-tactical-dark"
+                      ? "bg-accent text-white"
+                      : "text-ink/80 hover:bg-surface-2 hover:text-ink"
                   }`
                 }
               >
@@ -172,7 +172,7 @@ export default function Sidebar() {
           onClick={toggle}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={`mt-auto ${itemBase} ${itemPad} text-tactical-dark/60 hover:bg-tactical-dark/5 hover:text-tactical-dark transition-all duration-200`}
+          className={`mt-auto ${itemBase} ${itemPad} text-muted hover:bg-surface-2 hover:text-ink transition-all duration-200`}
         >
           <ChevronIcon
             className={`w-5 h-5 shrink-0 transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}

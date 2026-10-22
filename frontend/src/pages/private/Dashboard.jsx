@@ -23,10 +23,10 @@ function countBy(list, keyFn) {
 }
 
 const statusStyle = {
-  done: "bg-emerald-100 text-emerald-700",
-  processing: "bg-amber-100 text-amber-700",
-  queued: "bg-amber-100 text-amber-700",
-  failed: "bg-tactical-alert/15 text-tactical-alert",
+  done: "bg-emerald-500/15 text-emerald-300",
+  processing: "bg-amber-500/15 text-amber-300",
+  queued: "bg-amber-500/15 text-amber-300",
+  failed: "bg-danger/15 text-danger",
 };
 
 export function IntrusionDashboard() {
@@ -87,7 +87,7 @@ export function IntrusionDashboard() {
     <div>
 
       {error && (
-        <div className="mb-6 rounded-2xl bg-tactical-alert/15 text-tactical-alert text-sm font-mono px-5 py-3">
+        <div className="mb-6 rounded-2xl bg-danger/15 text-danger text-sm font-mono px-5 py-3">
           Could not load data: {error}
         </div>
       )}
@@ -97,33 +97,33 @@ export function IntrusionDashboard() {
         {stats.map(([label, value]) => (
           <div
             key={label}
-            className="rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50 hover:-translate-y-1 transition-all duration-300"
+            className="rounded-2xl bg-surface text-ink p-6 shadow-none border border-line hover:-translate-y-1 transition-all duration-300"
           >
             <div className="text-3xl font-semibold font-mono">
               {loading ? "…" : value}
             </div>
-            <div className="mt-1 text-sm text-tactical-dark/60">{label}</div>
+            <div className="mt-1 text-sm text-muted">{label}</div>
           </div>
         ))}
       </div>
 
       {/* Recent incidents + recent videos */}
       <div className="mt-6 grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+        <div className="lg:col-span-3 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">Recent incidents</h3>
-            <Link to="/incidents" className="text-sm font-medium text-emerald-700 hover:underline">
+            <Link to="/incidents" className="text-sm font-medium text-accent hover:underline">
               View all →
             </Link>
           </div>
           {loading ? (
-            <p className="text-sm text-tactical-dark/60">Loading…</p>
+            <p className="text-sm text-muted">Loading…</p>
           ) : recentIncidents.length === 0 ? (
-            <p className="text-sm text-tactical-dark/60">No incidents yet. Analyze a video to record some.</p>
+            <p className="text-sm text-muted">No incidents yet. Analyze a video to record some.</p>
           ) : (
-            <div className="rounded-2xl bg-white border border-black/5 overflow-hidden">
+            <div className="rounded-2xl bg-surface-2 border border-line overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="text-left text-[11px] font-mono text-tactical-dark/50">
+                <thead className="text-left text-[11px] font-mono text-muted">
                   <tr>
                     {["ID", "TIME", "OBJECT", "RISK", "SEVERITY"].map((h) => (
                       <th key={h} className="px-4 py-3 font-normal">
@@ -137,7 +137,7 @@ export function IntrusionDashboard() {
                     <tr
                       key={i.id}
                       onClick={() => navigate(`/incidents/${i.id}`)}
-                      className="cursor-pointer border-t border-black/5 hover:bg-emerald-50 transition-all duration-200"
+                      className="cursor-pointer border-t border-line hover:bg-surface-2 transition-all duration-200"
                     >
                       <td className="px-4 py-3">{shortId(i.id)}</td>
                       <td className="px-4 py-3">{fmtTime(i.start_ts)}</td>
@@ -158,32 +158,32 @@ export function IntrusionDashboard() {
           )}
         </div>
 
-        <div className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50">
+        <div className="lg:col-span-2 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">Recent analysis</h3>
-            <Link to="/upload" className="text-sm font-medium text-emerald-700 hover:underline">
+            <Link to="/upload" className="text-sm font-medium text-accent hover:underline">
               New analysis →
             </Link>
           </div>
           {loading ? (
-            <p className="text-sm text-tactical-dark/60">Loading…</p>
+            <p className="text-sm text-muted">Loading…</p>
           ) : recentVideos.length === 0 ? (
-            <p className="text-sm text-tactical-dark/60">No videos analyzed yet.</p>
+            <p className="text-sm text-muted">No videos analyzed yet.</p>
           ) : (
             <ul className="space-y-3">
               {recentVideos.map((v) => (
-                <li key={v.id} className="rounded-2xl bg-white border border-black/5 px-4 py-3">
+                <li key={v.id} className="rounded-2xl bg-surface-2 border border-line px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-medium truncate">{v.original_filename || v.filename}</span>
                     <span
                       className={`shrink-0 text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full ${
-                        statusStyle[v.status] || "bg-black/5 text-tactical-dark/60"
+                        statusStyle[v.status] || "bg-black/5 text-muted"
                       }`}
                     >
                       {v.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-xs font-mono text-tactical-dark/50">
+                  <div className="mt-1 flex items-center justify-between text-xs font-mono text-muted">
                     <span>{formatDateTime(v.created_at)}</span>
                     <span>{v.status === "done" ? `${incidentCount(v.id)} incidents` : "—"}</span>
                   </div>
@@ -202,18 +202,18 @@ export function IntrusionDashboard() {
         ].map(([title, data, colorBySeverity]) => (
           <div
             key={title}
-            className="min-w-0 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50"
+            className="min-w-0 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line"
           >
             <h3 className="font-semibold mb-4">{title}</h3>
             {loading ? (
-              <p className="text-sm text-tactical-dark/60">Loading…</p>
+              <p className="text-sm text-muted">Loading…</p>
             ) : data.length === 0 ? (
-              <p className="text-sm text-tactical-dark/60">No incident data yet.</p>
+              <p className="text-sm text-muted">No incident data yet.</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.08)" />
+                    <CartesianGrid stroke="#243049" strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.08)" />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: "ui-monospace, monospace" }} tickLine={false} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 11, fontFamily: "ui-monospace, monospace" }} tickLine={false} axisLine={false} />
                     <Tooltip
@@ -247,7 +247,7 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs font-mono text-tactical-mint mb-2">DASHBOARD</div>
+          <div className="text-xs font-mono text-accent mb-2">DASHBOARD</div>
           <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
           <p className="mt-2 text-white/60 max-w-md">{TABS.find(([k]) => k === tab)[2]}</p>
         </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
               key={key}
               onClick={() => setTab(key)}
               className={`rounded-full px-5 py-2 text-sm font-medium transition ${
-                tab === key ? "bg-tactical-mint text-tactical-dark" : "text-white/70 hover:text-white"
+                tab === key ? "bg-accent text-ink" : "text-white/70 hover:text-white"
               }`}
             >
               {label}
