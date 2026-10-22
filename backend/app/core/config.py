@@ -19,6 +19,8 @@ UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", BASE_DIR / "uploads"))
 DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data"))
 MODELS_DIR = Path(os.getenv("MODELS_DIR", BASE_DIR / "models"))
 OUTPUTS_DIR = Path(os.getenv("OUTPUTS_DIR", BASE_DIR / "outputs"))
+# Stored media and evidence for the encroachment module (services/storage_service.py).
+STORAGE_DIR = Path(os.getenv("STORAGE_DIR", BASE_DIR / "storage"))
 
 # --- database -----------------------------------------------------------
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'railvigil.db'}")
@@ -179,3 +181,10 @@ ENC_CATEGORY_WEIGHT = {
 ENC_SEVERITY_BANDS = {"critical": 0.75, "high": 0.5, "medium": 0.25}
 # One photo cannot show that a vehicle is parked, so its severity is capped.
 ENC_VEHICLE_MAX_SEVERITY = "medium"
+
+# --- encroachment sites, reports and photo uploads (Phase 2) -----------------
+# Findings of the same class within this many metres of an open site are the
+# same site. PROVISIONAL: GPS on phones is often off by 5-20 m.
+ENC_SITE_RADIUS_M = float(os.getenv("ENC_SITE_RADIUS_M", "25"))
+MAX_IMAGE_MB = float(os.getenv("MAX_IMAGE_MB", "25"))
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}

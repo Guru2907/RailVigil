@@ -1,6 +1,6 @@
 # Data model
 
-## Today (PostgreSQL + PostGIS, or SQLite fallback; Alembic head `3c9e1f7a2b10`)
+## Today (PostgreSQL + PostGIS, or SQLite fallback; Alembic head `9944f93555d3`)
 All `created_at` columns are timezone-aware (`timestamptz` on PostgreSQL) and stored as UTC.
 
 - `videos` — one upload and its job state: `status` (queued / processing / done / failed), `progress`, `attempts`, `error`, `zone_json` (normalized points + source), `camera_label`, fps/size/duration, `output_video_path`.
@@ -8,18 +8,31 @@ All `created_at` columns are timezone-aware (`timestamptz` on PostgreSQL) and st
 - `detections` — defined but never written; to be removed or used in v2.
 - `users` — defined but unused until authentication.
 
-## Target (PostgreSQL + PostGIS) — planned
-| Table | Key fields |
-|---|---|
-| `locations` | name, `geom` point, railway zone/division, station, km post, saved right-of-way polygon |
-| `media` | kind (image/video), original/processed/thumbnail storage keys, sha256 (duplicate detection), size/fps/duration, `captured_at`, `geom`, `location_source` (exif / source / pin / camera), uploader, licence and source URL for public images |
-| `jobs` | generalised from today's video job: status, progress, attempts, error |
-| `encroachment_findings` | media id, frame time, class, confidence, mask polygon, box, zone hit (Z1/Z2/Z3/unknown), overlap m², distance to rail m, severity, evidence key, model version, site id |
-| `encroachment_sites` | `geom`, dominant class, first/last reported, report count, status, assignee, notes |
-| `intrusion_events` | today's incident fields plus class, `geom`, media id, model version |
-| `reports` | `report_no`, type, linked site or event, status, PDF key, audit trail |
-| `site_history` | status changes with who and when |
+### Encroachment (Phase 2a, `app/db/models/encroachment.py`)
+Ids are full UUID hex strings. Locations are plain `latitude`/`longitude` columns (both databases); on PostgreSQL a GiST index on the point as geography (`ix_encroachment_sites_geog`) backs "within R metres" searches with PostGIS, and SQLite uses a bounding box plus haversine.
 
-**Report numbers:** `RV-ENC-YYYY-NNNNNN` and `RV-INT-YYYY-NNNNNN`, issued from a database sequence so they are unique under concurrent jobs.
+| Table | Key columns |
+|---|---|
+| `media` | one uploaded photo: status (queued / processing / done / failed), attempts, error, original filename, **sha256 (unique: the same file twice is one row)**, size, `captured_at` (EXIF, read as IST, stored UTC), `latitude`/`longitude` + `location_source` (exif / pin / none), zone, camera label, storage keys (original, annotated), model versions |
+| `encroachment_findings` | one potential encroachment in a photo: class, model label, confidence, box, zone hit, overlap ratio and area, severity score and band, notes, model sources, crop key, `site_id` (null for photos without a location) |
+| `encroachment_sites` | a place reported again and again: class, location, status, finding count, worst severity, first/last reported |
+| `site_history` | every status change of a site (from → to, note, actor); site creation and automatic reopening included |
+| `reports` | `report_no` (unique, `RV-ENC-YYYY-NNNNNN`), kind, reason (new_site / critical_finding / re_encroached), site, photo, finding |
+| `report_counters` | last number per kind and year; incremented atomically inside the transaction that issues the report |
+
+**Sites** (`services/site_service.py`): a finding joins the nearest site of the same class within `ENC_SITE_RADIUS_M` (25 m, provisional), else starts one. A **resolved** site found again is reopened as re-encroached; a **false_positive** site keeps its status (the finding is still attached). Workflow: `reported → under_review → verified → action_taken → resolved`, or `→ false_positive`; closed sites can be reopened to `reported`. Invalid moves are rejected (HTTP 409 once exposed by the API).
+
+**Files** (`services/storage_service.py`): stored under `STORAGE_DIR` by key (`media/<id>/original.jpg`, `…/annotated.jpg`, `…/crops/NN.jpg`); only keys are in the database.
+
+## Still planned
+| Change | Phase |
+|---|---|
+| `locations` (named places / cameras with a saved right-of-way polygon) | later |
+| `media` for videos too, replacing `videos` (one job model for photos and videos) | with issue #3 |
+| `intrusion_events` replacing `incidents` (adds location, model version, report numbers `RV-INT-…`) | issue #3, part C |
+| findings: segmentation mask, zone Z1/Z2, distance to rail in metres | Phases 4–5 |
+| reports: PDF file, assignee | Phase 6 |
+
+**Report numbers:** `RV-ENC-YYYY-NNNNNN` and `RV-INT-YYYY-NNNNNN`, issued from the `report_counters` row inside the same transaction (atomic `UPDATE … RETURNING`), so they are unique under concurrent jobs.
 
 **Media files are never stored in the database**, only their storage keys and checksums (see ADR-0002).
