@@ -16,7 +16,7 @@ from app.core.logging import configure_logging
 from app.db.database import init_db
 from app.middleware.cors import add_cors
 from app.middleware.error_handler import add_error_handlers
-from app.services import job_queue
+from app.services import image_jobs, job_queue
 
 logger = logging.getLogger(__name__)
 
@@ -26,26 +26,30 @@ async def lifespan(app: FastAPI):
     """Everything that must happen once when the server starts, and once
     when it stops. (Replaces the deprecated @app.on_event handlers.)"""
     configure_logging()
-    for d in (config.DATA_DIR, config.OUTPUTS_DIR, config.MODELS_DIR):
+    for d in (config.DATA_DIR, config.OUTPUTS_DIR, config.MODELS_DIR, config.STORAGE_DIR):
         Path(d).mkdir(parents=True, exist_ok=True)
     init_db()  # runs migrations
 
-    # Starting the queue first re-queues anything a previous run left unfinished.
-    queue = job_queue.get_queue()
+    # Starting the queues first re-queues anything a previous run left unfinished.
+    queue = job_queue.get_queue()          # videos (intrusion)
     queue.start()
+    image_queue = image_jobs.get_image_queue()   # photos (encroachment)
+    image_queue.start()
     logger.info("RailVigil API ready")
     try:
         yield
     finally:
-        # In-flight videos stop at their next frame and go back to `queued`.
+        # In-flight jobs stop and go back to `queued`.
+        image_queue.stop()
         queue.stop()
 
 
 app = FastAPI(
     title="RailVigil API",
     description=(
-        "Railway right-of-way monitoring: intrusion detection in video (people and vehicles "
-        "entering configured track zones); physical encroachment detection is in development."
+        "Railway right-of-way monitoring: potential encroachments (structures, vegetation, "
+        "debris, dumped material) in photos, with sites and numbered reports; and intrusion "
+        "detection in video (people and vehicles entering configured track zones)."
     ),
     version="0.1.0",
     lifespan=lifespan,

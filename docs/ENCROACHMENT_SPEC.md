@@ -52,8 +52,17 @@ A finding is raised when `class ∈ ENCROACHMENT_CLASSES`, `confidence ≥ τ_c`
 
 τ_c, a₁, a₂, d and the weights are configuration values marked provisional until validated (see [EVALUATION.md](EVALUATION.md)).
 
-## Sites and persistence
-Each finding gets a location (EXIF GPS → source metadata → map pin → camera location; otherwise "location unknown", listed but not mapped). Findings of compatible categories within R metres are grouped into one **encroachment site** (PostGIS). Site lifecycle: `reported → under_review → verified → action_taken → resolved`, or `false_positive`; a new finding at a resolved site reopens it as re-encroached. Repeat reports over time are the evidence of persistence.
+## Sites, reports and the API — implemented (Phase 2)
+- **Upload:** `POST /api/media` — one or more photos plus the railway zone (`zone_points`, `zone_format` pixel/normalized, or `zone_sidecar`) and an optional map pin (`latitude`, `longitude`). The whole batch is checked before anything is stored; the same file uploaded again returns the existing photo (`duplicate: true`).
+- **Location:** EXIF GPS → map pin → none. A photo **without a location is still analysed** and its findings stored, but it gets no site and no map point.
+- **Sites:** a finding joins the nearest site of the same class within `ENC_SITE_RADIUS_M` (25 m, provisional; PostGIS `ST_DWithin` with a spatial index), otherwise starts a new one.
+- **Review workflow** (`PATCH /api/encroachment/sites/{id}`): `reported → under_review → verified → action_taken → resolved`, or `→ false_positive`; invalid moves return 409; every change is in the site history. A **resolved** site found again is reopened as re-encroached; a **false_positive** site is not.
+- **Reports** (`RV-ENC-YYYY-NNNNNN`), **at most one per site per photo** (a photo of five huts at one spot is one event):
+  - `new_site` — a finding started a new site;
+  - `re_encroached` — a resolved site was found again;
+  - `critical_finding` — an existing site's worst severity just became critical, or (once per photo) a photo without a location has a critical finding.
+- **Map:** `GET /api/map/features` returns sites as GeoJSON (`[longitude, latitude]`), filterable by area, class, severity, status and date.
+- **Not yet:** source metadata and camera locations as location sources (Phase 3+), photos from video keyframes (Phase 5).
 
 ## Video
 Encroachment is static, so video is sampled into keyframes and processed like images; the same object across frames is de-duplicated by mask overlap.

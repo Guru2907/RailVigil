@@ -64,6 +64,7 @@ class SiteAssignment:
     site: EncroachmentSite
     created: bool
     reopened: bool
+    escalated_to_critical: bool = False   # an existing site's worst severity just became critical
 
 
 def _worse(a: str, b: str) -> str:
@@ -133,8 +134,10 @@ def assign_site(db: Session, finding: EncroachmentFinding, location: Location | 
     reopened = site.status == "resolved"
     if reopened:
         change_site_status(db, site, "reported", note="found again after being closed (re-encroached)")
+    was_critical = site.max_severity == "critical"
     site.finding_count += 1
     site.max_severity = _worse(site.max_severity, finding.severity)
     site.last_reported_at = now
     finding.site_id = site.id
-    return SiteAssignment(site, created=False, reopened=reopened)
+    return SiteAssignment(site, created=False, reopened=reopened,
+                          escalated_to_critical=not was_critical and site.max_severity == "critical")
