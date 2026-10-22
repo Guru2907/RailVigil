@@ -16,7 +16,7 @@ from app.core import config as app_config
 from app.db.database import EXTENSION_TABLES, Base, extension_owned_tables
 
 # Importing the models registers their tables on Base.metadata.
-from app.db.models import detection, incident, user, video  # noqa: F401
+from app.db.models import detection, encroachment, incident, user, video  # noqa: F401
 
 alembic_config = context.config
 if not alembic_config.get_main_option("sqlalchemy.url"):
@@ -30,12 +30,19 @@ target_metadata = Base.metadata
 IS_SQLITE = alembic_config.get_main_option("sqlalchemy.url").startswith("sqlite")
 
 
+# Indexes created by hand in migrations that the models cannot express
+# (PostgreSQL-only functional indexes), so autogenerate must not drop them.
+HAND_MADE_INDEXES = frozenset({"ix_encroachment_sites_geog"})
+
+
 def make_include_object(skip_tables):
     """An include_object hook that leaves tables belonging to extensions
-    (PostGIS and friends) out of autogenerate and `alembic check`, so they are
-    never proposed for dropping."""
+    (PostGIS and friends) and hand-made indexes out of autogenerate and
+    `alembic check`, so they are never proposed for dropping."""
     def include_object(obj, name, type_, reflected, compare_to):
-        return not (type_ == "table" and reflected and name in skip_tables)
+        if type_ == "table" and reflected and name in skip_tables:
+            return False
+        return not (type_ == "index" and reflected and name in HAND_MADE_INDEXES)
     return include_object
 
 

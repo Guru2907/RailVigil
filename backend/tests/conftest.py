@@ -28,10 +28,19 @@ os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///
 os.environ["DATA_DIR"] = str(_TMP / "data")
 os.environ["OUTPUTS_DIR"] = str(_TMP / "outputs")
 os.environ["UPLOAD_DIR"] = str(_TMP / "uploads")
+os.environ["STORAGE_DIR"] = str(_TMP / "storage")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.db.database import SessionLocal, init_db  # noqa: E402
+from app.db.models.encroachment import (  # noqa: E402
+    EncroachmentFinding,
+    EncroachmentSite,
+    Media,
+    Report,
+    ReportCounter,
+    SiteHistory,
+)
 from app.db.models.incident import Incident  # noqa: E402
 from app.db.models.video import Video  # noqa: E402
 from app.db.repositories import video_repository  # noqa: E402
@@ -51,6 +60,9 @@ def _clean_tables():
     try:
         db.query(Incident).delete()
         db.query(Video).delete()
+        # encroachment tables, children before parents
+        for model in (Report, SiteHistory, EncroachmentFinding, EncroachmentSite, Media, ReportCounter):
+            db.query(model).delete()
         db.commit()
     finally:
         db.close()
