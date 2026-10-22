@@ -4,6 +4,8 @@ import { listVideos } from "../../api/videos.js";
 import { listIncidents } from "../../api/incidents.js";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { fmtTime, sevClass, shortId } from "../../utils/incidentFormat.js";
+import { formatDateTime } from "../../utils/formatDate.js";
+import EncroachmentDashboard from "../../components/dashboard/EncroachmentDashboard.jsx";
 
 function sevColor(name) {
   if (name === "HIGH" || name === "CRITICAL") return "#E11D48";
@@ -27,7 +29,7 @@ const statusStyle = {
   failed: "bg-tactical-alert/15 text-tactical-alert",
 };
 
-export default function Dashboard() {
+export function IntrusionDashboard() {
   const navigate = useNavigate();
   const [videos, setVideos] = useState([]);
   const [incidents, setIncidents] = useState([]);
@@ -82,16 +84,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <div className="mb-8">
-        <div className="text-xs font-mono text-tactical-mint mb-2">
-          DASHBOARD
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
-        <p className="mt-2 text-white/60 max-w-md">
-          What RailVigil has detected across every video you&apos;ve analyzed.
-        </p>
-      </div>
+    <div>
 
       {error && (
         <div className="mb-6 rounded-2xl bg-tactical-alert/15 text-tactical-alert text-sm font-mono px-5 py-3">
@@ -191,7 +184,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="mt-1 flex items-center justify-between text-xs font-mono text-tactical-dark/50">
-                    <span>{new Date(v.created_at).toLocaleString()}</span>
+                    <span>{formatDateTime(v.created_at)}</span>
                     <span>{v.status === "done" ? `${incidentCount(v.id)} incidents` : "—"}</span>
                   </div>
                 </li>
@@ -239,6 +232,40 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const TABS = [
+  ["encroachment", "Encroachment", "Photos, sites and reports on railway land."],
+  ["intrusion", "Intrusion", "What RailVigil has detected across every video you've analyzed."],
+];
+
+export default function Dashboard() {
+  const [tab, setTab] = useState("encroachment");
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="text-xs font-mono text-tactical-mint mb-2">DASHBOARD</div>
+          <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
+          <p className="mt-2 text-white/60 max-w-md">{TABS.find(([k]) => k === tab)[2]}</p>
+        </div>
+        <div className="inline-flex rounded-full bg-white/10 p-1">
+          {TABS.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                tab === key ? "bg-tactical-mint text-tactical-dark" : "text-white/70 hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {tab === "encroachment" ? <EncroachmentDashboard /> : <IntrusionDashboard />}
     </div>
   );
 }

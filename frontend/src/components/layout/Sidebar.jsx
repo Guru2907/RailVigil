@@ -29,6 +29,38 @@ function GridIcon(props) {
     </svg>
   );
 }
+function MapIcon(props) {
+  return (
+    <svg {...iconProps} {...props}>
+      <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+      <path d="M9 4v14M15 6v14" />
+    </svg>
+  );
+}
+function CameraIcon(props) {
+  return (
+    <svg {...iconProps} {...props}>
+      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  );
+}
+function PinIcon(props) {
+  return (
+    <svg {...iconProps} {...props}>
+      <path d="M12 22s7-7 7-12a7 7 0 10-14 0c0 5 7 12 7 12z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+function DocIcon(props) {
+  return (
+    <svg {...iconProps} {...props}>
+      <path d="M6 2h9l5 5v15H6z" />
+      <path d="M14 2v6h6M9 13h8M9 17h8" />
+    </svg>
+  );
+}
 function ChevronIcon(props) {
   return (
     <svg {...iconProps} strokeWidth="2" {...props}>
@@ -38,9 +70,14 @@ function ChevronIcon(props) {
 }
 
 // soon: true = page not built yet, shown as a muted non-link item
+// section: starts a labelled group in the sidebar
 export const navItems = [
-  { to: "/dashboard", label: "Dashboard", Icon: GridIcon },
-  { to: "/upload", label: "Video Analysis", Icon: VideoIcon },
+  { to: "/dashboard", label: "Dashboard", Icon: GridIcon, section: "Overview" },
+  { to: "/map", label: "GIS Map", Icon: MapIcon },
+  { to: "/encroachment/upload", label: "Photo Analysis", Icon: CameraIcon, section: "Encroachment" },
+  { to: "/sites", label: "Sites", Icon: PinIcon },
+  { to: "/reports", label: "Reports", Icon: DocIcon },
+  { to: "/upload", label: "Video Analysis", Icon: VideoIcon, section: "Intrusion" },
   { to: "/incidents", label: "Incidents", Icon: AlertIcon },
 ];
 
@@ -78,7 +115,7 @@ export default function Sidebar() {
         {/* Logo */}
         <Link
           to="/"
-          className={`flex items-center gap-3 mb-8 mt-2 ${collapsed ? "justify-center" : "px-2"}`}
+          className={`flex items-center gap-3 mb-4 mt-2 ${collapsed ? "justify-center" : "px-2"}`}
         >
           <div className="w-9 h-9 shrink-0 rounded-full bg-tactical-dark flex items-center justify-center font-bold text-tactical-mint text-sm">
             RV
@@ -87,8 +124,13 @@ export default function Sidebar() {
         </Link>
 
         {/* Nav */}
-        <nav className="space-y-1.5">
-          {navItems.map(({ to, label, Icon, soon }) =>
+        <nav className="space-y-1">
+          {navItems.map(({ to, label, Icon, soon, section }) => [
+            section && !collapsed && (
+              <div key={`s-${section}`} className="px-4 pt-3 pb-1 text-[10px] font-mono uppercase tracking-widest text-tactical-dark/40">
+                {section}
+              </div>
+            ),
             soon ? (
               <div
                 key={to}
@@ -121,8 +163,8 @@ export default function Sidebar() {
                 <Icon className="w-5 h-5 shrink-0" />
                 {!collapsed && label}
               </NavLink>
-            )
-          )}
+            ),
+          ])}
         </nav>
 
         {/* Collapse toggle */}

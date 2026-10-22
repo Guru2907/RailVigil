@@ -1,4 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getStatsSummary, listReports } from "../../api/encroachment.js";
+import { listIncidents } from "../../api/incidents.js";
+import { classLabel } from "../../utils/encroachmentFormat.js";
+import { shortId } from "../../utils/incidentFormat.js";
+import { timeAgo } from "../../utils/formatDate.js";
 
 const iconProps = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8 };
 
@@ -48,7 +54,8 @@ const steps = [
   { n: "04", title: "Act", desc: "Confirmed events become incidents with evidence.", Icon: ShieldIcon },
 ];
 
-const log = [
+// Shown only when the backend is offline or has no data yet.
+const demoLog = [
   { t: "00:14:32", id: "INC-1024", msg: "Person inside corridor", sev: "HIGH" },
   { t: "00:11:05", id: "INC-1023", msg: "Vehicle near rail bed", sev: "MED" },
   { t: "00:09:47", id: "INC-1022", msg: "Person entered track zone", sev: "LOW" },
@@ -56,12 +63,56 @@ const log = [
 ];
 
 const sevStyle = {
+  ENC: "bg-sky-100 text-sky-700",
   HIGH: "bg-tactical-alert/15 text-tactical-alert animate-pulse",
   MED: "bg-amber-100 text-amber-700",
   LOW: "bg-emerald-100 text-emerald-700",
 };
 
+const REASON_MSG = { new_site: "New encroachment site", re_encroached: "Site re-encroached", critical_finding: "Critical encroachment" };
+
+// Latest encroachment reports and intrusion incidents, newest first.
+function useLiveLog() {
+  const [live, setLive] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getStatsSummary(), listReports({ limit: 4 }), listIncidents()])
+      .then(([stats, reports, incidents]) => {
+        if (cancelled) return;
+        const rows = [
+          ...reports.map((r) => ({ at: r.created_at, id: r.report_no, msg: REASON_MSG[r.reason] || r.reason, sev: "ENC" })),
+          ...incidents.map((i) => ({
+            at: i.created_at,
+            id: shortId(i.id),
+            msg: `${classLabel(i.event_type || "intrusion").replaceAll("_", " ")} in track zone`,
+            sev: ["HIGH", "CRITICAL"].includes((i.severity || "").toUpperCase()) ? "HIGH" : (i.severity || "").toUpperCase().startsWith("MED") ? "MED" : "LOW",
+          })),
+        ]
+          .sort((a, b) => new Date(b.at) - new Date(a.at))
+          .slice(0, 4)
+          .map((r) => ({ ...r, t: timeAgo(r.at) }));
+        const e = stats.encroachment;
+        setLive({
+          rows,
+          totals: [
+            [String(e.sites_open), "Open sites"],
+            [String(e.reports_total), "Reports"],
+            [String(stats.intrusion.incidents_total), "Intrusions"],
+          ],
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return live;
+}
+
 export default function LandingPage() {
+  const live = useLiveLog();
+  const log = live?.rows?.length ? live.rows : demoLog;
+  const totals = live?.totals || [["18", "Objects"], ["3", "Incidents"], ["1", "High risk"]];
   return (
     <div className="min-h-screen bg-tactical-canvas text-white font-sans antialiased overflow-x-hidden">
       {/* Floating pill nav */}
@@ -202,8 +253,8 @@ export default function LandingPage() {
           {/* Log 40% */}
           <div className="lg:col-span-2 rounded-3xl bg-tactical-card text-tactical-dark p-6 shadow-lg border border-emerald-200/50 flex flex-col">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold">Live incident log</h3>
-              <span className="text-xs font-mono text-emerald-600">4 events</span>
+              <h3 className="font-semibold">{live?.rows?.length ? "Live activity log" : "Live incident log"}</h3>
+              <span className="text-xs font-mono text-emerald-600">{live?.rows?.length ? "LIVE" : "DEMO"} · {log.length} events</span>
             </div>
             <ul className="flex-1 space-y-3">
               {log.map((r) => (
@@ -219,7 +270,7 @@ export default function LandingPage() {
               ))}
             </ul>
             <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-              {[["18", "Objects"], ["3", "Incidents"], ["1", "High risk"]].map(([v, l]) => (
+              {totals.map(([v, l]) => (
                 <div key={l} className="rounded-2xl bg-emerald-100/60 py-3">
                   <div className="text-xl font-semibold font-mono">{v}</div>
                   <div className="text-[11px] text-tactical-dark/60">{l}</div>

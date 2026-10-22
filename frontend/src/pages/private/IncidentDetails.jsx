@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getIncident } from "../../api/incidents.js";
 import { getIncidentSnapshotUrl, getAnnotatedVideoUrl } from "../../api/videos.js";
+import { formatDateTime } from "../../utils/formatDate.js";
 import { fmtTime, fmtPct, sevClass, shortId } from "../../utils/incidentFormat.js";
 
 export default function IncidentDetails() {
@@ -81,7 +82,7 @@ export default function IncidentDetails() {
                   ["Avg penetration", fmtPct(incident.avg_penetration)],
                   ["Risk score", Math.round(incident.risk_score)],
                   ["Zone", incident.zone_label],
-                  ["Recorded", new Date(incident.created_at).toLocaleString()],
+                  ["Recorded", formatDateTime(incident.created_at)],
                 ].map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between rounded-2xl bg-white border border-black/5 px-4 py-3">
                     <dt className="text-sm text-tactical-dark/60">{k}</dt>
