@@ -59,13 +59,16 @@ def main() -> None:
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--include-labelled", action="store_true", help="also pre-label photos that already have labels")
     p.add_argument("--no-sam", action="store_true", help="rectangles only (faster, worse masks)")
+    p.add_argument("--skip-source", default="taco", help="comma-separated sources not to pre-label (default: taco)")
     p.add_argument("--device", default=None, help="e.g. 0 for the GPU, cpu for the CPU (default: auto)")
     args = p.parse_args()
 
     from ultralytics import SAM, YOLO
 
     rows = rv.read_manifest()
-    todo = [r for r in rows if args.include_labelled or not (rv.LABELS / f"{r['image_id']}.txt").exists()]
+    skip = {s.strip() for s in args.skip_source.split(",") if s.strip()}
+    todo = [r for r in rows if r["source"] not in skip
+            and (args.include_labelled or not (rv.LABELS / f"{r['image_id']}.txt").exists())]
     if args.limit:
         todo = todo[: args.limit]
     if not todo:

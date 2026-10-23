@@ -51,7 +51,7 @@ img001.jpg,https://commons.wikimedia.org/wiki/File:...,Jane Doe,CC BY-SA 4.0
 & $T training\remove_images.py <id> <id> --reason "no track visible"   # drop irrelevant photos after a look
 ```
 
-- **Mapillary:** only photos within 40 m of an OpenStreetMap railway line, facing it, not on a road or foot bridge, at least 100 m apart. Licence CC BY-SA 4.0; the photographer is recorded.
+- **Mapillary:** only photos taken on an OpenStreetMap railway line (within 8 m: from a train or at a level crossing), not on a road or foot bridge, at least 100 m apart. Photos from roads beside the track rarely show it. Licence CC BY-SA 4.0; the photographer is recorded.
 - **Commons:** only free licences (never NC or ND). Photos must be inside India by coordinates, or carry Indian place names and no foreign ones.
 - **TACO** is not Indian, so its photos are marked `train_only`. They never reach val or test, so every reported number is measured on Indian photos only.
 - Run the collectors **one at a time**: each rewrites `datasets\manifest.csv`.
