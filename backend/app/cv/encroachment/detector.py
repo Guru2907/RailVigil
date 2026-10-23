@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from app.core import config
 from app.cv.common.model_registry import get_model
-from app.cv.encroachment.geometry import box_polygon, iou
+from app.cv.encroachment.geometry import iou, object_polygon
 from app.cv.encroachment.taxonomy import map_label
 
 
@@ -16,6 +16,10 @@ class Detection:
     confidence: float
     bbox: tuple[float, float, float, float]    # x1, y1, x2, y2 in image pixels
     sources: list[str] = field(default_factory=list)   # "model-name@version"
+    outline: list[tuple[float, float]] | None = None   # mask outline in image pixels (segmentation models only)
+
+    def polygon(self):
+        return object_polygon(self.bbox, self.outline)
 
 
 def merge_detections(detections: list[Detection], iou_threshold: float) -> list[Detection]:
@@ -24,14 +28,20 @@ def merge_detections(detections: list[Detection], iou_threshold: float) -> list[
     other's sources are added to it."""
     merged: list[Detection] = []
     for det in sorted(detections, key=lambda d: d.confidence, reverse=True):
-        poly = box_polygon(det.bbox)
+        poly = det.polygon()
         for kept in merged:
-            if kept.cls == det.cls and iou(box_polygon(kept.bbox), poly) >= iou_threshold:
+            if kept.cls == det.cls and iou(kept.polygon(), poly) >= iou_threshold:
                 kept.sources.extend(s for s in det.sources if s not in kept.sources)
                 break
         else:
-            merged.append(Detection(det.cls, det.label, det.confidence, det.bbox, list(det.sources)))
+            merged.append(Detection(det.cls, det.label, det.confidence, det.bbox, list(det.sources), det.outline))
     return merged
+
+
+def _outline(points) -> list[tuple[float, float]] | None:
+    if points is None or len(points) < 3:
+        return None
+    return [(float(x), float(y)) for x, y in points]
 
 
 class EncroachmentDetector:
@@ -62,10 +72,14 @@ class EncroachmentDetector:
             if result.boxes is None:
                 continue
             names = result.names
-            for xyxy, cls_id, conf in zip(
+            # Segmentation models also return one mask outline per box, in pixels.
+            masks = getattr(result, "masks", None)
+            outlines = list(masks.xy) if masks is not None else [None] * len(result.boxes.conf.cpu().numpy())
+            for xyxy, cls_id, conf, outline in zip(
                 result.boxes.xyxy.cpu().numpy(),
                 result.boxes.cls.cpu().numpy().astype(int),
                 result.boxes.conf.cpu().numpy(),
+                outlines,
                 strict=True,
             ):
                 label = names[int(cls_id)]
@@ -79,5 +93,6 @@ class EncroachmentDetector:
                     cls=cls, label=label, confidence=float(conf),
                     bbox=tuple(float(v) for v in xyxy),
                     sources=[f"{name}@{loaded.version}"],
+                    outline=_outline(outline),
                 ))
         return merge_detections(found, self.merge_iou)

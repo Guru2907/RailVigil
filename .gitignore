@@ -28,6 +28,8 @@ backend/uploads/*
 backend/storage/
 datasets/*
 !datasets/manifest.csv
+training/runs/
+training/weights/
 *.pt
 *.onnx
 .ruff_cache/

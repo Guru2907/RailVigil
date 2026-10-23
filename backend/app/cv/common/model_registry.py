@@ -47,6 +47,11 @@ MODELS: dict[str, ModelSpec] = {
             "YOLOv8s-WorldV2 with RailVigil's text prompts built in; encroachment baseline",
             "run backend/scripts/build_world_model.py",
         ),
+        ModelSpec(
+            "railvigil-seg", "railvigil-seg.pt",
+            "YOLOv8s-seg trained on the RailVigil corridor dataset (6 classes, masks); encroachment",
+            "train with training/train.py, then training/promote.py copies the chosen run here",
+        ),
     )
 }
 
