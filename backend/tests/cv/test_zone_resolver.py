@@ -3,7 +3,6 @@ import json
 import numpy as np
 import pytest
 
-from app.core.errors import ValidationFailed
 from app.core.errors import ZoneUnavailable
 from app.cv.common.zones import AutoZoneProvider, ResolvedZone, ZoneResolver, stored_zone_to_pixels
 

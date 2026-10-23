@@ -128,7 +128,7 @@ def assign_zone(db: Session, video_id: str, zone_points_raw) -> Video:
         )
 
     if not video_repository.assign_zone_and_queue(db, video_id, json.dumps(zone.as_record())):
-        raise AppError(f"Video is not awaiting a zone.", 409)
+        raise AppError("Video is not awaiting a zone.", 409)
 
     job_queue.get_queue().submit(video_id)
     video = video_repository.get_video(db, video_id)
