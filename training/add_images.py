@@ -12,7 +12,6 @@ for per-file credit (Wikimedia Commons / Flickr / Mapillary downloads).
 
 import argparse
 import csv
-import shutil
 from pathlib import Path
 
 import rvdata as rv
@@ -45,42 +44,27 @@ def main() -> None:
 
     rows = rv.read_manifest()
     known = {r["image_id"] for r in rows}
-    rv.IMAGES.mkdir(parents=True, exist_ok=True)
     added = dupes = located = 0
     missing_licence = []
 
     for f in files:
-        image_id = rv.image_id_for(f)
-        if image_id in known:
-            dupes += 1
-            continue
         credit = credits.get(f.name, {})
         licence = (credit.get("licence") or args.licence).strip()
         if not licence:
             missing_licence.append(f.name)
             continue
-        target = rv.IMAGES / f"{image_id}{f.suffix.lower()}"
-        shutil.copy2(f, target)
-        lat, lon, taken = rv.exif_info(f)
-        located += lat is not None
-        rows.append({
-            "image_id": image_id,
-            "file": f"images/{target.name}",
-            "original_name": f.name,
+        image_id = rv.register_image(f, {
             "source": args.source,
             "source_url": (credit.get("source_url") or args.source_url).strip(),
             "licence": licence,
             "author": (credit.get("author") or args.author).strip(),
-            "lat": f"{lat:.6f}" if lat is not None else "",
-            "lon": f"{lon:.6f}" if lon is not None else "",
-            "captured_at": taken,
-            "location_source": "exif" if lat is not None else "none",
             "group": (credit.get("group") or args.group).strip(),
-            "split": "",
-            "added_at": rv.now_iso(),
-        })
-        known.add(image_id)
+        }, rows, known)
+        if image_id is None:
+            dupes += 1
+            continue
         added += 1
+        located += bool(rows[-1]["lat"])
 
     rv.write_manifest(rows)
     print(f"Added {added} photos ({located} with GPS), skipped {dupes} duplicates. Manifest: {len(rows)} photos.")

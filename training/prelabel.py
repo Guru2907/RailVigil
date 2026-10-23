@@ -21,7 +21,7 @@ import shutil
 
 import rvdata as rv
 
-from app.cv.encroachment.taxonomy import CLASSES, map_label
+CLASSES, map_label = rv.CLASSES, rv.map_label
 
 BASELINE = {  # model name -> (weights file in backend/models, confidence cut-off)
     "oiv7-v8s": ("yolov8s-oiv7.pt", 0.25),

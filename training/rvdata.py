@@ -36,7 +36,9 @@ WEIGHTS = REPO / "training" / "weights"
 
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
-from app.cv.encroachment.taxonomy import CLASSES  # noqa: E402  (pure constants, no app setup)
+# Scripts import the taxonomy through this module (never `from app...` themselves),
+# because the line above is what makes `app` importable.
+from app.cv.encroachment.taxonomy import CLASSES, map_label  # noqa: E402, F401  (pure constants)
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 # Written by prelabel.py into its output. Uncorrected pre-labels must never become
@@ -49,8 +51,72 @@ SAME_PLACE_M = 300.0
 
 MANIFEST_FIELDS = [
     "image_id", "file", "original_name", "source", "source_url", "licence", "author",
-    "lat", "lon", "captured_at", "location_source", "group", "split", "added_at",
+    "lat", "lon", "captured_at", "location_source", "group", "split", "added_at", "role",
 ]
+# role "train_only": extra training data from outside India (e.g. TACO litter). It never
+# enters val/test, so every reported number is measured on Indian photos only.
+TRAIN_ONLY = "train_only"
+
+# --- India check ---------------------------------------------------------------
+# Coarse hand-traced outlines (lon, lat), accurate to roughly 10-30 km: enough to
+# tell an Indian railway photo from one in Bangladesh, Nepal, Pakistan or Sri Lanka
+# (a bounding box would wrongly include Bangladesh and Nepal).
+INDIA_OUTLINE = [
+    (68.2, 23.6), (68.9, 22.4), (69.9, 21.0), (71.0, 20.6), (72.6, 20.5), (72.7, 19.0), (72.95, 17.5),
+    (73.4, 16.0), (74.0, 14.9), (74.6, 13.0), (75.5, 11.5), (76.2, 10.0), (76.6, 8.8), (77.5, 8.0),
+    (78.2, 8.9), (79.3, 9.3), (79.9, 10.3), (79.9, 11.8), (80.45, 13.5), (80.3, 15.5), (81.3, 16.4),
+    (82.3, 16.6), (83.4, 17.8), (85.0, 19.3), (86.4, 20.0), (87.0, 21.3), (88.2, 21.6), (89.0, 21.5),
+    (92.3, 20.6), (92.7, 22.0), (93.2, 22.2), (93.4, 23.0), (94.2, 23.9), (94.6, 25.0), (95.2, 26.0),
+    (95.9, 27.0), (97.2, 27.1), (97.4, 28.2), (96.6, 28.8), (95.4, 29.2), (94.2, 29.2), (93.0, 28.6),
+    (92.0, 27.9), (91.6, 27.8), (92.0, 26.9), (90.0, 26.75), (89.0, 26.85), (88.9, 27.3), (88.8, 28.1),
+    (88.1, 27.9), (81.0, 30.3), (79.0, 31.4), (78.7, 32.2), (79.4, 32.7), (79.4, 34.0), (78.3, 35.5),
+    (77.0, 35.7), (75.5, 36.0), (74.3, 35.4), (73.6, 34.5), (73.8, 33.6), (74.3, 33.0), (74.7, 32.5),
+    (74.6, 31.6), (74.55, 31.0), (73.9, 30.3), (73.4, 29.9), (72.5, 28.9), (71.9, 28.0), (70.6, 27.8),
+    (69.6, 27.2), (70.1, 25.9), (70.7, 25.6), (71.1, 24.4), (70.0, 24.2), (68.8, 24.3),
+]
+# Countries inside or next to the outline above, cut out of it.
+EXCLUDED_OUTLINES = {
+    "Bangladesh": [
+        (88.95, 21.55), (88.88, 22.9), (88.75, 23.6), (88.45, 24.25), (88.05, 24.75), (88.4, 25.3), (88.1, 25.9),
+        (88.35, 26.45), (88.95, 26.25), (89.85, 25.95), (89.85, 25.3), (90.6, 25.15), (92.05, 25.15), (92.2, 24.95),
+        (91.95, 24.35), (91.75, 24.15), (91.25, 23.95), (91.2, 23.75), (91.3, 23.45), (91.45, 23.1), (92.1, 22.6),
+        (92.35, 21.9), (92.65, 21.25), (92.3, 20.65), (91.9, 21.4), (90.5, 21.8), (89.9, 21.8),
+    ],
+    "Nepal": [
+        (80.06, 28.95), (80.5, 29.8), (81.2, 30.2), (82.5, 29.9), (83.5, 29.3), (84.5, 28.7), (86.0, 28.1),
+        (87.0, 28.0), (88.2, 27.8), (88.15, 26.4), (87.0, 26.4), (86.0, 26.6), (85.0, 26.9), (84.0, 27.4),
+        (83.0, 27.4), (82.0, 27.7), (81.0, 28.3),
+    ],
+}
+
+
+def _inside(lon: float, lat: float, poly) -> bool:
+    """Ray casting point-in-polygon."""
+    inside = False
+    j = len(poly) - 1
+    for i, (xi, yi) in enumerate(poly):
+        xj, yj = poly[j]
+        if (yi > lat) != (yj > lat) and lon < (xj - xi) * (lat - yi) / (yj - yi) + xi:
+            inside = not inside
+        j = i
+    return inside
+
+
+def in_india(lat: float, lon: float) -> bool:
+    return _inside(lon, lat, INDIA_OUTLINE) and not any(_inside(lon, lat, p) for p in EXCLUDED_OUTLINES.values())
+
+
+def load_secret(name: str) -> str | None:
+    """A value from the environment or training/.env (git-ignored). Never print it."""
+    if os.getenv(name):
+        return os.environ[name]
+    env = REPO / "training" / ".env"
+    if env.is_file():
+        for line in env.read_text(encoding="utf-8").splitlines():
+            key, _, value = line.partition("=")
+            if key.strip() == name:
+                return value.strip().strip('"').strip("'") or None
+    return None
 
 
 # --- manifest ----------------------------------------------------------------
@@ -175,13 +241,18 @@ def _bucket(key: str, ratios=DEFAULT_RATIOS) -> str:
 def assign_splits(rows: list[dict], ratios=DEFAULT_RATIOS, same_place_m: float = SAME_PLACE_M) -> list[dict]:
     """Fill in `split` for rows that have none. Existing splits never change
     (the test set stays frozen), and a new photo of an already-split place
-    joins that place's split so no place leaks between train and test."""
-    groups = place_groups(rows, same_place_m)
-    group_split: dict[str, str] = {}
+    joins that place's split so no place leaks between train and test.
+    Train-only rows (outside data such as TACO) always go to train."""
     for r in rows:
+        if r.get("role") == TRAIN_ONLY:
+            r["split"] = "train"
+    regular = [r for r in rows if r.get("role") != TRAIN_ONLY]
+    groups = place_groups(regular, same_place_m)
+    group_split: dict[str, str] = {}
+    for r in regular:
         if r["split"]:
             group_split.setdefault(groups[r["image_id"]], r["split"])
-    for r in rows:
+    for r in regular:
         if not r["split"]:
             g = groups[r["image_id"]]
             r["split"] = group_split.setdefault(g, _bucket(g, ratios))
@@ -190,12 +261,60 @@ def assign_splits(rows: list[dict], ratios=DEFAULT_RATIOS, same_place_m: float =
 
 def split_leaks(rows: list[dict], same_place_m: float = SAME_PLACE_M) -> list[str]:
     """Group keys whose photos ended up in more than one split (should be empty)."""
-    groups = place_groups(rows, same_place_m)
+    regular = [r for r in rows if r.get("role") != TRAIN_ONLY]
+    groups = place_groups(regular, same_place_m)
     seen: dict[str, set] = {}
-    for r in rows:
+    for r in regular:
         if r["split"]:
             seen.setdefault(groups[r["image_id"]], set()).add(r["split"])
-    return sorted(g for g, s in seen.items() if len(s) > 1)
+    leaks = sorted(g for g, s in seen.items() if len(s) > 1)
+    leaks += [f"train-only {r['image_id']}" for r in rows
+              if r.get("role") == TRAIN_ONLY and r["split"] not in ("", "train")]
+    return leaks
+
+
+# --- adding images ---------------------------------------------------------------
+
+def register_image(src: Path, meta: dict, rows: list[dict], known: set[str] | None = None) -> str | None:
+    """Copy one photo into datasets/images and append its manifest row to `rows`.
+    `meta` holds source, licence, author, source_url and optionally lat/lon,
+    captured_at, group, role, original_name. Location from `meta` wins over EXIF.
+    Returns the new image id, or None for a duplicate (same SHA-256)."""
+    import shutil
+
+    if not meta.get("licence"):
+        raise ValueError(f"{src}: no licence")
+    known = known if known is not None else {r["image_id"] for r in rows}
+    image_id = image_id_for(src)
+    if image_id in known:
+        return None
+    IMAGES.mkdir(parents=True, exist_ok=True)
+    target = IMAGES / f"{image_id}{Path(src).suffix.lower() or '.jpg'}"
+    shutil.copy2(src, target)
+    lat, lon = meta.get("lat"), meta.get("lon")
+    location_source = meta.get("location_source", "source") if lat is not None and lon is not None else "none"
+    exif_lat, exif_lon, taken = exif_info(src)
+    if lat is None and exif_lat is not None:
+        lat, lon, location_source = exif_lat, exif_lon, "exif"
+    rows.append({
+        "image_id": image_id,
+        "file": f"images/{target.name}",
+        "original_name": meta.get("original_name", Path(src).name),
+        "source": meta["source"],
+        "source_url": meta.get("source_url", ""),
+        "licence": meta["licence"],
+        "author": meta.get("author", ""),
+        "lat": f"{float(lat):.6f}" if lat is not None else "",
+        "lon": f"{float(lon):.6f}" if lon is not None else "",
+        "captured_at": meta.get("captured_at") or taken,
+        "location_source": location_source,
+        "group": meta.get("group", ""),
+        "split": "",
+        "added_at": now_iso(),
+        "role": meta.get("role", ""),
+    })
+    known.add(image_id)
+    return image_id
 
 
 # --- YOLO segmentation labels ------------------------------------------------
