@@ -22,7 +22,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # make `app` importable
 
 from app.core import config  # noqa: E402
-from app.core.errors import AppError  # noqa: E402
 from app.cv.intrusion.video_processor import process_video  # noqa: E402
 
 

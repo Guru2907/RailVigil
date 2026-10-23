@@ -36,8 +36,8 @@ def _is_number(v) -> bool:
 def parse_zone_points(raw: str) -> list[list[float]]:
     try:
         data = json.loads(raw)
-    except (TypeError, ValueError):
-        raise ValidationFailed("zone_points must be valid JSON, for example [[10,10],[200,10],[200,150]].")
+    except (TypeError, ValueError) as exc:
+        raise ValidationFailed("zone_points must be valid JSON, for example [[10,10],[200,10],[200,150]].") from exc
 
     if not isinstance(data, list):
         raise ValidationFailed("zone_points must be a list of [x, y] points.")

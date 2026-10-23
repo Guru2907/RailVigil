@@ -13,7 +13,7 @@ from app.cv.common.zones import ZoneResolver
 from app.db.models.video import Video
 from app.db.repositories import video_repository
 from app.services import job_queue
-from app.utils.file_utils import check_extension, save_upload, delete_quietly
+from app.utils.file_utils import check_extension, delete_quietly, save_upload
 from app.utils.video_utils import probe_video
 from app.utils.zone_validation import parse_zone_points
 

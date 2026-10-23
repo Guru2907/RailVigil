@@ -1,13 +1,9 @@
 # RailVigil Backend
 
-FastAPI backend for railway intrusion detection: people, animals and vehicles entering configured track zones. Structures, vegetation and debris detection are out of scope.
+FastAPI service and computer-vision pipelines for RailVigil: intrusion detection in video (working) and physical encroachment detection in images (in development). See the root [README](../README.md).
 
-Install from `backend/`: `pip install -r requirements.txt`
+Install from `backend/`: `pip install -r requirements-dev.txt` (runtime only: `requirements.txt`)
 Run from `backend/`: `uvicorn app.main:app --reload`
+Check: `pytest` and `ruff check .`
 
-Uploads normally include a manually drawn zone. Alternatively, submit a
-`zone_sidecar` JSON form field or configure `CAMERA_ZONES` as a JSON object
-mapping camera labels to normalized zone records. The CLI reads
-`<video-stem>.zone.json` (or `<video-file>.zone.json`) when `--zone` is omitted.
-Sidecars use `{"format":"normalized","points":[[0.1,0.2],[0.8,0.2],[0.8,0.9]]}`;
-legacy pixel-point lists remain supported. Missing zones are rejected.
+Zones are described in [docs/ZONES.md](../docs/ZONES.md). In short: an upload needs a drawn zone, a `zone_sidecar` JSON field, or a `CAMERA_ZONES` entry for its camera label; the CLI (`scripts/run_clip.py`) reads `<video-stem>.zone.json` when `--zone` is omitted. A missing zone is rejected, never replaced by the whole frame.

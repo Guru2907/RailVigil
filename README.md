@@ -1,33 +1,54 @@
 # RailVigil
 
-Automated railway **intrusion** detection using YOLOv8 video analytics — people, animals, and vehicles entering configured track-side safety zones. Physical encroachment (structures, vegetation, debris) is out of scope for the current pipeline.
+Railway right-of-way monitoring with YOLOv8, in two separate modules:
 
-## Project Structure
+| Module | What it finds | Input | Status |
+|---|---|---|---|
+| **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **Baseline on images** (command line, pretrained models, not yet measured) — see [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
+| **Intrusion** | People and vehicles entering a track-side safety zone in video | Video | **Working** — see [docs/INTRUSION_SPEC.md](docs/INTRUSION_SPEC.md) |
 
-- `backend/` — FastAPI backend, computer-vision pipeline, API, database layer, tests, data and model locations.
-- `frontend/` — React + Vite dashboard and monitoring interface.
+Results are always *potential* encroachments or intrusions for an officer to review. Software cannot establish that something is illegal.
 
-## Run the backend
+## What works today
+- Upload a video with a safety zone (drawn, sidecar file, or per-camera config) → background job → YOLOv8n + ByteTrack → time-based confirmation → risk score → incidents with snapshots.
+- Encroachment baseline: `backend/scripts/run_image.py` finds potential encroachments in photos (pretrained YOLOv8 Open Images V7 + YOLO-World), checks how much of each object lies on the railway land you mark, and writes annotated evidence.
+- Job queue with crash recovery, upload validation, PostgreSQL + PostGIS (SQLite fallback), Alembic migrations, ~160 backend tests.
+- React pages: video analysis (upload + zone drawing), incidents list and detail, dashboard.
 
-From `RailVigil/backend`:
+## Not built yet
+Encroachment in the web app (image uploads, database records, sites), a trained encroachment model, the GIS map of India (PostgreSQL + PostGIS is set up, no spatial tables yet), incident reports with IDs, authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
+
+## Run locally
+
+Backend (from `backend/`):
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+.venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
+uvicorn app.main:app --reload     # one process only: the job queue is in-process
 ```
 
-## Run the frontend
+The YOLOv8n weights go in `backend/models/yolov8n.pt`.
 
-From `RailVigil/frontend`:
+Database: **PostgreSQL + PostGIS** — set it up once with [docs/SETUP_POSTGRES.md](docs/SETUP_POSTGRES.md) (`backend\scripts\setup_postgres.ps1` writes `DATABASE_URL` into `backend/.env`). Without `DATABASE_URL` the app falls back to a local SQLite file, `backend/railvigil.db`. Migrations run on start-up; a database that has tables but no migration history is refused with a message.
+
+Frontend (from `frontend/`):
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-## Notes
+Tests and checks: `pytest` (SQLite) and `scripts\test_postgres.ps1` (PostgreSQL) and `ruff check .` in `backend/`; `npm run lint` and `npm run build` in `frontend/`.
 
-Stage 2 focuses on **reliable intrusion detection and video processing** (queue, validation, migrations, shared zone resolution). Do not treat missing zones as the whole frame — provide a drawn zone, `.zone.json` sidecar, or `CAMERA_ZONES` config.
+## Repository layout
+- `backend/app/cv/common/` — detector, tracker, zone geometry and zone resolver shared by both modules
+- `backend/app/cv/intrusion/` — intrusion pipeline
+- `backend/app/cv/encroachment/` — encroachment pipeline (in development)
+- `backend/app/services/` — upload handling, job queue and runner
+- `frontend/` — React + Vite app
+- `docs/` — specifications, data model, evaluation plan and decision records
+
+## Team
+Ownership and workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Planned work: [BACKLOG.md](BACKLOG.md).

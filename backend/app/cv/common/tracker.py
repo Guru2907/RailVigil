@@ -55,7 +55,7 @@ class Tracker:
         confs = r.boxes.conf.cpu().numpy()
         track_ids = r.boxes.id.cpu().numpy().astype(int)
 
-        for box, cid, conf, tid in zip(boxes, cls_ids, confs, track_ids):
+        for box, cid, conf, tid in zip(boxes, cls_ids, confs, track_ids, strict=True):
             cls_name = self.class_names.get(int(cid), str(cid))
             if self.class_filter is not None and cls_name not in self.class_filter:
                 continue

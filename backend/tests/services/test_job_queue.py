@@ -5,11 +5,11 @@ import threading
 import time
 
 import pytest
+from conftest import get_video, make_video_row
 
+from app.cv.intrusion.video_processor import ProcessingAborted
 from app.services import job_runner
 from app.services.job_queue import JobQueue
-from app.cv.intrusion.video_processor import ProcessingAborted
-from conftest import get_video, make_video_row
 
 
 @pytest.fixture

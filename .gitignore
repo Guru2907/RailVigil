@@ -25,6 +25,12 @@ backend/data/annotations/*
 backend/models/*
 backend/outputs/*
 backend/uploads/*
+backend/storage/
+datasets/*
+!datasets/manifest.csv
+*.pt
+*.onnx
+.ruff_cache/
 !backend/data/**/.gitkeep
 !backend/models/.gitkeep
 !backend/outputs/.gitkeep

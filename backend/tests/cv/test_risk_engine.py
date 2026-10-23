@@ -4,9 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from app.core import config
-from app.cv.intrusion.risk_engine import (
-    compute_risk_score, severity_from_score, is_persistent, classify_event_type
-)
+from app.cv.intrusion.risk_engine import classify_event_type, compute_risk_score, is_persistent, severity_from_score
 
 
 def test_risk_increases_with_penetration_and_dwell():
@@ -73,7 +71,8 @@ def test_event_type_classification():
     assert classify_event_type("person", persistent=True) == "persistent_human_presence"
     assert classify_event_type("bicycle", persistent=True) == "persistent_human_presence"
     assert classify_event_type("car", persistent=False) == "vehicle_intrusion"
-    assert classify_event_type("car", persistent=True) == "vehicle_intrusion"  # vehicles stay vehicle_intrusion regardless
+    # vehicles stay vehicle_intrusion regardless of dwell
+    assert classify_event_type("car", persistent=True) == "vehicle_intrusion"
     assert classify_event_type("cow", persistent=False) == "animal_intrusion"
     assert classify_event_type("cow", persistent=True) == "persistent_animal_presence"
     assert classify_event_type("elephant", persistent=False) == "animal_intrusion"

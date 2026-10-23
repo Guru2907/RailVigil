@@ -21,9 +21,9 @@ about one frame at a time.
 
 import cv2
 
-from app.cv.common.tracker import Tracker
-from app.cv.common.zone_geometry import bbox_feet_point, point_in_zone, penetration_ratio
 from app.cv.common.snapshots import save_snapshot
+from app.cv.common.tracker import Tracker
+from app.cv.common.zone_geometry import bbox_feet_point, penetration_ratio, point_in_zone
 from app.cv.intrusion.temporal_engine import TemporalEngine
 
 # BGR colours (OpenCV order).

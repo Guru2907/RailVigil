@@ -1,0 +1,25 @@
+# Store text with LF in the repository and check it out with LF everywhere,
+# so Windows and Linux machines produce identical diffs.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files: never diff or convert.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.mkv binary
+*.webm binary
+*.pt binary
+*.onnx binary
+*.db binary
+*.pdf binary

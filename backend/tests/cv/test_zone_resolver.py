@@ -7,7 +7,6 @@ from app.core.errors import ValidationFailed
 from app.core.errors import ZoneUnavailable
 from app.cv.common.zones import AutoZoneProvider, ResolvedZone, ZoneResolver, stored_zone_to_pixels
 
-
 PIXEL_ZONE = [[10, 10], [200, 10], [200, 150], [10, 150]]
 NORMALIZED_ZONE = [[0.03125, 1 / 24], [0.625, 1 / 24], [0.625, 0.625], [0.03125, 0.625]]
 

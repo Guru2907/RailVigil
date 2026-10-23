@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.core.errors import ValidationFailed
+from app.core.errors import ZoneUnavailable
 from app.cv.intrusion.video_processor import process_video
 
 
@@ -62,7 +62,7 @@ def test_pipeline_rejects_missing_zone_instead_of_using_full_frame(tmp_path):
             video_id="missing-zone",
             output_video_path=str(tmp_path / "annotated.mp4"),
         )
-    except ValidationFailed as exc:
+    except ZoneUnavailable as exc:
         assert "No railway safety zone" in exc.message
     else:
         raise AssertionError("missing zone must not silently become the full frame")

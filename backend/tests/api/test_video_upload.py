@@ -7,6 +7,7 @@ upload stays `queued` and these tests are deterministic.
 import json
 
 import pytest
+from conftest import get_video
 from fastapi.testclient import TestClient
 
 from app.core import config
@@ -14,7 +15,6 @@ from app.main import app
 from app.services import job_queue
 from app.services.job_queue import JobQueue
 from app.utils.file_utils import raw_dir
-from conftest import get_video
 
 SQUARE = [[10, 10], [200, 10], [200, 150], [10, 150]]   # fits the 320x240 synthetic video
 
@@ -188,10 +188,12 @@ def test_camera_label_too_long_is_422(client, synthetic_video):
     assert r.status_code == 422
 
 
-def test_missing_fields_are_422(client, synthetic_video):
+def test_upload_without_zone_is_awaiting_zone(client, synthetic_video):
+    """Zone is optional at upload time; video parks as awaiting_zone."""
     with open(synthetic_video(), "rb") as f:
         r = client.post("/api/videos", files={"video": ("clip.mp4", f, "video/mp4")})
-    assert r.status_code == 422
+    assert r.status_code == 200
+    assert r.json()["status"] == "awaiting_zone"
 
 
 # --- back-pressure -----------------------------------------------------------------

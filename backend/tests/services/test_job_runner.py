@@ -7,6 +7,7 @@ tests need no model weights and run in milliseconds.
 from pathlib import Path
 
 import pytest
+from conftest import count_incidents, get_video, make_video_row
 from sqlalchemy import update
 
 from app.core import config
@@ -16,7 +17,6 @@ from app.db.database import SessionLocal
 from app.db.models.video import Video
 from app.db.repositories import video_repository
 from app.services import job_runner
-from conftest import count_incidents, get_video, make_video_row
 
 
 def _incident(track_id=1):

@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# pycodestyle errors, pyflakes, import order, bugbear, pyupgrade
+select = ["E", "F", "I", "B", "UP"]
+# FastAPI's Depends()/File()/Form() in parameter defaults is the intended pattern.
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+# The backend/alembic/ migrations folder would otherwise make ruff treat the
+# alembic package as first-party.
+known-third-party = ["alembic"]

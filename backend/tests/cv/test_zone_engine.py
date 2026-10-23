@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from app.cv.common.zone_geometry import bbox_feet_point, point_in_zone, zone_mask, penetration_ratio
+from app.cv.common.zone_geometry import bbox_feet_point, penetration_ratio, point_in_zone, zone_mask
 
 
 def test_bbox_feet_point_is_bottom_center():

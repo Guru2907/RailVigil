@@ -7,6 +7,10 @@ railvigil.db or the real outputs/ folder.
 
 (MODELS_DIR is left alone on purpose: the one end-to-end test that runs real
 YOLO needs the real weights file.)
+
+Database: a throwaway SQLite file by default. Set TEST_DATABASE_URL to run the
+same suite against PostgreSQL (backend/scripts/test_postgres.ps1 does this
+from backend/.env); that database's tables are emptied between tests.
 """
 
 import json
@@ -20,7 +24,7 @@ import numpy as np
 import pytest
 
 _TMP = Path(tempfile.mkdtemp(prefix="railvigil-tests-"))
-os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP / 'test.db').as_posix()}"
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{(_TMP / 'test.db').as_posix()}"
 os.environ["DATA_DIR"] = str(_TMP / "data")
 os.environ["OUTPUTS_DIR"] = str(_TMP / "outputs")
 os.environ["UPLOAD_DIR"] = str(_TMP / "uploads")

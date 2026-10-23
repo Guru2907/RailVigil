@@ -15,9 +15,51 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
       - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
-      - run: pytest
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      # Tests marked requires_weights need YOLO weights, which CI never downloads.
+      - run: pytest -m "not requires_weights"
+
+  # Same suite against PostgreSQL + PostGIS. The service container runs on
+  # GitHub's machine only; its user is a superuser, so migrations can enable PostGIS.
+  backend-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: railvigil
+          POSTGRES_PASSWORD: railvigil
+          POSTGRES_DB: railvigil_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U railvigil"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg2://railvigil:railvigil@localhost:5432/railvigil_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -m "not requires_weights"
 
   frontend:
     runs-on: ubuntu-latest
@@ -30,7 +72,7 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: frontend/package.json
-      - run: npm install
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
       - run: npm run lint
       - run: npm run build

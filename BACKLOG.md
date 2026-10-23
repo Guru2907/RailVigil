@@ -4,9 +4,14 @@ Single place to track all planned work. Last updated: 2026-10-20.
 
 ## Scope (read this first)
 
-**In scope for this product (and for PR #1):** railway **intrusion detection** — people, animals, and vehicles entering or approaching configured track-side safety zones.
+RailVigil has two separate modules (see `docs/decisions/ADR-0003-separate-modules.md`):
 
-**Out of scope (separate feature / later PRs):** physical encroachment detection such as structures, vegetation growth, debris, or other static right-of-way changes. Do not mix that terminology into intrusion incidents or Stage 2 work.
+- **Physical encroachment** (main module, owner Gurpreet): structures, vegetation, debris and dumped material on or beside railway land, from images. In development — `docs/ENCROACHMENT_SPEC.md`.
+- **Intrusion** (owner Siddeshwar): people and vehicles entering configured track-side safety zones in video. Stages 0–2 below are this module — `docs/INTRUSION_SPEC.md`.
+
+Keep the terminology separate: intrusion events are never called encroachment and vice versa.
+
+**v2 build order** (both modules, Postgres+PostGIS, GIS map, reports) is in `docs/ARCHITECTURE.md`. Stages 3–6 below are the earlier intrusion-only plan and will be merged into the v2 phases.
 
 ## Working rules
 - One branch per stage (`stage-N/<short-name>`). **No commit and no push unless the owner says so.**
@@ -205,7 +210,7 @@ Branch: `stage-6/polish`
 | D4 | Replay Studio (instant re-scoring on stored tracks): build or skip? | before Stage 4 | Skip; compute metrics with the Stage 5 script instead |
 
 ## Parked ideas (not in scope; only if everything above is done)
-Time-to-clear vs train ETA · camera drift detection · trajectory intent · live RTSP monitoring · alerts (Telegram/email) · analytics heatmaps · Claude-written incident summaries · hotspot prediction · **physical encroachment** (structures / vegetation / debris).
+Time-to-clear vs train ETA · camera drift detection · trajectory intent · live RTSP monitoring · alerts (Telegram/email) · analytics heatmaps · Claude-written incident summaries · hotspot prediction.
 Reason parked: the agreed scope is reliable **intrusion** detection done correctly, not extra features.
 
 ## Bug index
