@@ -58,7 +58,7 @@ class JobQueue:
     def __init__(self, runner=None, tracker_factory=None, recover=None, worker_count: int | None = None):
         # Injected so tests can run the real queue with a fake runner and no model.
         self._runner = runner or job_runner.run_job
-        self._tracker_factory = tracker_factory or Tracker
+        self._tracker_factory = tracker_factory or (lambda: Tracker(class_filter=config.INTRUSION_CLASSES))
         self._recover = recover or job_runner.recover_unfinished_jobs
         self._worker_count = worker_count
 

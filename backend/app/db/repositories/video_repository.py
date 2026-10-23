@@ -16,16 +16,17 @@ from app.db.models.video import Video
 
 
 def create_video(db: Session, filename: str, original_filename: str,
-                  zone_json: str, camera_label: str | None = None,
+                  zone_json: str | None, camera_label: str | None = None,
                   fps: float | None = None, width: int | None = None,
-                  height: int | None = None, duration_sec: float | None = None) -> Video:
+                  height: int | None = None, duration_sec: float | None = None,
+                  status: str = "queued") -> Video:
     video = Video(
         filename=filename,
         original_filename=original_filename,
         zone_json=zone_json,
         camera_label=camera_label,
         fps=fps, width=width, height=height, duration_sec=duration_sec,
-        status="queued",
+        status=status,
     )
     db.add(video)
     db.commit()
@@ -116,3 +117,14 @@ def list_unfinished(db: Session) -> list[Video]:
         .order_by(Video.created_at.asc())
         .all()
     )
+
+
+def assign_zone_and_queue(db: Session, video_id: str, zone_json: str) -> bool:
+    """awaiting_zone -> queued with a stored zone. Returns False if not awaiting_zone."""
+    result = db.execute(
+        update(Video)
+        .where(Video.id == video_id, Video.status == "awaiting_zone")
+        .values(status="queued", zone_json=zone_json, progress=0.0, error=None)
+    )
+    db.commit()
+    return result.rowcount == 1

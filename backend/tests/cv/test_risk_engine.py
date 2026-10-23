@@ -74,5 +74,6 @@ def test_event_type_classification():
     assert classify_event_type("bicycle", persistent=True) == "persistent_human_presence"
     assert classify_event_type("car", persistent=False) == "vehicle_intrusion"
     assert classify_event_type("car", persistent=True) == "vehicle_intrusion"  # vehicles stay vehicle_intrusion regardless
-    assert classify_event_type("cow", persistent=False) == "other_intrusion"
-    assert classify_event_type("cow", persistent=True) == "other_intrusion"
+    assert classify_event_type("cow", persistent=False) == "animal_intrusion"
+    assert classify_event_type("cow", persistent=True) == "persistent_animal_presence"
+    assert classify_event_type("elephant", persistent=False) == "animal_intrusion"

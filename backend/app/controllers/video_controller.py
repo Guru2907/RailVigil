@@ -19,3 +19,7 @@ def get_video_status(db: Session, video_id: str):
 
 def get_all_videos(db: Session):
     return video_repository.list_videos(db)
+
+
+def assign_zone(db: Session, video_id: str, zone_points):
+    return video_service.assign_zone(db, video_id, zone_points)

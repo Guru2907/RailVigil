@@ -6,7 +6,7 @@ from app.core import config
 
 
 class Detector:
-    def __init__(self, weights_path: str | None = None, class_filter=config.RELEVANT_CLASSES):
+    def __init__(self, weights_path: str | None = None, class_filter=None):
         self.model = YOLO(weights_path or config.MODEL_WEIGHTS)
         self.class_names = self.model.names
         self.class_filter = None if class_filter is None else frozenset(class_filter)

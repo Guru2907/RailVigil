@@ -29,7 +29,13 @@ CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.35"))
 
 # Classes included in railway intrusion detection. Anything YOLO detects
 # outside this set is ignored (e.g. "chair", "clock" from COCO).
-RELEVANT_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle"}
+INTRUSION_CLASSES = {
+    "person", "bicycle", "car", "motorcycle", "bus", "truck",
+    "cow", "dog", "horse", "sheep", "elephant",
+}
+
+# Provisional IoU for continuing an event after a ByteTrack ID switch.
+ID_MERGE_MIN_IOU = float(os.getenv("ID_MERGE_MIN_IOU", "0.3"))
 
 # --- frame sampling / confirmation -----------------------------------
 # Provisional sampling threshold: only run YOLO on every Nth frame; this keeps CPU-only inference usable at
@@ -96,6 +102,11 @@ CLASS_RISK_FACTOR = {
     "car": 0.9,
     "bus": 0.95,
     "truck": 1.0,
+    "elephant": 1.0,  # provisional: large wildlife on track
+    "cow": 0.9,       # provisional: cattle strikes common
+    "horse": 0.85,
+    "sheep": 0.7,
+    "dog": 0.65,
 }
 
 # Provisional severity bands on the 0-100 score. Chosen so that, with the factors

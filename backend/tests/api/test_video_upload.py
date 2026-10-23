@@ -87,15 +87,18 @@ def test_upload_uses_camera_zone_when_manual_and_sidecar_are_absent(
     assert stored["source"] == "camera"
 
 
-def test_upload_without_any_zone_source_is_rejected(client, synthetic_video, monkeypatch):
+def test_upload_without_any_zone_source_awaits_zone(client, synthetic_video, monkeypatch):
     monkeypatch.delenv("CAMERA_ZONES", raising=False)
-    before = files_on_disk()
 
     response = upload(client, synthetic_video(), zone=None)
 
-    assert response.status_code == 422
-    assert "No railway safety zone" in response.json()["detail"]
-    assert files_on_disk() == before
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "awaiting_zone"
+    assert body["has_output"] is False
+    assert "output_video_path" not in body
+    video = get_video(body["id"])
+    assert video.zone_json is None
 
 
 def test_status_endpoint_reports_progress_field(client, synthetic_video):
@@ -213,3 +216,32 @@ def test_annotated_file_is_409_until_done(client, synthetic_video):
     r = client.get(f"/api/videos/{vid}/file")
     assert r.status_code == 409
     assert "queued" in r.json()["detail"]
+
+
+def test_put_zone_queues_awaiting_video(client, synthetic_video, monkeypatch):
+    monkeypatch.delenv("CAMERA_ZONES", raising=False)
+    created = upload(client, synthetic_video(), zone=None).json()
+    assert created["status"] == "awaiting_zone"
+
+    r = client.put(f"/api/videos/{created['id']}/zone", json={"zone_points": SQUARE})
+    assert r.status_code == 200
+    assert r.json()["status"] == "queued"
+    assert get_video(created["id"]).zone_json is not None
+
+
+def test_put_zone_404_409_422(client, synthetic_video, monkeypatch):
+    monkeypatch.delenv("CAMERA_ZONES", raising=False)
+    assert client.put("/api/videos/nope/zone", json={"zone_points": SQUARE}).status_code == 404
+
+    queued = upload(client, synthetic_video(), zone=SQUARE).json()
+    assert client.put(f"/api/videos/{queued['id']}/zone", json={"zone_points": SQUARE}).status_code == 409
+
+    waiting = upload(client, synthetic_video(), zone=None).json()
+    bad = client.put(f"/api/videos/{waiting['id']}/zone", json={"zone_points": [[0, 0], [1, 1]]})
+    assert bad.status_code == 422
+
+
+def test_video_out_exposes_has_output_not_path(client, synthetic_video):
+    body = upload(client, synthetic_video(), zone=SQUARE).json()
+    assert "output_video_path" not in body
+    assert body["has_output"] is False

@@ -88,7 +88,7 @@ def process_video(video_path: str, zone_points: list | dict | None, video_id: st
         cap.release()
         raise
 
-    tracker = tracker or Tracker(class_filter=config.RELEVANT_CLASSES)
+    tracker = tracker or Tracker(class_filter=config.INTRUSION_CLASSES)
     tracker.reset()  # never inherit ids from a previous video
     temporal_engine = TemporalEngine()
     zmask = zone_mask(zone_poly, (height, width))  # rasterized once, reused every frame

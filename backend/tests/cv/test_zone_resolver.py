@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from app.core.errors import ValidationFailed
+from app.core.errors import ZoneUnavailable
 from app.cv.common.zones import AutoZoneProvider, ResolvedZone, ZoneResolver, stored_zone_to_pixels
 
 
@@ -102,7 +103,7 @@ def test_normalized_record_preserves_source():
 
 
 def test_missing_zone_fails_instead_of_using_full_frame():
-    with pytest.raises(ValidationFailed, match="No railway safety zone"):
+    with pytest.raises(ZoneUnavailable, match="No railway safety zone"):
         ZoneResolver(camera_zones={}).resolve(320, 240)
 
 
