@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.core import config
-from app.core.errors import ValidationFailed
+from app.core.errors import ValidationFailed, ZoneUnavailable
 from app.utils.zone_validation import parse_zone_points, validate_zone_in_frame
 
 
@@ -174,7 +174,7 @@ class ZoneResolver:
         zone = self.auto.resolve(width, height)
         if zone is not None:
             return zone
-        raise ValidationFailed(
+        raise ZoneUnavailable(
             "No railway safety zone is available. Draw a zone, provide a .zone.json "
             "sidecar, or configure a zone for this camera."
         )

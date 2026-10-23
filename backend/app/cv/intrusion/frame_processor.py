@@ -71,6 +71,7 @@ class FrameProcessor:
             obj["state"] = self.temporal_engine.observe(
                 track_id=obj["track_id"], object_class=obj["class_name"],
                 frame_idx=frame_idx, ts_sec=ts_sec, penetration=penetration,
+                bbox=obj["bbox"],
             )
 
         # Any active track NOT seen inside this frame starts (or continues)

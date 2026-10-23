@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { uploadVideo, getVideo, getAnnotatedVideoUrl, getIncidentSnapshotUrl } from "../../api/videos.js";
+import { uploadVideo, assignVideoZone, getVideo, getAnnotatedVideoUrl, getIncidentSnapshotUrl } from "../../api/videos.js";
 import TrainLoader from "../../components/video/TrainLoader.jsx";
 
 const ACCEPTED_EXT = [".mp4", ".avi", ".mov"];
@@ -51,6 +51,7 @@ export default function VideoAnalysis() {
 
   const zoneReady = !drawing && points.length >= 3;
   const analysisStarted = Boolean(videoId);
+  const awaitingZone = job?.status === "awaiting_zone";
   const finished = job?.status === "done" || job?.status === "failed";
   const incidents = [...(job?.incidents ?? [])].sort((a, b) => b.risk_score - a.risk_score);
   const highRisk = incidents.filter((i) => ["HIGH", "CRITICAL"].includes((i.severity || "").toUpperCase())).length;
@@ -73,10 +74,28 @@ export default function VideoAnalysis() {
     setError("");
     setSubmitting(true);
     try {
-      const zone = points.map((p) => [Math.round(p.x * meta.width), Math.round(p.y * meta.height)]);
+      const zone = zoneReady
+        ? points.map((p) => [Math.round(p.x * meta.width), Math.round(p.y * meta.height)])
+        : null;
       const created = await uploadVideo(file, zone);
       setVideoId(created.id);
       setJob(created);
+    } catch (e) {
+      const detail = e?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : e.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleAssignZone() {
+    if (!videoId || !zoneReady || !meta) return;
+    setError("");
+    setSubmitting(true);
+    try {
+      const zone = points.map((p) => [Math.round(p.x * meta.width), Math.round(p.y * meta.height)]);
+      const updated = await assignVideoZone(videoId, zone);
+      setJob(updated);
     } catch (e) {
       const detail = e?.response?.data?.detail;
       setError(typeof detail === "string" ? detail : e.message);
@@ -413,12 +432,31 @@ export default function VideoAnalysis() {
               {/* Start analysis + status */}
               <div className="mt-6">
                 {!analysisStarted ? (
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleAnalyze}
+                      disabled={!meta || submitting}
+                      className="w-full rounded-full bg-tactical-dark text-white font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    >
+                      {submitting
+                        ? "Uploading…"
+                        : zoneReady
+                          ? "Start analysis"
+                          : "Upload without zone"}
+                    </button>
+                    {!zoneReady && (
+                      <p className="text-xs text-tactical-dark/50 text-center">
+                        You can draw the zone now or after upload.
+                      </p>
+                    )}
+                  </div>
+                ) : awaitingZone ? (
                   <button
-                    onClick={handleAnalyze}
+                    onClick={handleAssignZone}
                     disabled={!zoneReady || !meta || submitting}
                     className="w-full rounded-full bg-tactical-dark text-white font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
-                    {submitting ? "Uploading…" : "Start analysis"}
+                    {submitting ? "Saving zone…" : "Save zone & start analysis"}
                   </button>
                 ) : (
                   <div className="rounded-2xl bg-white border border-black/5 p-4">

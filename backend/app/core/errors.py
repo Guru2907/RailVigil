@@ -24,6 +24,11 @@ class ValidationFailed(AppError):
     status_code = 422
 
 
+class ZoneUnavailable(AppError):
+    """No zone source available (not an invalid zone)."""
+    status_code = 422
+
+
 class UnsupportedMedia(AppError):
     status_code = 415
 

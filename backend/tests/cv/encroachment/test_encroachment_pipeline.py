@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from app.core.errors import ValidationFailed
+from app.core.errors import ValidationFailed, ZoneUnavailable
 from app.cv.encroachment.detector import Detection
 from app.cv.encroachment.pipeline import analyze_image, load_image
 from app.cv.encroachment.taxonomy import STRUCTURE_TEMPORARY, VEGETATION
@@ -83,7 +83,7 @@ def test_sidecar_zone_is_used_when_no_zone_is_given(photo):
 
 def test_no_zone_is_rejected_never_whole_image(photo):
     detector = FakeDetector([HUT])
-    with pytest.raises(ValidationFailed, match="No railway safety zone"):
+    with pytest.raises(ZoneUnavailable, match="No railway safety zone"):
         analyze_image(photo, detector)
     assert not hasattr(detector, "seen_shape")   # detection never ran
 

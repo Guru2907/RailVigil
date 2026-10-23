@@ -1,12 +1,21 @@
 import axiosClient, { API_BASE_URL } from "./axiosClient.js";
 
-// zonePoints: [[x, y], ...] in video pixel coordinates
+// zonePoints: [[x, y], ...] in video pixel coordinates (optional)
 export async function uploadVideo(file, zonePoints, cameraLabel) {
   const form = new globalThis.FormData();
   form.append("video", file);
-  form.append("zone_points", JSON.stringify(zonePoints));
+  if (zonePoints && zonePoints.length >= 3) {
+    form.append("zone_points", JSON.stringify(zonePoints));
+  }
   if (cameraLabel) form.append("camera_label", cameraLabel);
   const { data } = await axiosClient.post("/videos", form);
+  return data;
+}
+
+export async function assignVideoZone(videoId, zonePoints) {
+  const { data } = await axiosClient.put(`/videos/${videoId}/zone`, {
+    zone_points: zonePoints,
+  });
   return data;
 }
 

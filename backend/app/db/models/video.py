@@ -22,7 +22,7 @@ class Video(Base):
     filename = Column(String, nullable=False)           # stored filename on disk
     original_filename = Column(String, nullable=True)   # what the user uploaded
 
-    # Lifecycle:  queued -> processing -> done | failed
+    # Lifecycle:  awaiting_zone -> queued -> processing -> done | failed
     # A video is `queued` from the moment the upload is accepted. If the
     # server dies mid-job the row stays `processing`; startup recovery puts
     # it back to `queued` (see services/job_queue.py).

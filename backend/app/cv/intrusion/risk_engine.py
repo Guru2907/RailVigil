@@ -21,6 +21,7 @@ from app.core import config
 # the rider, not the bike.
 HUMAN_LIKE = {"person", "bicycle"}
 VEHICLE_LIKE = {"car", "truck", "bus", "motorcycle"}
+ANIMAL_LIKE = {"cow", "dog", "horse", "sheep", "elephant"}
 
 
 def compute_risk_score(max_penetration: float, dwell_time_sec: float, object_class: str) -> float:
@@ -64,4 +65,16 @@ def classify_event_type(object_class: str, persistent: bool) -> str:
         # Vehicles don't get a "persistent" variant: a car on the track is
         # an obstruction the moment it's there, however briefly.
         return "vehicle_intrusion"
+    if object_class in ANIMAL_LIKE:
+        return "persistent_animal_presence" if persistent else "animal_intrusion"
     return "other_intrusion"
+
+
+def class_group(object_class: str) -> str:
+    if object_class in HUMAN_LIKE:
+        return "human"
+    if object_class in VEHICLE_LIKE:
+        return "vehicle"
+    if object_class in ANIMAL_LIKE:
+        return "animal"
+    return "other"

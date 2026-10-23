@@ -14,7 +14,7 @@ from app.cv.common.detector import Detector
 
 
 class Tracker:
-    def __init__(self, detector: Detector | None = None, class_filter=config.RELEVANT_CLASSES):
+    def __init__(self, detector: Detector | None = None, class_filter=None):
         self.detector = detector or Detector(class_filter=class_filter)
         self.model = self.detector.model
         self.class_names = self.detector.class_names
