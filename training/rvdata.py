@@ -374,6 +374,31 @@ def class_remap(export_names: list[str]) -> dict[int, int]:
     return remap
 
 
+def coco_labels(data: dict) -> dict[str, list]:
+    """COCO segmentation export -> {image file name: [(class index, normalised outline)]}.
+    Classes are matched by name; a category with no annotations (Roboflow adds the
+    project itself as a parent category) is ignored. Polygons are kept as drawn; a
+    compressed mask (RLE) or missing outline falls back to its bounding box."""
+    used = {a["category_id"] for a in data["annotations"]}
+    cats = [c for c in data["categories"] if c["id"] in used]
+    remap = class_remap([c["name"] for c in cats])
+    cls_of = {c["id"]: remap[i] for i, c in enumerate(cats)}
+    images = {im["id"]: im for im in data["images"]}
+    out = {im["file_name"]: [] for im in data["images"]}
+    for ann in data["annotations"]:
+        im = images[ann["image_id"]]
+        w, h = im["width"], im["height"]
+        seg = ann.get("segmentation")
+        polys = [p for p in seg if len(p) >= 6] if isinstance(seg, list) else []
+        if not polys:
+            x, y, bw, bh = ann["bbox"]
+            polys = [[x, y, x + bw, y, x + bw, y + bh, x, y + bh]]
+        for p in polys:
+            out[im["file_name"]].append(
+                (cls_of[ann["category_id"]], [(px / w, py / h) for px, py in zip(p[0::2], p[1::2], strict=True)]))
+    return out
+
+
 _ID = re.compile(r"^([0-9a-f]{12})")
 
 
