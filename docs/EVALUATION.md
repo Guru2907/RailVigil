@@ -16,6 +16,12 @@
 ## Paper
 The draft paper's 96-track benchmark results are not backed by code or data in this repository. They must be reproduced from code added here or removed from the paper.
 
+## How to produce the numbers
+- **Trained model:** `training/evaluate.py --name <run>`. Ultralytics validation on the frozen **test** split gives mask and box precision, recall, mAP50 and mAP50-95 per class. Saved as `training/runs/<run>/eval_test.json`.
+- **Pretrained baseline:** `backend/scripts/evaluate_baseline.py` runs the same photos through the baseline pipeline. It gives box AP50 per class, plus precision and recall at confidence 0.25. Compare it with the trained model's box mAP50.
+- **Ground truth must be human-corrected.** `import_labels.py` refuses uncorrected pre-labels, because measuring the baseline against its own guesses would be meaningless.
+- Each training run records the git commit and a dataset fingerprint (`railvigil_run.json`).
+
 ## Results log
 | Date | Module | Model / config | Test set | Metrics | Run |
 |---|---|---|---|---|---|

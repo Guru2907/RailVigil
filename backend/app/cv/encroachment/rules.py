@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 
 from app.core import config
 from app.cv.encroachment.detector import Detection
-from app.cv.encroachment.geometry import box_polygon, overlap_ratio
+from app.cv.encroachment.geometry import overlap_ratio
 from app.cv.encroachment.taxonomy import VEHICLE_PARKED
 
 SEVERITY_ORDER = ("low", "medium", "high", "critical")
@@ -59,6 +59,7 @@ class Finding:
     severity_score: float
     severity: str
     notes: list[str] = field(default_factory=list)
+    outline: list[tuple[float, float]] | None = None   # mask outline, when the model gave one
 
 
 def severity_for(score: float, bands: dict) -> str:
@@ -73,7 +74,7 @@ def classify_finding(det: Detection, zone, cfg: RuleConfig, zone_name: str = "Z3
     polygon in image pixels), otherwise None."""
     if det.confidence < cfg.min_confidence:
         return None
-    ratio, area = overlap_ratio(box_polygon(det.bbox), zone)
+    ratio, area = overlap_ratio(det.polygon(), zone)
     if ratio < cfg.min_overlap:
         return None
 
@@ -92,5 +93,5 @@ def classify_finding(det: Detection, zone, cfg: RuleConfig, zone_name: str = "Z3
         cls=det.cls, label=det.label, confidence=round(det.confidence, 4), bbox=det.bbox,
         sources=list(det.sources), zone_hit=zone_name,
         overlap_ratio=round(ratio, 4), overlap_area_px=round(area, 1),
-        severity_score=round(score, 4), severity=severity, notes=notes,
+        severity_score=round(score, 4), severity=severity, notes=notes, outline=det.outline,
     )

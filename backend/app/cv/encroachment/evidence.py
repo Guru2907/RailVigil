@@ -48,7 +48,12 @@ def annotate(image_bgr, zone_points, findings, detections):
     for i, f in enumerate(findings, start=1):
         colour = SEVERITY_COLOURS[f.severity]
         x1, y1, x2, y2 = _clip_box(f.bbox, w, h)
-        cv2.rectangle(out, (x1, y1), (x2, y2), colour, 2)
+        if f.outline:
+            # Segmentation model: draw the real object outline, box kept thin for reference
+            cv2.polylines(out, [np.array(f.outline, dtype=np.int32)], isClosed=True, color=colour, thickness=2)
+            cv2.rectangle(out, (x1, y1), (x2, y2), colour, 1)
+        else:
+            cv2.rectangle(out, (x1, y1), (x2, y2), colour, 2)
         text = f"#{i} {f.cls} {f.severity} {f.confidence:.2f}"
         cv2.putText(out, text, (x1, max(12, y1 - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 2)
     return out
@@ -77,7 +82,8 @@ def write_evidence(out_dir, image_path, image_bgr, zone_points, zone_source, fin
         "width": w,
         "height": h,
         "generated_at": datetime.now(UTC).isoformat(),
-        "note": "Baseline pretrained models, accuracy not measured. Potential encroachments for officer review.",
+        "note": ("Potential encroachments for officer review. Pretrained baseline: accuracy not measured; "
+                 "trained models: see docs/EVALUATION.md."),
         "models": models,
         "zone": {"source": zone_source, "points_px": zone_points},
         "detections_total": len(detections),

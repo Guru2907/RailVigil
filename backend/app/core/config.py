@@ -166,6 +166,8 @@ ENC_MODELS = [m.strip() for m in os.getenv("ENC_MODELS", "oiv7-v8s,world-v8s-rai
 ENC_MODEL_MIN_CONFIDENCE = {
     "oiv7-v8s": float(os.getenv("ENC_MIN_CONFIDENCE_OIV7", "0.25")),
     "world-v8s-railvigil": float(os.getenv("ENC_MIN_CONFIDENCE_WORLD", "0.10")),
+    # Provisional until chosen from the evaluation run (docs/EVALUATION.md).
+    "railvigil-seg": float(os.getenv("ENC_MIN_CONFIDENCE_SEG", "0.25")),
 }
 # Rule-level floor: no finding below this confidence, whichever model produced it.
 ENC_MIN_CONFIDENCE = float(os.getenv("ENC_MIN_CONFIDENCE", "0.10"))

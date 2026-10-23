@@ -1,0 +1,4 @@
+# Training tools (installed by setup_training.ps1 after the CUDA build of torch).
+ultralytics==8.4.161
+shapely==2.2.0
+PyYAML>=6.0

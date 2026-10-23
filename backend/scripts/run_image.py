@@ -86,7 +86,10 @@ def main() -> int:
             print(f"  #{i} {f.cls:<20} {f.severity:<8} score {f.severity_score:.2f}  "
                   f"inside {f.overlap_ratio:.0%}  conf {f.confidence:.2f}  ({f.label}){note}")
     print(f"\n{total} potential encroachment(s) in {len(images)} image(s). Evidence: {args.out}")
-    print("Baseline pretrained models; accuracy not measured. Findings need officer review.")
+    if "railvigil-seg" in config.ENC_MODELS:
+        print("Trained RailVigil model; its measured accuracy is in docs/EVALUATION.md. Findings need officer review.")
+    else:
+        print("Baseline pretrained models; accuracy not measured. Findings need officer review.")
     return 0
 
 

@@ -88,6 +88,8 @@ WORLD_MODEL_PROMPTS = (*WORLD_PROMPTS, *WORLD_DISTRACTORS)
 LABEL_MAPS = {
     "oiv7-v8s": OIV7_LABELS,
     "world-v8s-railvigil": WORLD_PROMPTS,
+    # The trained model's classes are RailVigil's own classes.
+    "railvigil-seg": {c: c for c in CLASSES},
 }
 
 
