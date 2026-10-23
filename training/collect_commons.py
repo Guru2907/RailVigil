@@ -14,9 +14,11 @@ Title, author, licence and the file page are recorded in the manifest. No accoun
 import argparse
 import html
 import re
+import sys
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 import rvdata as rv
@@ -54,14 +56,17 @@ MIN_WIDTH = 800
 
 
 def api(params):
+    error = None
     for attempt in range(4):
         try:
-            r = requests.get(API, params={"format": "json", "formatversion": 2, **params}, headers=HEADERS, timeout=60)
+            r = requests.get(API, params={"action": "query", "format": "json", "formatversion": 2, **params},
+                             headers=HEADERS, timeout=60)
             r.raise_for_status()
             return r.json()
-        except requests.RequestException:
+        except requests.RequestException as exc:
+            error = exc
             time.sleep(3 * (attempt + 1))
-    raise SystemExit("Wikimedia Commons is unavailable right now; try again later.")
+    raise SystemExit(f"Wikimedia Commons request failed: {error}")
 
 
 FILE_PROPS = {
@@ -143,6 +148,7 @@ def search_pages(query, max_results=150):
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # photo titles in any language
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--limit", type=int, default=100, help="new photos to add")
     args = p.parse_args()
@@ -171,7 +177,8 @@ def main() -> None:
         resp = requests.get(url, headers=HEADERS, timeout=120)
         if not resp.ok:
             continue
-        path = tmp / f"commons_{len(seen)}{Path(url).suffix.lower() or '.jpg'}"
+        # Thumbnail URLs carry tracking parameters (?utm_source=...): take the suffix from the path only.
+        path = tmp / f"commons_{len(seen)}{Path(urlparse(url).path).suffix.lower() or '.jpg'}"
         path.write_bytes(resp.content)
         if rv.register_image(path, meta, rows, known):
             added += 1

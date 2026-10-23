@@ -19,6 +19,7 @@ Rules:
 
 import argparse
 import json
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -55,6 +56,7 @@ def same_frame(width, height, ann_w, ann_h, tolerance=0.02) -> bool:
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # photo titles in any language
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--limit", type=int, default=400)
     args = p.parse_args()

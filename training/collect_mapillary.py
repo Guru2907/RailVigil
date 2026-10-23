@@ -6,8 +6,9 @@
 For each city: railway lines come from OpenStreetMap (Overpass API). Points
 every ~250 m along them are searched on Mapillary, and a photo is kept only if:
   - it is not a panorama;
-  - it was taken within 40 m of a track and the camera faces the track
-    (or it stands on the track);
+  - it was taken ON the track (within 8 m: from a train or at a level
+    crossing). Photos from roads beside the track were tried first and almost
+    never show it (walls, buildings, flyovers block the view);
   - it lies inside India (rvdata.in_india);
   - it is at least 100 m from photos already kept (spread, not 30 frames of one spot).
 
@@ -20,6 +21,7 @@ import argparse
 import json
 import math
 import random
+import sys
 import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -50,7 +52,7 @@ USER_AGENT = "RailVigil-dataset/0.1 (academic project; https://github.com/Guru29
 
 SAMPLE_EVERY_M = 250
 SEARCH_RADIUS_DEG = 0.0004   # ~45 m box around each sample point
-MAX_TRACK_DIST_M = 40
+MAX_TRACK_DIST_M = 8         # on the track: taken from a train or at a level crossing
 ON_TRACK_M = 8               # closer than this: any camera direction is fine
 MAX_ANGLE_DEG = 70           # camera direction vs direction to the nearest track point
 MIN_SPACING_M = 100
@@ -196,6 +198,7 @@ def search_many(token, lonlats, in_flight=8):
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # photo titles in any language
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--cities", default=",".join(CITIES))
     p.add_argument("--per-city", type=int, default=35)
