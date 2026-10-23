@@ -1,0 +1,9 @@
+{
+  "clip": "empty_or_train.mp4",
+  "description": "Empty track or a train / rolling stock passing through the zone (negative).",
+  "incident_count": {"min": 0, "max": 0},
+  "object_classes": [],
+  "event_types": [],
+  "min_dwell_sec": 0.0,
+  "notes": "No intrusion incidents. Trains must not be counted as intrusions."
+}

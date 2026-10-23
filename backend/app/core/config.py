@@ -27,8 +27,12 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'railvigil.db'}
 
 # --- YOLO / detection -----------------------------------------------
 MODEL_WEIGHTS = os.getenv("MODEL_WEIGHTS", str(MODELS_DIR / "yolov8n.pt"))
-# Provisional confidence threshold; validate against labeled railway footage.
+# Confidence threshold (candidate). Validate via scripts/evaluate_intrusion.py;
+# record the justifying run in docs/EVALUATION.md before calling it final.
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.35"))
+
+# Outside-repo folder of golden regression clips + .zone.json sidecars (issue #3 A).
+GOLDEN_CLIPS_DIR = os.getenv("GOLDEN_CLIPS_DIR", "")
 
 # Classes included in railway intrusion detection. Anything YOLO detects
 # outside this set is ignored (e.g. "chair", "clock" from COCO).
@@ -37,21 +41,22 @@ INTRUSION_CLASSES = {
     "cow", "dog", "horse", "sheep", "elephant",
 }
 
-# Provisional IoU for continuing an event after a ByteTrack ID switch.
+# IoU for continuing an event after a ByteTrack ID switch (candidate;
+# calibrate with evaluate_intrusion.py / ID-switch unit tests).
 ID_MERGE_MIN_IOU = float(os.getenv("ID_MERGE_MIN_IOU", "0.3"))
 
 # --- frame sampling / confirmation -----------------------------------
-# Provisional sampling threshold: only run YOLO on every Nth frame; this keeps CPU-only inference usable at
+# Sampling interval (candidate): only run YOLO on every Nth frame; this keeps CPU-only inference usable at
 # something close to real time. The frames in between are still drawn
 # (zone + last known boxes) so the output video doesn't flicker; they
 # just don't get fresh detections. Lower = smoother tracking, slower.
+# Final value must be justified in docs/EVALUATION.md results log.
 FRAME_SAMPLE_INTERVAL = int(os.getenv("FRAME_SAMPLE_INTERVAL", "3"))
 
-# Provisional threshold: an object must stay inside the zone for at least this many SECONDS
-# video time before it's confirmed as a real event (anti-flicker: a
-# one-off false detection never becomes an incident). Measured in
-# seconds — NOT sampled frames — so behaviour is the same whatever the
-# video's fps or FRAME_SAMPLE_INTERVAL happen to be.
+# Confirmation dwell (candidate, default 0.6 s). An object must stay inside
+# the zone for at least this many SECONDS of video time before it's
+# confirmed (anti-flicker). Measured in seconds — NOT sampled frames.
+# Paper draft mentions ~3 s; do not adopt until a measured eval run supports it.
 CONFIRM_DWELL_SEC = float(os.getenv("CONFIRM_DWELL_SEC", "0.6"))
 
 # When a tracked object stops being seen inside the zone we do NOT close
@@ -60,13 +65,13 @@ CONFIRM_DWELL_SEC = float(os.getenv("CONFIRM_DWELL_SEC", "0.6"))
 # into several incidents. The event is closed only once the object has
 # been missing for longer than this. Dwell time still only counts up to
 # the last real sighting, so the grace window itself is never added.
-# Provisional threshold; tune against labeled footage before deployment.
+# Candidate; tune with --sweep miss_grace and log the run in EVALUATION.md.
 MISS_GRACE_SEC = float(os.getenv("MISS_GRACE_SEC", "1.0"))
 
 # --- temporal reasoning -------------------------------------------------
-# Provisional threshold; dwell above this is labeled persistent presence.
-# Short for demo purposes; this value would be much longer in real
-# deployment (documented in the paper's limitations section).
+# Dwell above this is labeled persistent presence (candidate).
+# Short for demo purposes; real deployment would be longer
+# (documented in the paper's limitations section).
 PERSISTENT_DWELL_THRESHOLD_SEC = float(os.getenv("PERSISTENT_DWELL_THRESHOLD_SEC", "8.0"))
 
 # Optional camera-label to normalized-zone map, supplied as JSON in the environment.
@@ -87,17 +92,18 @@ PERSISTENT_DWELL_THRESHOLD_SEC = float(os.getenv("PERSISTENT_DWELL_THRESHOLD_SEC
 # The earlier additive formula (+ w_class * class_weight) handed out
 # 15-24 points just for existing, which made "low" unreachable for
 # vehicles and pushed almost every incident to "medium" or above.
-# Provisional risk weights and thresholds; calibrate on labeled footage.
+# Risk weights (candidates); calibrate on labeled footage and log in EVALUATION.md.
 RISK_WEIGHTS = {
     "penetration": float(os.getenv("RISK_WEIGHT_PENETRATION", "0.6")),
     "dwell": float(os.getenv("RISK_WEIGHT_DWELL", "0.4")),
 }
-# Provisional dwell time at which the dwell term saturates (= full weight).
+# Dwell time at which the dwell term saturates (= full weight). Candidate.
 RISK_DWELL_NORM_SEC = float(os.getenv("RISK_DWELL_NORM_SEC", "15.0"))
 
-# Provisional per-class multiplier on the spatiotemporal base (0-1). A truck on the
+# Per-class multiplier on the spatiotemporal base (0-1). A truck on the
 # track is a bigger hazard than a person, all else equal. Keep the top
-# class at 1.0 so the 0-100 scale is actually reachable.
+# class at 1.0 so the 0-100 scale is actually reachable. Animal factors
+# are candidates pending labelled animal clips in the eval set.
 CLASS_RISK_FACTOR = {
     "person": 0.8,
     "bicycle": 0.75,
@@ -105,14 +111,14 @@ CLASS_RISK_FACTOR = {
     "car": 0.9,
     "bus": 0.95,
     "truck": 1.0,
-    "elephant": 1.0,  # provisional: large wildlife on track
-    "cow": 0.9,       # provisional: cattle strikes common
+    "elephant": 1.0,  # large wildlife on track
+    "cow": 0.9,       # cattle strikes common on Indian railways
     "horse": 0.85,
     "sheep": 0.75,
     "dog": 0.7,  # >= 0.7 so max score can still reach "critical"
 }
 
-# Provisional severity bands on the 0-100 score. Chosen so that, with the factors
+# Severity bands on the 0-100 score (candidates). Chosen so that, with the factors
 # above, every band is reachable for every class (see tests/cv/test_risk_engine.py).
 SEVERITY_THRESHOLDS = {"critical": 70, "high": 40, "medium": 20}
 
