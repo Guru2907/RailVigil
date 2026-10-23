@@ -3,8 +3,8 @@
 ## Today (PostgreSQL + PostGIS, or SQLite fallback; Alembic head `9944f93555d3`)
 All `created_at` columns are timezone-aware (`timestamptz` on PostgreSQL) and stored as UTC.
 
-- `videos` — one upload and its job state: `status` (queued / processing / done / failed), `progress`, `attempts`, `error`, `zone_json` (normalized points + source), `camera_label`, fps/size/duration, `output_video_path`.
-- `incidents` — confirmed intrusion events per video (class, event type, severity, dwell, penetration, risk, snapshot path). Replaced as a whole when a video is re-run.
+- `videos` — one upload and its job state: `status` (`awaiting_zone` / queued / processing / done / failed), `progress`, `attempts`, `error`, `zone_json` (normalized points + source), `camera_label`, fps/size/duration, `output_video_path` (internal only; API exposes `has_output`).
+- `incidents` — confirmed intrusion events per video (class, event type, severity, dwell, penetration, risk, snapshot path). Replaced as a whole when a video is re-run. **Do not add columns here for issue #3 part C.**
 - `detections` — defined but never written; to be removed or used in v2.
 - `users` — defined but unused until authentication.
 

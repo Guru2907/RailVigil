@@ -1,0 +1,9 @@
+{
+  "clip": "two_people.mp4",
+  "description": "Two people in the safety zone (distinct tracks).",
+  "incident_count": {"min": 2, "max": 2},
+  "object_classes": ["person"],
+  "event_types": ["human_intrusion", "persistent_human_presence"],
+  "min_dwell_sec": 0.6,
+  "notes": "Expect two confirmed person events (one per person)."
+}

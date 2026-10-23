@@ -29,9 +29,17 @@ An **intrusion** is a person, vehicle, or animal that enters a configured track-
 
 None of these values has been validated on labelled footage yet. Final values come from the evaluation in [EVALUATION.md](EVALUATION.md).
 
+## Evaluation & regression (issue #3)
+- Labels: `datasets/intrusion/labels.csv` (rows must match real owner clips only)
+- Script: `backend/scripts/evaluate_intrusion.py`
+- Golden clips: set `GOLDEN_CLIPS_DIR`; tests in `backend/tests/regression/` marked `requires_weights` (skipped in CI)
+
 ## Known limitations
 - A tracker ID switch with IoU below `ID_MERGE_MIN_IOU` (or different class group) can still split one object into two events.
 - A fixed camera is assumed; the zone does not move with the camera.
 
+## Persistence (`intrusion_events`)
+Part C of issue #3 — still planned (see [DATA_MODEL.md](DATA_MODEL.md)). Until then results stay in `incidents`; do not add columns to `incidents` for that migration.
+
 ## Related
-Deferred zone upload flow: see [ZONES.md](ZONES.md). Regression / evaluation: issue #3.
+Deferred zone upload flow: see [ZONES.md](ZONES.md).

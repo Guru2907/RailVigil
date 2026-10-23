@@ -28,6 +28,10 @@ backend/uploads/*
 backend/storage/
 datasets/*
 !datasets/manifest.csv
+!datasets/intrusion/
+datasets/intrusion/*
+!datasets/intrusion/labels.csv
+!datasets/intrusion/README.md
 training/runs/
 training/weights/
 *.pt
