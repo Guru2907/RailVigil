@@ -24,8 +24,10 @@ class ValidationFailed(AppError):
     status_code = 422
 
 
-class ZoneUnavailable(AppError):
-    """No zone source available (not an invalid zone)."""
+class ZoneUnavailable(ValidationFailed):
+    """No zone source available (not an invalid zone). A ValidationFailed, so
+    callers that report validation problems per file still catch it; video
+    uploads catch it first to park the video as `awaiting_zone`."""
     status_code = 422
 
 

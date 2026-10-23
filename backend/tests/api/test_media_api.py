@@ -322,6 +322,14 @@ def test_bad_zone_or_location_is_422(api, tmp_path, form, needle):
     assert stored_media_folders() == set()
 
 
+def test_missing_zone_error_names_the_photo(api, tmp_path):
+    client, _ = api
+    path = photo(tmp_path)
+    r = upload(client, path, zone=None)
+    assert r.status_code == 422
+    assert f"'{Path(path).name}'" in r.json()["detail"]
+
+
 def test_unknown_media_and_missing_files_are_404(api):
     client, _ = api
     assert client.get("/api/media/nope").status_code == 404
