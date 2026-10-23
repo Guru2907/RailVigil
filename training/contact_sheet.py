@@ -35,9 +35,11 @@ def main() -> None:
     p.add_argument("--source", required=True)
     p.add_argument("--per-sheet", type=int, default=12)
     p.add_argument("--cols", type=int, default=4)
+    p.add_argument("--unlabelled", action="store_true", help="only photos without labels yet (new photos)")
     args = p.parse_args()
 
-    rows = [r for r in rv.read_manifest() if r["source"] == args.source]
+    rows = [r for r in rv.read_manifest() if r["source"] == args.source
+            and not (args.unlabelled and (rv.LABELS / f"{r['image_id']}.txt").exists())]
     out = rv.DATASETS / "review"
     out.mkdir(parents=True, exist_ok=True)
     for old in out.glob(f"{args.source}_*.jpg"):

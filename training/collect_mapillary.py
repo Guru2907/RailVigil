@@ -166,6 +166,35 @@ def _overpass_lines(selector, local, cache):
     return lines
 
 
+HDX_SAMPLE_EVERY_M = 1000  # whole states: spread the searches along many lines
+
+
+def _plain(name: str) -> str:
+    """'Bihār' -> 'bihar': HDX state names carry diacritics."""
+    import unicodedata
+
+    return "".join(c for c in unicodedata.normalize("NFKD", name) if not unicodedata.combining(c)).lower().strip()
+
+
+def hdx_lines(path, state: str) -> list[list[tuple[float, float]]]:
+    """Railway lines of one state from the HDX 'Railways of India' GeoJSON
+    (an OpenStreetMap export, so no busy Overpass server is needed), as lon/lat lists."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    want = _plain(state)
+    return [
+        [tuple(pt[:2]) for pt in f["geometry"]["coordinates"]]
+        for f in data["features"]
+        if f["geometry"]["type"] == "LineString" and f["properties"].get("railway") == "rail"
+        and _plain(f["properties"].get("adm1_name") or "") == want and len(f["geometry"]["coordinates"]) >= 2
+    ]
+
+
+def _line(local, lon_lats):
+    from shapely.geometry import LineString
+
+    return LineString([local.xy(lon, lat) for lon, lat in lon_lats])
+
+
 def sample_points(lines, every_m=SAMPLE_EVERY_M):
     pts = []
     for line in lines:
@@ -202,7 +231,9 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--cities", default=",".join(CITIES))
     p.add_argument("--per-city", type=int, default=35)
-    p.add_argument("--max-searches", type=int, default=600, help="Mapillary searches per city at most")
+    p.add_argument("--max-searches", type=int, default=600, help="Mapillary searches per area at most")
+    p.add_argument("--hdx", type=Path, help="HDX 'Railways of India' GeoJSON: search whole states instead of cities")
+    p.add_argument("--states", default="Uttar Pradesh,Bihar", help="with --hdx: comma-separated state names")
     args = p.parse_args()
 
     from shapely.geometry import Point
@@ -217,21 +248,34 @@ def main() -> None:
     seen_names = {r["original_name"] for r in rows if r["source"] == "mapillary"}
     tmp = Path(tempfile.mkdtemp(prefix="rv_mly_"))
 
-    for city in args.cities.split(","):
-        bbox = CITIES[city]
-        local = Local((bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2)
-        lines, bridges = city_lines(bbox, local, args.max_searches)
-        if not lines:
-            print(f"{city}: no railway data from OpenStreetMap, skipped")
-            continue
+    areas = []  # (name, local projection, railway lines, bridges, sample spacing)
+    if args.hdx:
+        for state in [s.strip() for s in args.states.split(",") if s.strip()]:
+            lon_lats = hdx_lines(args.hdx, state)
+            if not lon_lats:
+                print(f"{state}: no railway lines in {args.hdx}, skipped")
+                continue
+            lons = [x for line in lon_lats for x, _ in line]
+            lats = [y for line in lon_lats for _, y in line]
+            local = Local((min(lats) + max(lats)) / 2, (min(lons) + max(lons)) / 2)
+            areas.append((state, local, [_line(local, line) for line in lon_lats], [], HDX_SAMPLE_EVERY_M))
+    else:
+        for city in args.cities.split(","):
+            bbox = CITIES[city]
+            local = Local((bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2)
+            lines, bridges = city_lines(bbox, local, args.max_searches)
+            if not lines:
+                print(f"{city}: no railway data from OpenStreetMap, skipped")
+                continue
+            areas.append((city, local, lines, bridges, SAMPLE_EVERY_M))
+
+    for city, local, lines, bridges, spacing in areas:
         tree = STRtree(lines)
         bridge_tree = STRtree(bridges) if bridges else None
-        points = sample_points(lines)
+        points = sample_points(lines, spacing)
         random.Random(f"railvigil-{city}").shuffle(points)
-        s, w, n, e = bbox
         kept_xy = [local.xy(float(r["lon"]), float(r["lat"])) for r in rows
-                   if r["source"] == "mapillary" and r["lon"]
-                   and s <= float(r["lat"]) <= n and w <= float(r["lon"]) <= e]
+                   if r["source"] == "mapillary" and r["lon"] and r["location_source"] == f"mapillary:{city}"]
         added = searches = 0
         print(f"{city}: {len(lines)} railway lines, {len(bridges)} bridges, {len(points)} sample points")
         for found in search_many(token, [local.lonlat(pt.x, pt.y) for pt in points[: args.max_searches]]):
@@ -277,6 +321,8 @@ def main() -> None:
                     "captured_at": datetime.fromtimestamp(taken / 1000, UTC).isoformat() if taken else "",
                     "original_name": name,
                 }, rows, known)
+                if image_id:
+                    rows[-1]["location_source"] = f"mapillary:{city}"  # which area search found it
                 seen_names.add(name)
                 if image_id:
                     kept_xy.append((x, y))

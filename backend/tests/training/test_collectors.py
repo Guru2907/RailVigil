@@ -180,3 +180,12 @@ def test_taco_items_become_debris_and_tiny_items_are_dropped():
 def test_taco_rotated_downloads_are_detected():
     assert taco.same_frame(640, 480, 4000, 3000)
     assert not taco.same_frame(480, 640, 4000, 3000)
+
+
+def test_rejected_photos_are_never_added_again(dataset, tmp_path, monkeypatch):
+    monkeypatch.setattr(rv, "REJECTED", tmp_path / "rejected.txt")
+    path = _photo(dataset / "a.jpg", colour=(1, 2, 3))
+    rv.add_rejected([rv.image_id_for(path)], "off-topic")
+    assert rv.register_image(path, {"source": "wikimedia", "licence": "CC0"}, []) is None
+    rv.add_rejected([rv.image_id_for(path)])          # no duplicate lines
+    assert len((tmp_path / "rejected.txt").read_text().splitlines()) == 1

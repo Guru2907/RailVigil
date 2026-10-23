@@ -30,6 +30,8 @@ DATASETS = Path(os.getenv("RAILVIGIL_DATASETS", REPO / "datasets"))
 IMAGES = DATASETS / "images"
 LABELS = DATASETS / "labels"
 MANIFEST = DATASETS / "manifest.csv"
+# Photos removed after review. Collectors never add them again (same SHA-256 id).
+REJECTED = DATASETS / "rejected.txt"
 BUILD = DATASETS / "build" / "railvigil-seg"
 RUNS = Path(os.getenv("RAILVIGIL_RUNS", REPO / "training" / "runs"))
 WEIGHTS = REPO / "training" / "weights"
@@ -275,6 +277,22 @@ def split_leaks(rows: list[dict], same_place_m: float = SAME_PLACE_M) -> list[st
 
 # --- adding images ---------------------------------------------------------------
 
+def read_rejected(path: Path | None = None) -> set[str]:
+    path = path or REJECTED
+    if not path.is_file():
+        return set()
+    return {line.split()[0] for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
+
+
+def add_rejected(ids, reason: str = "", path: Path | None = None) -> None:
+    path = path or REJECTED
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new = [i for i in ids if i not in read_rejected(path)]
+    with path.open("a", encoding="utf-8") as f:
+        for i in new:
+            f.write(f"{i}\t{reason}\n")
+
+
 def register_image(src: Path, meta: dict, rows: list[dict], known: set[str] | None = None) -> str | None:
     """Copy one photo into datasets/images and append its manifest row to `rows`.
     `meta` holds source, licence, author, source_url and optionally lat/lon,
@@ -286,7 +304,7 @@ def register_image(src: Path, meta: dict, rows: list[dict], known: set[str] | No
         raise ValueError(f"{src}: no licence")
     known = known if known is not None else {r["image_id"] for r in rows}
     image_id = image_id_for(src)
-    if image_id in known:
+    if image_id in known or image_id in read_rejected():
         return None
     IMAGES.mkdir(parents=True, exist_ok=True)
     target = IMAGES / f"{image_id}{Path(src).suffix.lower() or '.jpg'}"

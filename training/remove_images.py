@@ -2,7 +2,8 @@
 
     python training/remove_images.py 0f47c8dc9867 2940a8d512f0 --reason "no track visible"
 
-Deletes the image file and any label, and drops the manifest row. The ids
+Deletes the image file and any label, drops the manifest row, and records the
+id in datasets/rejected.txt so no collector adds the same photo again. The ids
 are the 12-character names of the files in datasets/images.
 """
 
@@ -27,6 +28,7 @@ def main() -> None:
         else:
             keep.append(r)
     rv.write_manifest(keep)
+    rv.add_rejected([r["image_id"] for r in rows if r["image_id"] in drop], args.reason)
     removed = len(rows) - len(keep)
     print(f"Removed {removed} photo(s){f' ({args.reason})' if args.reason else ''}. Manifest: {len(keep)} photos.")
     missing = drop - {r["image_id"] for r in rows}

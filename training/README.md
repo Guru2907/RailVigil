@@ -28,7 +28,7 @@ Put each batch in its own folder under `datasets\incoming\` (git-ignored). Keep 
 | **Your own** (best) | Phone camera with **location on**. Take them from platforms, foot-over-bridges, level crossings or public roads, **never on the track**. | `own` |
 | Wikimedia Commons | Search e.g. "railway track India slum", "railway line encroachment". | The file's licence, e.g. `CC BY-SA 4.0` |
 | Mapillary | Street-level images near tracks (CC BY-SA). | `CC BY-SA 4.0` |
-| Flickr | Only photos with a Creative Commons licence. | The CC licence shown |
+| Flickr (manual only) | No free API key, so no collector. Hand-picked CC photos can be added with a `credits.csv`. | The CC licence shown |
 | TACO / Roboflow Universe | Extra garbage and debris examples. | The dataset's licence |
 
 **Also collect "clean" photos.** These show empty track and **legitimate railway structures** (signal cabins, relay huts, station sheds, platforms). They teach the model what *not* to flag.

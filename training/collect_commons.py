@@ -33,10 +33,22 @@ QUERIES = [
     "railway track Mumbai", "railway track Delhi", "railway track Kolkata", "railway track Chennai",
     "railway track Hyderabad", "railway track Bangalore", "level crossing India", "railway line huts India",
     "jhuggi railway", "railway track India houses",
+    # round 2: Uttar Pradesh and Bihar, plus more trackside scenes
+    "railway track Lucknow", "railway track Kanpur", "railway track Varanasi", "railway track Prayagraj",
+    "railway track Allahabad", "railway track Gorakhpur", "railway track Agra", "railway track Mathura",
+    "railway track Ghaziabad", "railway track Meerut", "railway track Bareilly", "railway track Jhansi",
+    "railway track Patna", "railway track Gaya", "railway track Muzaffarpur", "railway track Darbhanga",
+    "railway track Bhagalpur", "railway track Samastipur", "railway line Uttar Pradesh", "railway line Bihar",
+    "railway station Uttar Pradesh track", "railway station Bihar track", "slum railway Lucknow",
+    "slum railway Patna", "garbage railway line", "railway crossing village India", "railway track village India",
+    "railway track market India", "railway track shops India", "railway line houses Kolkata",
+    "railway track Mumbai suburban slum", "railway colony India", "railway track vegetation India",
 ]
 
 INDIA_WORDS = [
-    "india", "indian", "mumbai", "bombay", "delhi", "kolkata", "calcutta", "chennai", "madras", "bengaluru",
+    "india", "indian", "uttar pradesh", "varanasi", "prayagraj", "allahabad", "gorakhpur",
+    "mathura", "ghaziabad", "meerut", "bareilly", "jhansi", "gaya", "muzaffarpur", "darbhanga", "bhagalpur",
+    "samastipur", "bihar", "mumbai", "bombay", "delhi", "kolkata", "calcutta", "chennai", "madras", "bengaluru",
     "bangalore", "hyderabad", "secunderabad", "pune", "ahmedabad", "surat", "jaipur", "lucknow", "kanpur", "patna",
     "nagpur", "thane", "howrah", "dharavi", "bandra", "kerala", "kochi", "cochin", "goa", "assam", "guwahati",
     "odisha", "bhubaneswar", "maharashtra", "gujarat", "rajasthan", "punjab", "haryana", "uttar pradesh", "bihar",

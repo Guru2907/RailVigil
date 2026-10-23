@@ -9,7 +9,7 @@ Owner: Gurpreet. Images and labels are **not** committed (`datasets/` is git-ign
 | Own photos | Indian corridors, GPS on, known rights | Take them from platforms, overbridges or public roads — never by entering the track |
 | Mapillary API | Street-level images with GPS near level crossings and roadside track | CC BY-SA; keep attribution |
 | Wikimedia Commons | Often geotagged; categories for Indian railway lines and settlements along railways | Per-file licence; keep author and licence |
-| Flickr API | Creative-Commons images with geotags | Use CC-licensed images only |
+| Flickr | Not used: no free API keys are available (2026-10). Individual CC photos may still be added by hand with `add_images.py --credits` | CC-licensed images only |
 | RailSem19 | Rail and vegetation/building masks for the rail-track helper class | Research licence — check before use |
 | TACO, Roboflow Universe | Litter and debris examples | Per-dataset licence |
 
