@@ -17,7 +17,7 @@ import shutil
 
 import rvdata as rv
 
-from app.cv.encroachment.taxonomy import CLASSES
+CLASSES = rv.CLASSES
 
 
 def link(src, dst):

@@ -171,3 +171,22 @@ def test_evaluate_boxes_matches_each_ground_truth_once():
 
 def test_polygon_box():
     assert rv.polygon_box([(0.1, 0.2), (0.5, 0.2), (0.3, 0.6)], 100, 50) == pytest.approx((10, 10, 50, 30))
+
+
+def test_coco_segmentation_export_is_converted():
+    data = {
+        "images": [{"id": 1, "file_name": "ab12cd34ef56_jpg.rf.x.jpg", "width": 200, "height": 100},
+                   {"id": 2, "file_name": "ffffffffffff_jpg.rf.y.jpg", "width": 200, "height": 100}],
+        "categories": [{"id": 0, "name": "RailVigil-encroachment"}, {"id": 1, "name": "material_dump"},
+                       {"id": 2, "name": "vegetation"}],
+        "annotations": [
+            {"image_id": 1, "category_id": 1, "bbox": [0, 0, 1, 1], "segmentation": [[20, 10, 100, 10, 100, 50]]},
+            {"image_id": 1, "category_id": 2, "bbox": [10, 20, 40, 30],
+             "segmentation": {"counts": "abc", "size": [1, 1]}},
+        ],
+    }
+    out = rv.coco_labels(data)
+    assert out["ffffffffffff_jpg.rf.y.jpg"] == []                       # a "null" photo stays a clean negative
+    (c1, p1), (c2, p2) = out["ab12cd34ef56_jpg.rf.x.jpg"]
+    assert CLASSES[c1] == "material_dump" and p1[1] == pytest.approx((0.5, 0.1))
+    assert CLASSES[c2] == "vegetation" and p2[2] == pytest.approx((0.25, 0.5))  # RLE -> box corners

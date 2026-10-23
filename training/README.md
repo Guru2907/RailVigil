@@ -42,7 +42,22 @@ filename,source_url,author,licence
 img001.jpg,https://commons.wikimedia.org/wiki/File:...,Jane Doe,CC BY-SA 4.0
 ```
 
-## 2. Add them to the dataset
+### Automatic collectors (India only)
+
+```powershell
+& $T training\collect_mapillary.py --per-city 50   # street-level photos near tracks, 6 metros (needs MAPILLARY_TOKEN in training\.env)
+& $T training\collect_commons.py --limit 100       # freely licensed Wikimedia Commons photos
+& $T training\import_taco.py --limit 400           # TACO litter outlines -> debris_waste, TRAIN ONLY
+& $T training\remove_images.py <id> <id> --reason "no track visible"   # drop irrelevant photos after a look
+```
+
+- **Mapillary:** only photos taken on an OpenStreetMap railway line (within 8 m: from a train or at a level crossing), not on a road or foot bridge, at least 100 m apart. Photos from roads beside the track rarely show it. Licence CC BY-SA 4.0; the photographer is recorded.
+- **Commons:** only free licences (never NC or ND). Photos must be inside India by coordinates, or carry Indian place names and no foreign ones.
+- **TACO** is not Indian, so its photos are marked `train_only`. They never reach val or test, so every reported number is measured on Indian photos only.
+- Run the collectors **one at a time**: each rewrites `datasets\manifest.csv`.
+- `MAPILLARY_TOKEN` lives in `training\.env` (git-ignored). Use a READ-only client token, and never commit or share it.
+
+## 2. Add your own photos to the dataset
 
 ```powershell
 & $T training\add_images.py datasets\incoming\own_kalyan --source own --licence own --author "Gurpreet"
