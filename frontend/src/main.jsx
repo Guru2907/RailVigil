@@ -5,7 +5,7 @@ import App from "./App.jsx";
 import "./styles/index.css";
 import { applyStoredPreferences } from "./utils/preferences.js";
 
-// Apply the saved theme and text size before the first paint.
+// Apply the saved colour theme before the first paint.
 applyStoredPreferences();
 
 ReactDOM.createRoot(document.getElementById("root")).render(

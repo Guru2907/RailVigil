@@ -44,7 +44,7 @@ export default function Footer() {
       <div className="border-t border-canvas-line">
         <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 text-xs md:flex-row md:justify-between md:px-6">
           <span>© {new Date().getFullYear()} RailVigil project team · Prototype v2</span>
-          <span>Academic project. Not an official Government of India or Indian Railways system.</span>
+          <span>Academic project.</span>
         </div>
       </div>
     </footer>

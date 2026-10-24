@@ -1,25 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import axiosClient from "../../api/axiosClient.js";
-import { THEMES, TEXT_SIZES, setTextSize, setThemeAttr, usePreference } from "../../utils/preferences.js";
+import { THEMES, setThemeAttr, usePreference } from "../../utils/preferences.js";
 
 const HEALTH_POLL_MS = 15000;
 
-// Grouped like a government portal menu bar.
+// Main menu, grouped by module.
 export const menu = [
   { group: null, items: [["/", "Home", true], ["/dashboard", "Dashboard"], ["/map", "GIS Map"]] },
   { group: "Encroachment", items: [["/encroachment/upload", "Photo Analysis"], ["/sites", "Sites"], ["/reports", "Reports"]] },
   { group: "Intrusion", items: [["/upload", "Video Analysis"], ["/incidents", "Incidents"]] },
 ];
-
-function useIstClock() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  return now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
-}
 
 // Real backend health and round-trip time, not a decorative label.
 function useTelemetry() {
@@ -44,9 +35,7 @@ function useTelemetry() {
 }
 
 function UtilityBar() {
-  const clock = useIstClock();
   const [theme, setTheme] = usePreference("rv-theme", "tactical", setThemeAttr);
-  const [size, setSize] = usePreference("rv-text", "md", setTextSize);
   const pill = "rounded px-1.5 py-0.5 transition";
   return (
     <div className="border-b border-canvas-line bg-canvas-2 text-[11px] text-canvas-muted">
@@ -58,36 +47,19 @@ function UtilityBar() {
       </a>
       <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
         <span className="hidden truncate sm:block">
-          Railway Right-of-Way Monitoring System · <span className="text-canvas-ink/80">Academic prototype</span>
+          RailVigil · <span className="text-canvas-ink/80">Academic prototype</span>
         </span>
-        <div className="ml-auto flex items-center gap-4">
-          <div className="flex items-center gap-1" role="group" aria-label="Text size">
-            {TEXT_SIZES.map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setSize(key)}
-                aria-pressed={size === key}
-                className={`${pill} ${size === key ? "bg-canvas-line text-canvas-ink" : "hover:text-canvas-ink"}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <span className="h-3 w-px bg-canvas-line" aria-hidden />
-          <div className="flex items-center gap-1" role="group" aria-label="Colour theme">
-            {THEMES.map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setTheme(key)}
-                aria-pressed={theme === key}
-                className={`${pill} ${theme === key ? "bg-canvas-line text-canvas-ink" : "hover:text-canvas-ink"}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <span className="h-3 w-px bg-canvas-line" aria-hidden />
-          <span className="tabular font-mono text-canvas-ink/80">{clock} IST</span>
+        <div className="ml-auto flex items-center gap-1" role="group" aria-label="Colour theme">
+          {THEMES.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTheme(key)}
+              aria-pressed={theme === key}
+              className={`${pill} ${theme === key ? "bg-canvas-line text-canvas-ink" : "hover:text-canvas-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

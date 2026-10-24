@@ -175,3 +175,34 @@ select option {
 .rv-map .leaflet-control-attribution a {
   color: var(--color-signal);
 }
+
+/* Marker clusters: bubble coloured by the worst severity inside. */
+.rv-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 30%, rgba(0, 0, 0, 0.75));
+  box-shadow: 0 0 12px var(--c), inset 0 0 8px rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font: 700 12px var(--font-mono);
+}
+
+/* Intrusion incidents: glowing diamond, distinct from site dots. */
+.rv-diamond {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 2px;
+  transform: rotate(45deg);
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+  animation: rv-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes rv-blink {
+  50% {
+    opacity: 0.55;
+  }
+}

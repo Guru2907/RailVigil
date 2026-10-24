@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Per-viewer display preferences (theme and text size), kept in localStorage.
+// Per-viewer display preference (colour theme), kept in localStorage.
 // Storage can be unavailable (private mode), so every access is guarded.
 
 function read(key, fallback) {
@@ -24,16 +24,8 @@ export const THEMES = [
   ["obsidian", "Obsidian"],
 ];
 
-export const TEXT_SIZES = [
-  ["sm", "A−", "14px"],
-  ["md", "A", "16px"],
-  ["lg", "A+", "18px"],
-];
-
 export function applyStoredPreferences() {
   document.documentElement.dataset.theme = read("rv-theme", "tactical");
-  const size = TEXT_SIZES.find(([k]) => k === read("rv-text", "md"));
-  document.documentElement.style.fontSize = size ? size[2] : "16px";
 }
 
 export function usePreference(key, fallback, apply) {
@@ -47,11 +39,6 @@ export function usePreference(key, fallback, apply) {
 
 export const setThemeAttr = (theme) => {
   document.documentElement.dataset.theme = theme;
-};
-
-export const setTextSize = (key) => {
-  const size = TEXT_SIZES.find(([k]) => k === key);
-  document.documentElement.style.fontSize = size ? size[2] : "16px";
 };
 
 // Chart colours follow the active theme through CSS variables.
