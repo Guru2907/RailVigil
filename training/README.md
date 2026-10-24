@@ -28,7 +28,7 @@ Put each batch in its own folder under `datasets\incoming\` (git-ignored). Keep 
 | **Your own** (best) | Phone camera with **location on**. Take them from platforms, foot-over-bridges, level crossings or public roads, **never on the track**. | `own` |
 | Wikimedia Commons | Search e.g. "railway track India slum", "railway line encroachment". | The file's licence, e.g. `CC BY-SA 4.0` |
 | Mapillary | Street-level images near tracks (CC BY-SA). | `CC BY-SA 4.0` |
-| Flickr | Only photos with a Creative Commons licence. | The CC licence shown |
+| Flickr (manual only) | No free API key, so no collector. Hand-picked CC photos can be added with a `credits.csv`. | The CC licence shown |
 | TACO / Roboflow Universe | Extra garbage and debris examples. | The dataset's licence |
 
 **Also collect "clean" photos.** These show empty track and **legitimate railway structures** (signal cabins, relay huts, station sheds, platforms). They teach the model what *not* to flag.
@@ -42,7 +42,22 @@ filename,source_url,author,licence
 img001.jpg,https://commons.wikimedia.org/wiki/File:...,Jane Doe,CC BY-SA 4.0
 ```
 
-## 2. Add them to the dataset
+### Automatic collectors (India only)
+
+```powershell
+& $T training\collect_mapillary.py --per-city 50   # street-level photos near tracks, 6 metros (needs MAPILLARY_TOKEN in training\.env)
+& $T training\collect_commons.py --limit 100       # freely licensed Wikimedia Commons photos
+& $T training\import_taco.py --limit 400           # TACO litter outlines -> debris_waste, TRAIN ONLY
+& $T training\remove_images.py <id> <id> --reason "no track visible"   # drop irrelevant photos after a look
+```
+
+- **Mapillary:** only photos taken on an OpenStreetMap railway line (within 8 m: from a train or at a level crossing), not on a road or foot bridge, at least 100 m apart. Photos from roads beside the track rarely show it. Licence CC BY-SA 4.0; the photographer is recorded.
+- **Commons:** only free licences (never NC or ND). Photos must be inside India by coordinates, or carry Indian place names and no foreign ones.
+- **TACO** is not Indian, so its photos are marked `train_only`. They never reach val or test, so every reported number is measured on Indian photos only.
+- Run the collectors **one at a time**: each rewrites `datasets\manifest.csv`.
+- `MAPILLARY_TOKEN` lives in `training\.env` (git-ignored). Use a READ-only client token, and never commit or share it.
+
+## 2. Add your own photos to the dataset
 
 ```powershell
 & $T training\add_images.py datasets\incoming\own_kalyan --source own --licence own --author "Gurpreet"
@@ -108,17 +123,17 @@ This **refuses** the `datasets\upload\...` folder itself. Uncorrected guesses mu
 
 ```powershell
 & $T training\train.py --name smoke --epochs 3     # quick check (~1 min)
-& $T training\train.py --name seg-v1               # real run: 100 epochs, stops early if no progress
+& $T training\train.py --name railvigil-s --epochs 150 --batch 4 --patience 50 --freeze 10   # settings of the reported model
 ```
 
 - On the RTX 3050 (4 GB), use `--batch 4` if you see "CUDA out of memory".
 - Expect roughly 1–4 hours for ~1000 photos.
-- Results go to `training\runs\seg-v1\`: curves, a confusion matrix, `weights\best.pt`, and `railvigil_run.json`, which records the git commit, a fingerprint of the dataset and the settings.
+- Results go to `training\runs\railvigil-s\`: curves, a confusion matrix, `weights\best.pt`, and `railvigil_run.json`, which records the git commit, a fingerprint of the dataset and the settings.
 
 ## 8. Evaluate on the frozen test split
 
 ```powershell
-& $T training\evaluate.py --name seg-v1           # trained model: mask + box metrics per class
+& $T training\evaluate.py --name railvigil-s           # trained model: mask + box metrics per class
 & $B backend\scripts\evaluate_baseline.py         # pretrained baseline on the same photos (box AP50)
 ```
 
@@ -130,7 +145,7 @@ Both print Markdown tables.
 ## 9. Use the model in the app
 
 ```powershell
-& $T training\promote.py --name seg-v1
+& $T training\promote.py --name railvigil-s
 ```
 
 This copies `best.pt` to `backend\models\railvigil-seg.pt` and prints a results-log row. Then add this line to `backend\.env` and restart the backend:

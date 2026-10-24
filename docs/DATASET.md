@@ -9,11 +9,16 @@ Owner: Gurpreet. Images and labels are **not** committed (`datasets/` is git-ign
 | Own photos | Indian corridors, GPS on, known rights | Take them from platforms, overbridges or public roads — never by entering the track |
 | Mapillary API | Street-level images with GPS near level crossings and roadside track | CC BY-SA; keep attribution |
 | Wikimedia Commons | Often geotagged; categories for Indian railway lines and settlements along railways | Per-file licence; keep author and licence |
-| Flickr API | Creative-Commons images with geotags | Use CC-licensed images only |
+| Flickr | Not used: no free API keys are available (2026-10). Individual CC photos may still be added by hand with `add_images.py --credits` | CC-licensed images only |
 | RailSem19 | Rail and vegetation/building masks for the rail-track helper class | Research licence — check before use |
 | TACO, Roboflow Universe | Litter and debris examples | Per-dataset licence |
 
 **Reddit:** not used for training. Browser scraping breaks Reddit's user agreement, the data API terms forbid training AI models on user content without the rights-holders' permission, and Reddit strips GPS from images. At most a small set fetched through the official API may be used to *test* the model, with credit.
+
+## India-only rule and outside data
+- Every photo in **val and test** is from India, checked by coordinates against a traced India outline that excludes Bangladesh, Nepal, Pakistan and Sri Lanka, or by Indian place names on Commons. Reported accuracy is therefore India-only.
+- Outside data (TACO litter) is marked `role=train_only`. `build_dataset.py` always puts it in train and fails if it ever appears in val or test.
+- TACO outlines individual litter items; only items covering at least 0.3 % of the photo are kept, all mapped to `debris_waste`.
 
 ## Manifest
 Every image gets one row in `datasets/manifest.csv`:

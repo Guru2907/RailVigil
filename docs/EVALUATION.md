@@ -1,6 +1,6 @@
 # Evaluation
 
-**Rule:** no accuracy, precision, recall, speed or dataset-size figure appears in the README, UI, reports or paper unless it was produced by the evaluation script on a frozen test set and can be reproduced. As of now **nothing has been measured.** Intrusion metrics below are only recorded when a real run is logged.
+**Rule:** no accuracy, precision, recall, speed or dataset-size figure appears in the README, UI, reports or paper unless it was produced by the evaluation script on a frozen test set and can be reproduced. The only measured figures so far are the **encroachment results** below. Intrusion metrics are recorded only once a real run is logged.
 
 ## Encroachment
 - Detector: mask mAP50 and mAP50-95 per class on the location-split test set.
@@ -42,9 +42,67 @@ The draft paper's 96-track benchmark results are not backed by code or data in t
 - **Ground truth must be human-corrected.** `import_labels.py` refuses uncorrected pre-labels, because measuring the baseline against its own guesses would be meaningless.
 - Each training run records the git commit and a dataset fingerprint (`railvigil_run.json`).
 
+## Encroachment results (2026-10-24)
+
+### Dataset
+| | Train | Val | Test |
+|---|---|---|---|
+| Indian photos (Wikimedia Commons + Mapillary) | 139 | 39 | 39 |
+| TACO litter photos (`train_only`, never val/test) | 100 | – | – |
+| `structure_permanent` / `structure_temporary` objects | 136 / 80 | 36 / 27 | 35 / 18 |
+| `vegetation` / `vehicle_parked` objects | 210 / 37 | 67 / 7 | 62 / 24 |
+| `material_dump` objects (TACO litter mapped here) | 337 | 2 | 1 |
+| Clean photos (no objects) | 25 | 3 | 6 |
+
+- **Photos:**
+  - 217 Indian photos: Commons, plus Mapillary photos taken on OpenStreetMap railway lines (HDX "Railways of India") in Uttar Pradesh, Delhi, West Bengal, Bihar, Haryana, Punjab and Assam.
+  - Every photo was filtered to India and reviewed by eye; off-topic photos and duplicates were removed.
+- **Labels:** pre-labelled by the pretrained baseline + MobileSAM, then corrected by hand in Roboflow (755 objects; 34 photos with no encroachment).
+- **Splits:** by place (photos within 300 m, or a known duplicate scene, share a split); the test set is frozen.
+- **Classes:** `debris_waste` was not used; waste and construction leftovers were labelled `material_dump`.
+
+### Model selection (validation split only)
+| Run | Model | Best epoch | Val mask mAP50 | Val mask mAP50–95 | Val box mAP50 |
+|---|---|---|---|---|---|
+| **`railvigil-s`** | YOLOv8s-seg, first 10 layers frozen, 640 px, batch 4, patience 50 | 76 / 87 | **0.299** | **0.150** | **0.356** |
+| `railvigil-m` | YOLOv8m-seg, same settings, batch 2 | 37 / 115 | 0.294 | 0.148 | 0.297 |
+
+`railvigil-s` was chosen on validation. Only the chosen model was run on the test split, and only once.
+
+### Results on the 39 test photos
+**Main comparison, box AP50:**
+
+| Class | Pretrained baseline (P / R at conf 0.25) | Trained `railvigil-s` (P / R) | Test objects |
+|---|---|---|---|
+| `structure_permanent` | **0.673** (0.63 / 0.34) | 0.255 (0.43 / 0.34) | 35 |
+| `structure_temporary` | **0.698** (0.75 / 0.17) | 0.186 (0.32 / 0.11) | 18 |
+| `vegetation` | **0.982** (0.98 / 0.98) | 0.576 (0.65 / 0.56) | 62 |
+| `vehicle_parked` | **0.817** (1.00 / 0.46) | 0.527 (0.64 / 0.38) | 24 |
+| `material_dump` | 0.000 | 0.000 | 1 |
+| **Mean over classes** | **0.634** | **0.309** | |
+
+**Trained `railvigil-s` masks:**
+- mask mAP50 **0.291**, mAP50–95 0.145, P 0.607, R 0.279;
+- per class: vegetation 0.559, vehicle_parked 0.502, structure_permanent 0.261, structure_temporary 0.132.
+
+### Reading the numbers
+- **The fine-tuned model reaches about half the baseline's box AP50, so the baseline stays the default** (`ENC_MODELS` unchanged; `railvigil-s` is not promoted).
+  - With ~140 Indian training photos, structures (especially temporary ones) are learned poorly.
+  - Vegetation and vehicles transfer best.
+- **The baseline figures are likely optimistic.** The ground truth was made by correcting the baseline's own pre-labels (anchoring). Treat 0.634 as an upper estimate.
+- **The test set is small** (18–62 objects per class), and `material_dump` has a single test object, so its score is not interpretable.
+- **Method:** baseline AP comes from `evaluate_baseline.py` (all-point interpolation); trained-model AP from Ultralytics validation (COCO-style).
+- **Next:** more Indian photos (the team's own trackside photos, structures first), and a test set labelled independently of any model's pre-labels.
+
+### Reproduce
+`training/build_dataset.py` → `training/train.py --name railvigil-s --epochs 150 --batch 4 --patience 50 --freeze 10` (≈11 min on an RTX 3050 Laptop 4 GB) → `training/evaluate.py --name railvigil-s` → `backend/scripts/evaluate_baseline.py`.
+
 ## Results log
 | Date | Module | Model / config | Test set | Metrics | Run |
 |---|---|---|---|---|---|
-| — | — | — | — | — | — |
-| — | intrusion | yolov8n + defaults | `datasets/intrusion/labels.csv` + owner clips | **not yet measured** — awaiting labelled clips | `python scripts/evaluate_intrusion.py --clips-dir $CLIPS --run-pipeline` |
-| — | intrusion regression | same | `GOLDEN_CLIPS_DIR` 3 clips | pass/skip via `pytest -m requires_weights` | `tests/regression/test_golden_clips.py` |
+| 2026-10-24 | Encroachment | Baseline: `oiv7-v8s@4663086e1b8e` + `world-v8s-railvigil@533a607ff9f2` | 39 Indian test photos, dataset `d7297135357c1df5` | box AP50 0.634 (mean of classes with test objects) | `training/runs/baseline_eval_test.json` |
+| 2026-10-24 | Encroachment | `railvigil-s` (YOLOv8s-seg, freeze 10, best epoch 76), weights `9b43e1832858` | same | box mAP50 0.309; mask mAP50 0.291, mAP50–95 0.145, P 0.607, R 0.279 | `training/runs/railvigil-s/eval_test.json` (not promoted) |
+
+**Intrusion:** nothing measured yet.
+- Event-level metrics: `python scripts/evaluate_intrusion.py --clips-dir $CLIPS --run-pipeline`, once `datasets/intrusion/labels.csv` lists the team's clips.
+- Golden-clip regression: `tests/regression/test_golden_clips.py` via `pytest -m requires_weights`.
