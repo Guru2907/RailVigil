@@ -7,6 +7,7 @@ import IncidentDetails from "../pages/private/IncidentDetails.jsx";
 import Dashboard from "../pages/private/Dashboard.jsx";
 import MapView from "../pages/private/MapView.jsx";
 import PhotoUpload from "../pages/private/PhotoUpload.jsx";
+import PhotoDetails from "../pages/private/PhotoDetails.jsx";
 import Sites from "../pages/private/Sites.jsx";
 import SiteDetails from "../pages/private/SiteDetails.jsx";
 import Reports from "../pages/private/Reports.jsx";
@@ -24,6 +25,7 @@ export default function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/encroachment/upload" element={<PhotoUpload />} />
+        <Route path="/photos/:id" element={<PhotoDetails />} />
         <Route path="/sites" element={<Sites />} />
         <Route path="/sites/:id" element={<SiteDetails />} />
         <Route path="/reports" element={<Reports />} />
