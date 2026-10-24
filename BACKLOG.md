@@ -1,6 +1,10 @@
 # RailVigil — Backlog
 
-Single place to track all planned work. Last updated: 2026-10-20.
+> **Status (2026-10-24):**
+> - **Current plan and phase status:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ("Build order"). Phases 0–4 are done; Phase 5 is the final paper. Automatic zones, video keyframes, PDF reports, alerts, authentication and Docker are future work.
+> - **Measured results:** [docs/EVALUATION.md](docs/EVALUATION.md).
+> - **Open work:** tracked as GitHub issues.
+> - The stage list below is the **historical** intrusion-only plan, kept for reference.
 
 ## Scope (read this first)
 

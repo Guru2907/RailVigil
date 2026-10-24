@@ -9,4 +9,4 @@ The GIS map, site clustering ("findings within R metres are one site") and map f
 Use one relational database, PostgreSQL with PostGIS, through SQLAlchemy, GeoAlchemy2 and Alembic. SQLite stays only until Phase 0 moves the backend to Postgres.
 
 ## Consequences
-Each developer installs PostgreSQL 17 + PostGIS natively and runs `backend/scripts/setup_postgres.ps1` (docs/SETUP_POSTGRES.md); Docker Compose is deferred to deployment (Phase 6). CI tests against a PostGIS service container. SQLite remains a zero-setup fallback for the code that has no spatial queries.
+Each developer installs PostgreSQL 17 + PostGIS natively and runs `backend/scripts/setup_postgres.ps1` (docs/SETUP_POSTGRES.md); Docker Compose is deferred to deployment (future work). CI tests against a PostGIS service container. SQLite remains a zero-setup fallback for the code that has no spatial queries.

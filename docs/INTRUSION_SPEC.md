@@ -13,7 +13,10 @@ An **intrusion** is a person, vehicle, or animal that enters a configured track-
 5. **Scoring (`risk_engine.py`):** `score = 100 × (w_pen × max_penetration + w_dwell × min(dwell / RISK_DWELL_NORM_SEC, 1)) × class_factor`; severity bands at 70 / 40 / 20 (critical / high / medium, else low). Rule-based, not learned.
 6. **Event type:** `human_intrusion` / `persistent_human_presence`, `vehicle_intrusion`, `animal_intrusion` / `persistent_animal_presence`, otherwise `other_intrusion`.
 7. **Evidence:** one snapshot per event at the confirmation frame, plus an annotated H.264 video.
-8. **API:** `VideoOut` exposes `has_output` (bool), never `output_video_path`. `PUT /api/videos/{id}/zone` moves `awaiting_zone` → `queued`.
+8. **API:**
+   - `VideoOut` exposes `has_output` (bool), never `output_video_path`.
+   - `PUT /api/videos/{id}/zone` moves `awaiting_zone` → `queued`.
+9. **Map:** an optional camera `latitude`/`longitude` at upload (validated: both or neither). `GET /api/map/features?layers=sites,intrusions` returns confirmed incidents of located videos as `intrusion_incident` points, which the GIS map shows as a separate layer.
 
 ## Current parameters (candidates pending evaluation)
 
