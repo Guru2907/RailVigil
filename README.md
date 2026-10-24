@@ -5,15 +5,23 @@ Railway right-of-way monitoring with YOLOv8, in two separate modules:
 | Module | What it finds | Input | Status |
 |---|---|---|---|
 | **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **Working** (photo analysis, sites with review workflow, numbered reports, GIS map, dashboard). Pretrained models are the default; a fine-tuned model was trained and measured — see [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
-| **Intrusion** | People and vehicles entering a track-side safety zone in video | Video | **Working** — see [docs/INTRUSION_SPEC.md](docs/INTRUSION_SPEC.md) |
+| **Intrusion** | People, vehicles and animals entering a track-side safety zone in video | Video | **Working**: incidents with snapshots, risk scores, an evaluation script, and incidents on the GIS map when a camera location is given. See [docs/INTRUSION_SPEC.md](docs/INTRUSION_SPEC.md) |
 
 Results are always *potential* encroachments or intrusions for an officer to review. Software cannot establish that something is illegal.
 
 ## What works today
-- Upload a video with a safety zone (drawn, sidecar file, or per-camera config) → background job → YOLOv8n + ByteTrack → time-based confirmation → risk score → incidents with snapshots.
+- **Intrusion:**
+  - upload a video with a safety zone (drawn, sidecar file or per-camera config; or later, `awaiting_zone`) and an optional camera location;
+  - background job → YOLOv8n + ByteTrack → time-based confirmation, with ID-switch merging → risk score → incidents with snapshots.
+  - Animals included. Evaluation: `backend/scripts/evaluate_intrusion.py`.
 - Encroachment (API): upload photos (`POST /api/media`) with the railway land marked and an optional map pin → background job → pretrained YOLOv8 Open Images V7 + YOLO-World → findings with evidence → findings at the same place grouped into **sites** (PostGIS) → numbered **reports** (`RV-ENC-…`) → site review workflow, GeoJSON map layer and dashboard stats. Also as a command line: `backend/scripts/run_image.py`.
 - Job queue with crash recovery, upload validation, PostgreSQL + PostGIS (SQLite fallback), Alembic migrations, ~300 backend tests.
-- React pages: photo analysis, sites and reports, GIS map, dashboard for both modules, video analysis (upload + zone drawing), incidents.
+- **React app** (Tactical Dash design, two colour themes):
+  - photo analysis (before/after), sites with review workflow, report register;
+  - **GIS map of India**: railway-line overlay, severity clusters, heatmap, intrusion layer;
+  - dashboard for both modules; video analysis; incidents.
+- **Measured results:** fine-tuned YOLOv8s-seg vs the pretrained baseline on 39 held-out Indian photos, with 95 % confidence intervals. See [docs/EVALUATION.md](docs/EVALUATION.md).
+- **Sample data:** `backend/scripts/seed_sample_sites.py` loads the located dataset photos as labelled sample data for the map (`--remove` deletes it).
 - Dataset and training tools (`training/`): India-only collectors, pre-labelling, location-based splits, GPU training, evaluation.
 
 ## Not built yet
