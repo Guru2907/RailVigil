@@ -5,7 +5,7 @@ Owner: Gurpreet. Code: `backend/app/cv/encroachment/`. The first section describ
 ## Implemented — Phase 1 baseline (images, command line)
 - **Run it:** `python scripts/run_image.py <image|folder> --zone "<points>"` from `backend/` (or a `<image>.zone.json` sidecar per image). Prints the findings and writes evidence — `annotated.jpg`, one crop per finding, `findings.json` — to `outputs/encroachment/<timestamp>/<image>/`.
 - **Pipeline** (`pipeline.analyze_image`): load image with EXIF orientation applied → zone from `ZoneResolver` (manual / sidecar / camera; no zone = rejected) → detectors → `rules.classify_finding` per detection → evidence.
-- **Zone:** only Z3, the right-of-way polygon given by the user. Z1/Z2 from detected rails come in Phase 5.
+- **Zone:** only Z3, the right-of-way polygon given by the user. Z1/Z2 from detected rails are future work.
 - **Object shape:** the mask outline when the model is a segmentation model (the trained `railvigil-seg`, selected with `ENC_MODELS=railvigil-seg`), otherwise the detection box as a polygon (the pretrained baseline). The rule is the same either way. Training and evaluation tools: [training/README.md](../training/README.md).
 - **Detection cut-offs:** per model, `ENC_MODEL_MIN_CONFIDENCE` — 0.25 for Open Images, 0.10 for YOLO-World, whose open-vocabulary scores run lower (on a test frame a real tarpaulin shelter scored 0.20 and was missed by a shared 0.25 cut-off).
 - **Rule** (`rules.py`): finding when `confidence ≥ ENC_MIN_CONFIDENCE` (floor 0.10) and `overlap_ratio ≥ ENC_MIN_OVERLAP` (0.2); `severity_score = ENC_CATEGORY_WEIGHT[class] × overlap_ratio`; bands critical ≥ 0.75, high ≥ 0.5, medium ≥ 0.25, else low; `vehicle_parked` capped at medium with the note "stationarity not verified"; findings below `ENC_LOW_CONFIDENCE_NOTE` (0.25) keep their severity but carry a "low detection confidence — verify" note (severity = how serious the object would be; confidence = how sure the model is). All values provisional (`core/config.py`).
@@ -19,7 +19,7 @@ Owner: Gurpreet. Code: `backend/app/cv/encroachment/`. The first section describ
   Label mapping is in `taxonomy.py`; `Train` is deliberately unmapped. **Distractor prompts** (train, railway platform, platform shelter, railway signal, concrete kerb, person) give YOLO-World somewhere to put legitimate look-alikes; they map to no class. Boxes covering ≥ `ENC_MAX_BOX_SHARE` (80 %) of the image are dropped as not-an-object. Duplicate detections of the same class across models (box IoU ≥ `ENC_MERGE_IOU`, 0.5) are merged.
 - **YOLO-World build:** setting text prompts needs OpenAI CLIP, which Ultralytics installs from GitHub into the venv and whose weights the script caches in `backend/models/clip/`. This is a one-time, developer-only step; the saved model carries the text embeddings, so the app needs neither CLIP nor a network connection. Rebuild when `WORLD_PROMPTS` changes.
 - **Status:** baseline with pretrained models; **accuracy not measured**. Output is for officer review only.
-- **Known limits seen on a 10-photo visual check** (2026-10-22; a check, not a measurement): garbage and debris are not detected at all (scores ≤ 0.03 even on heavily littered track); legitimate railway buildings such as station sheds are flagged as structures; bushes along a corridor were missed; most detections are low-confidence. These are what the Phase 4 segmentation model, trained with railway-owned structures as negatives, has to fix.
+- **Known limits seen on a 10-photo visual check** (2026-10-22; a check, not a measurement): garbage and debris are not detected at all (scores ≤ 0.03 even on heavily littered track); legitimate railway buildings such as station sheds are flagged as structures; bushes along a corridor were missed; most detections are low-confidence. The fine-tuned segmentation model was trained to address these; its measured results are in [EVALUATION.md](EVALUATION.md).
 
 ## Definition
 A **potential encroachment** is an object of an encroachment category that lies on railway land or inside the track clearance. The software cannot decide legality — that needs land records — so every finding is reviewed by an officer. UI, reports and the paper say "potential encroachment" until an officer verifies it.
@@ -62,7 +62,7 @@ A finding is raised when `class ∈ ENCROACHMENT_CLASSES`, `confidence ≥ τ_c`
   - `re_encroached` — a resolved site was found again;
   - `critical_finding` — an existing site's worst severity just became critical, or (once per photo) a photo without a location has a critical finding.
 - **Map:** `GET /api/map/features` returns sites as GeoJSON (`[longitude, latitude]`), filterable by area, class, severity, status and date.
-- **Not yet:** source metadata and camera locations as location sources (Phase 3+), photos from video keyframes (Phase 5).
+- **Not yet:** source metadata and camera locations as location sources (Phase 3+), photos from video keyframes (future work).
 
 ## Video
 Encroachment is static, so video is sampled into keyframes and processed like images; the same object across frames is de-duplicated by mask overlap.

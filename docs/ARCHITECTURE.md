@@ -44,13 +44,14 @@ Deployment: Docker Compose (Postgres+PostGIS, MinIO, backend, frontend)
 ## Build order
 | Phase | Deliverable |
 |---|---|
-| 0 | Backend on native PostgreSQL + PostGIS (setup script, timezone-aware timestamps, CI on both databases). Docker and MinIO deferred to Phase 6 |
+| 0 | ✅ Backend on native PostgreSQL + PostGIS (setup script, timezone-aware timestamps, CI on both databases). Docker and MinIO are future work |
 | 0b | Zone resolver extensions: `awaiting_zone`, zone suggestion endpoint, golden-clip tests |
-| 1 | Encroachment baseline on images: pretrained models, manual zone, `classify_finding`, evidence |
+| 1 | ✅ Encroachment baseline on images: pretrained models, manual zone, `classify_finding`, evidence |
 | 2 | ✅ Encroachment data layer + photo API: media, findings, sites (PostGIS), reports, map GeoJSON, stats (videos unchanged; moving intrusion into the v2 model is issue #3) |
-| 3 | Frontend: Upload Center, Reports, GIS map, Dashboard for both modules |
-| 4 (parallel from 1) | Dataset collection and labelling; fine-tuned encroachment and rail models |
-| 5 | Automatic zones from rails; video keyframes for encroachment; animal intrusion |
-| 6 | Authentication, PDF reports, notifications, deployment, paper update |
+| 3 | ✅ Frontend: photo and video analysis, sites and reports, GIS map (clusters, heatmap, intrusion layer), dashboard for both modules |
+| 4 | ✅ Dataset collection and labelling (217 Indian photos), fine-tuned encroachment model, measured evaluation ([EVALUATION.md](EVALUATION.md)) |
+| 5 | Final paper: results, statistics, write-up |
+
+**Future work** (not planned in the current build): automatic zones from detected rails; encroachment on video keyframes (which also verifies parked vehicles); PDF reports; alerts and notifications; authentication and roles; Docker deployment and MinIO object storage; `intrusion_events` with report numbers (issue #3 part C).
 
 Data model: [DATA_MODEL.md](DATA_MODEL.md). Decisions: [decisions/](decisions/).
