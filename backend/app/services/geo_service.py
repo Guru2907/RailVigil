@@ -85,6 +85,15 @@ def resolve_location(path: Path | str, pin_lat=None, pin_lon=None) -> Location |
     return Location(round(float(pin_lat), 7), round(float(pin_lon), 7), "pin")
 
 
+def pin_location(pin_lat=None, pin_lon=None) -> Location | None:
+    """A user-given pin only (videos have no EXIF GPS): both coordinates or neither."""
+    if pin_lat is None and pin_lon is None:
+        return None
+    if pin_lat is None or pin_lon is None or not valid_coordinates(pin_lat, pin_lon):
+        raise ValidationFailed("latitude and longitude must both be given, within -90..90 and -180..180.")
+    return Location(round(float(pin_lat), 7), round(float(pin_lon), 7), "pin")
+
+
 def distance_m(lat1, lon1, lat2, lon2) -> float:
     """Great-circle distance in metres (haversine); used where PostGIS is not available."""
     p1, p2 = math.radians(lat1), math.radians(lat2)

@@ -6,8 +6,9 @@ from app.services import video_service
 
 
 def upload_video(db: Session, video: UploadFile, zone_raw: str | None,
-                 camera_label: str | None, zone_sidecar: str | None = None):
-    return video_service.ingest_upload(db, video, zone_raw, camera_label, zone_sidecar)
+                 camera_label: str | None, zone_sidecar: str | None = None,
+                 latitude: float | None = None, longitude: float | None = None):
+    return video_service.ingest_upload(db, video, zone_raw, camera_label, zone_sidecar, latitude, longitude)
 
 
 def get_video_status(db: Session, video_id: str):

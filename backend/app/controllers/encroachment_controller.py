@@ -5,9 +5,12 @@ import json
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models.encroachment import EncroachmentFinding, EncroachmentSite, Media, Report
+from app.db.models.incident import Incident
+from app.db.models.video import Video
 from app.db.repositories import encroachment_repository as repo
 from app.services import site_service, storage_service
 
@@ -182,6 +185,31 @@ def map_features(db: Session, **filters) -> dict:
             },
         })
     return {"type": "FeatureCollection", "features": features}
+
+
+def intrusion_features(db: Session, bbox=None, created_from=None, created_to=None, limit: int = 2000) -> list[dict]:
+    """GeoJSON points for confirmed intrusion incidents of videos that have a camera location."""
+    q = (select(Incident, Video).join(Video, Incident.video_id == Video.id)
+         .where(Video.latitude.is_not(None), Video.longitude.is_not(None))
+         .order_by(Incident.created_at.desc()).limit(limit))
+    if bbox:
+        min_lon, min_lat, max_lon, max_lat = bbox
+        q = q.where(Video.longitude.between(min_lon, max_lon), Video.latitude.between(min_lat, max_lat))
+    if created_from:
+        q = q.where(Incident.created_at >= created_from)
+    if created_to:
+        q = q.where(Incident.created_at <= created_to)
+    return [{
+        "type": "Feature",
+        "id": f"inc-{inc.id}",
+        "geometry": {"type": "Point", "coordinates": [video.longitude, video.latitude]},
+        "properties": {
+            "kind": "intrusion_incident",
+            "incident_id": inc.id, "video_id": video.id, "camera_label": video.camera_label,
+            "object_class": inc.object_class, "event_type": inc.event_type, "severity": inc.severity,
+            "risk_score": inc.risk_score, "created_at": inc.created_at.isoformat(),
+        },
+    } for inc, video in db.execute(q).all()]
 
 
 def parse_bbox(raw: str | None) -> tuple[float, float, float, float] | None:

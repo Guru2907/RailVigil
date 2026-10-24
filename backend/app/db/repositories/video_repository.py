@@ -19,12 +19,14 @@ def create_video(db: Session, filename: str, original_filename: str,
                   zone_json: str | None, camera_label: str | None = None,
                   fps: float | None = None, width: int | None = None,
                   height: int | None = None, duration_sec: float | None = None,
-                  status: str = "queued") -> Video:
+                  status: str = "queued", latitude: float | None = None,
+                  longitude: float | None = None) -> Video:
     video = Video(
         filename=filename,
         original_filename=original_filename,
         zone_json=zone_json,
         camera_label=camera_label,
+        latitude=latitude, longitude=longitude,
         fps=fps, width=width, height=height, duration_sec=duration_sec,
         status=status,
     )

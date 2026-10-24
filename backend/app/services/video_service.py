@@ -12,7 +12,7 @@ from app.core.errors import AppError, ValidationFailed, ZoneUnavailable
 from app.cv.common.zones import ZoneResolver
 from app.db.models.video import Video
 from app.db.repositories import video_repository
-from app.services import job_queue
+from app.services import geo_service, job_queue
 from app.utils.file_utils import check_extension, delete_quietly, save_upload
 from app.utils.video_utils import probe_video
 from app.utils.zone_validation import parse_zone_points
@@ -35,8 +35,12 @@ def ingest_upload(
     zone_raw: str | None,
     camera_label: str | None,
     zone_sidecar: str | None = None,
+    latitude: float | None = None,
+    longitude: float | None = None,
 ) -> Video:
     label = _clean_label(camera_label)
+    location = geo_service.pin_location(latitude, longitude)  # validated before anything is stored
+    where = {"latitude": location.latitude, "longitude": location.longitude} if location else {}
     zone_points = parse_zone_points(zone_raw) if zone_raw and zone_raw.strip() else None
     suffix = check_extension(upload.filename)
 
@@ -69,6 +73,7 @@ def ingest_upload(
                 height=meta.height,
                 duration_sec=meta.duration_sec,
                 status="awaiting_zone",
+                **where,
             )
             logger.info("video %s awaiting_zone", video.id)
             return video
@@ -90,6 +95,7 @@ def ingest_upload(
             height=meta.height,
             duration_sec=meta.duration_sec,
             status="queued",
+            **where,
         )
     except BaseException:
         delete_quietly(path)

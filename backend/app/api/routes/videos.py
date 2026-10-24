@@ -16,9 +16,11 @@ def upload_video(
     zone_points: str | None = Form(None),
     zone_sidecar: str | None = Form(None),
     camera_label: str | None = Form(None),
+    latitude: float | None = Form(None, description="Camera location (optional); incidents are shown on the map"),
+    longitude: float | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    return video_controller.upload_video(db, video, zone_points, camera_label, zone_sidecar)
+    return video_controller.upload_video(db, video, zone_points, camera_label, zone_sidecar, latitude, longitude)
 
 
 @router.get("", response_model=list[VideoOut])
