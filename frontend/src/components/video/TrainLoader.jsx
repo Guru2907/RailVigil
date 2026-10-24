@@ -14,14 +14,14 @@ export default function TrainLoader() {
                 y1="2"
                 x2={x}
                 y2="18"
-                stroke="#18181B"
+                stroke="var(--color-ink)"
                 strokeOpacity="0.25"
                 strokeWidth="2.5"
                 vectorEffect="non-scaling-stroke"
               />
             ))}
-            <line x1="0" y1="5" x2="480" y2="5" stroke="#18181B" strokeOpacity="0.25" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-            <line x1="0" y1="15" x2="480" y2="15" stroke="#18181B" strokeOpacity="0.25" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+            <line x1="0" y1="5" x2="480" y2="5" stroke="var(--color-ink)" strokeOpacity="0.25" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+            <line x1="0" y1="15" x2="480" y2="15" stroke="var(--color-ink)" strokeOpacity="0.25" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
           </svg>
         </div>
 
@@ -29,35 +29,35 @@ export default function TrainLoader() {
         <div className="rv-train-layer" aria-hidden="true">
           <svg className="rv-train-svg" viewBox="0 0 200 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Carriage 2 */}
-            <rect x="0" y="8" width="56" height="22" rx="4" fill="#022C22" />
-            <rect x="0" y="22" width="56" height="2.5" fill="#34D399" />
-            <rect x="6" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <rect x="22" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <rect x="38" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <circle cx="12" cy="30.5" r="2.5" fill="#022C22" />
-            <circle cx="44" cy="30.5" r="2.5" fill="#022C22" />
-            <rect x="56" y="19" width="6" height="2" fill="#18181B" fillOpacity="0.25" />
+            <rect x="0" y="8" width="56" height="22" rx="4" fill="var(--color-ink)" />
+            <rect x="0" y="22" width="56" height="2.5" fill="var(--color-signal)" />
+            <rect x="6" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <rect x="22" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <rect x="38" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <circle cx="12" cy="30.5" r="2.5" fill="var(--color-ink)" />
+            <circle cx="44" cy="30.5" r="2.5" fill="var(--color-ink)" />
+            <rect x="56" y="19" width="6" height="2" fill="var(--color-ink)" fillOpacity="0.25" />
 
             {/* Carriage 1 */}
-            <rect x="62" y="8" width="56" height="22" rx="4" fill="#022C22" />
-            <rect x="62" y="22" width="56" height="2.5" fill="#34D399" />
-            <rect x="68" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <rect x="84" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <rect x="100" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <circle cx="74" cy="30.5" r="2.5" fill="#022C22" />
-            <circle cx="106" cy="30.5" r="2.5" fill="#022C22" />
-            <rect x="118" y="19" width="6" height="2" fill="#18181B" fillOpacity="0.25" />
+            <rect x="62" y="8" width="56" height="22" rx="4" fill="var(--color-ink)" />
+            <rect x="62" y="22" width="56" height="2.5" fill="var(--color-signal)" />
+            <rect x="68" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <rect x="84" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <rect x="100" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <circle cx="74" cy="30.5" r="2.5" fill="var(--color-ink)" />
+            <circle cx="106" cy="30.5" r="2.5" fill="var(--color-ink)" />
+            <rect x="118" y="19" width="6" height="2" fill="var(--color-ink)" fillOpacity="0.25" />
 
             {/* Locomotive */}
-            <path d="M124 8H165C175 8 184 14 186 23L187 30H124V8Z" fill="#022C22" />
-            <path d="M124 22H185.5L186 24.5H124V22Z" fill="#34D399" />
-            <rect x="130" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <rect x="146" y="12" width="11" height="7" rx="1.5" fill="#34D399" />
-            <path d="M162 12H170C173 12 175.5 14 176.5 17L177.5 19H162V12Z" fill="#34D399" />
-            <circle cx="184" cy="27" r="2" fill="#34D399" />
-            <polygon points="186,26 198,24 198,30 186,28" fill="#34D399" opacity="0.4" />
-            <circle cx="136" cy="30.5" r="2.5" fill="#022C22" />
-            <circle cx="168" cy="30.5" r="2.5" fill="#022C22" />
+            <path d="M124 8H165C175 8 184 14 186 23L187 30H124V8Z" fill="var(--color-ink)" />
+            <path d="M124 22H185.5L186 24.5H124V22Z" fill="var(--color-signal)" />
+            <rect x="130" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <rect x="146" y="12" width="11" height="7" rx="1.5" fill="var(--color-signal)" />
+            <path d="M162 12H170C173 12 175.5 14 176.5 17L177.5 19H162V12Z" fill="var(--color-signal)" />
+            <circle cx="184" cy="27" r="2" fill="var(--color-signal)" />
+            <polygon points="186,26 198,24 198,30 186,28" fill="var(--color-signal)" opacity="0.4" />
+            <circle cx="136" cy="30.5" r="2.5" fill="var(--color-ink)" />
+            <circle cx="168" cy="30.5" r="2.5" fill="var(--color-ink)" />
           </svg>
         </div>
 

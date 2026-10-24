@@ -1,21 +1,108 @@
 @import "tailwindcss";
 
+/* `obsidian:` variant, e.g. `text-amber-700 obsidian:text-amber-300`, for the
+   few places where a status colour needs a different shade per theme. */
+@custom-variant obsidian (&:where([data-theme="obsidian"], [data-theme="obsidian"] *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Two themes share the same token names, so every page works in
+   both. Split: canvas 60% · surface 30% · accent 5% · alert 5% · signal <5%.
+
+   canvas*   : app shell background and text placed directly on it
+   surface*  : cards, panels, tables, inputs (and `ink`/`muted`/`line` on them)
+   paper     : inset areas inside a card (list items, table bodies)
+   accent    : primary actions only; `accent-ink` is text on accent
+   danger    : breaches, high/critical risk, errors (never decorative)
+   signal    : live/online status, active lines, telemetry (never decorative)
+   ------------------------------------------------------------------------ */
+
+/* Theme 1 (default): "Tactical Dash", light mint cards floating on deep emerald */
 @theme {
-  --color-tactical-canvas: #022C22;
-  --color-tactical-card: #F0FDF4;
-  --color-tactical-dark: #18181B;
-  --color-tactical-alert: #E11D48;
-  --color-tactical-mint: #34D399;
+  --color-canvas: #022C22;
+  --color-canvas-2: #011D17;
+  --color-canvas-ink: #ECFDF5;
+  --color-canvas-muted: #93BBAC;
+  --color-canvas-line: #0E4536;
+
+  --color-surface: #F0FDF4;
+  --color-surface-2: #E2F4E9;
+  --color-paper: #FFFFFF;
+  --color-ink: #18181B;
+  --color-muted: #52525B;
+  --color-line: #CDE7D8;
+
+  --color-accent: #18181B;
+  --color-accent-hover: #2E2E33;
+  --color-accent-ink: #FFFFFF;
+
+  --color-danger: #E11D48;
+  --color-signal: #34D399;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-body {
-  font-family: var(--font-sans);
+/* Theme 2: "Pitch Obsidian & Lime", true black, charcoal cards, lime accent */
+[data-theme="obsidian"] {
+  --color-canvas: #000000;
+  --color-canvas-2: #060607;
+  --color-canvas-ink: #FAFAFA;
+  --color-canvas-muted: #A1A1AA;
+  --color-canvas-line: #1F1F23;
+
+  --color-surface: #09090B;
+  --color-surface-2: #131316;
+  --color-paper: #0F0F12;
+  --color-ink: #F4F4F5;
+  --color-muted: #A1A1AA;
+  --color-line: #26262B;
+
+  --color-accent: #A3E635;
+  --color-accent-hover: #BEF264;
+  --color-accent-ink: #09090B;
+
+  --color-danger: #F43F5E;
+  --color-signal: #A3E635;
 }
 
-/* --- GIS map (MapView.jsx) --- */
+html {
+  background: var(--color-canvas);
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-canvas);
+  color: var(--color-canvas-ink);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Keyboard focus is always visible. */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+select option {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Numbers that line up in tables and KPIs */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- GIS map (always dark, whatever the theme) --- */
 .rv-map {
   background: #05070a;
 }
@@ -34,14 +121,12 @@ body {
   border-radius: 9999px;
 }
 
-/* solid core */
 .rv-pin::before {
   inset: 5px;
   background: var(--c);
   box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
 }
 
-/* expanding ring */
 .rv-pin::after {
   inset: 0;
   border: 2px solid var(--c);
@@ -70,16 +155,16 @@ body {
 }
 
 .rv-tooltip {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   color: #fff;
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  border: 1px solid var(--color-signal);
 }
 
 .rv-map .leaflet-control-layers {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.78);
   color: #e5e7eb;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .rv-map .leaflet-control-attribution {
@@ -88,5 +173,36 @@ body {
 }
 
 .rv-map .leaflet-control-attribution a {
-  color: #6ee7b7;
+  color: var(--color-signal);
+}
+
+/* Marker clusters: bubble coloured by the worst severity inside. */
+.rv-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 30%, rgba(0, 0, 0, 0.75));
+  box-shadow: 0 0 12px var(--c), inset 0 0 8px rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font: 700 12px var(--font-mono);
+}
+
+/* Intrusion incidents: glowing diamond, distinct from site dots. */
+.rv-diamond {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 2px;
+  transform: rotate(45deg);
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+  animation: rv-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes rv-blink {
+  50% {
+    opacity: 0.55;
+  }
 }
