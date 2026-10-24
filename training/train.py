@@ -47,6 +47,8 @@ def main() -> None:
     p.add_argument("--patience", type=int, default=30, help="stop early after this many epochs without improvement")
     p.add_argument("--workers", type=int, default=2, help="data-loading processes (keep low on Windows)")
     p.add_argument("--device", default="0", help="0 = first GPU, cpu = CPU (very slow)")
+    p.add_argument("--freeze", type=int, default=0,
+                   help="freeze the first N layers (e.g. 10 = backbone) to keep pretrained features on small data")
     args = p.parse_args()
 
     data = rv.BUILD / "data.yaml"
@@ -68,7 +70,7 @@ def main() -> None:
     model.train(
         data=str(data), epochs=args.epochs, imgsz=args.imgsz, batch=args.batch, patience=args.patience,
         workers=args.workers, device=args.device, project=str(rv.RUNS), name=args.name, exist_ok=False,
-        seed=0, deterministic=True, plots=True,
+        seed=0, deterministic=True, plots=True, freeze=args.freeze or None,
     )
 
     # Ultralytics may add a suffix (seg-v1-2) if the name is taken: use the folder it really wrote.

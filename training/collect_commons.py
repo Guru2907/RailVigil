@@ -33,7 +33,7 @@ QUERIES = [
     "railway track Mumbai", "railway track Delhi", "railway track Kolkata", "railway track Chennai",
     "railway track Hyderabad", "railway track Bangalore", "level crossing India", "railway line huts India",
     "jhuggi railway", "railway track India houses",
-    # round 2: Uttar Pradesh and Bihar, plus more trackside scenes
+    # Uttar Pradesh and Bihar, plus more trackside scenes
     "railway track Lucknow", "railway track Kanpur", "railway track Varanasi", "railway track Prayagraj",
     "railway track Allahabad", "railway track Gorakhpur", "railway track Agra", "railway track Mathura",
     "railway track Ghaziabad", "railway track Meerut", "railway track Bareilly", "railway track Jhansi",
