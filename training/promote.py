@@ -1,6 +1,6 @@
 """Make a trained run the model the backend uses.
 
-    python training/promote.py --name seg-v1
+    python training/promote.py --name railvigil-s
 
 Copies training/runs/<name>/weights/best.pt to backend/models/railvigil-seg.pt
 (registered as "railvigil-seg"). Then switch the backend to it by adding this

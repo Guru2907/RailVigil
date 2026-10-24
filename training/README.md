@@ -123,17 +123,17 @@ This **refuses** the `datasets\upload\...` folder itself. Uncorrected guesses mu
 
 ```powershell
 & $T training\train.py --name smoke --epochs 3     # quick check (~1 min)
-& $T training\train.py --name seg-v1               # real run: 100 epochs, stops early if no progress
+& $T training\train.py --name railvigil-s --epochs 150 --batch 4 --patience 50 --freeze 10   # settings of the reported model
 ```
 
 - On the RTX 3050 (4 GB), use `--batch 4` if you see "CUDA out of memory".
 - Expect roughly 1–4 hours for ~1000 photos.
-- Results go to `training\runs\seg-v1\`: curves, a confusion matrix, `weights\best.pt`, and `railvigil_run.json`, which records the git commit, a fingerprint of the dataset and the settings.
+- Results go to `training\runs\railvigil-s\`: curves, a confusion matrix, `weights\best.pt`, and `railvigil_run.json`, which records the git commit, a fingerprint of the dataset and the settings.
 
 ## 8. Evaluate on the frozen test split
 
 ```powershell
-& $T training\evaluate.py --name seg-v1           # trained model: mask + box metrics per class
+& $T training\evaluate.py --name railvigil-s           # trained model: mask + box metrics per class
 & $B backend\scripts\evaluate_baseline.py         # pretrained baseline on the same photos (box AP50)
 ```
 
@@ -145,7 +145,7 @@ Both print Markdown tables.
 ## 9. Use the model in the app
 
 ```powershell
-& $T training\promote.py --name seg-v1
+& $T training\promote.py --name railvigil-s
 ```
 
 This copies `best.pt` to `backend\models\railvigil-seg.pt` and prints a results-log row. Then add this line to `backend\.env` and restart the backend:

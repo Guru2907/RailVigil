@@ -1,6 +1,6 @@
 """Evaluate a trained run on the frozen TEST split (never seen in training).
 
-    python training/evaluate.py --name seg-v1
+    python training/evaluate.py --name railvigil-s
 
 Writes training/runs/<name>/eval_test.json and prints a Markdown table of
 per-class precision, recall, mAP50 and mAP50-95 for masks and boxes. Only

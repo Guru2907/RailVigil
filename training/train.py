@@ -1,7 +1,7 @@
 """Train the RailVigil segmentation model on the built dataset.
 
-    python training/train.py --name seg-v1                 # defaults suit an RTX 3050 (4 GB)
-    python training/train.py --name seg-v1 --batch 4       # if you see "CUDA out of memory"
+    python training/train.py --name railvigil-s                 # defaults suit an RTX 3050 (4 GB)
+    python training/train.py --name railvigil-s --batch 4       # if you see "CUDA out of memory"
     python training/train.py --name smoke --epochs 3       # quick end-to-end check
 
 Runs go to training/runs/<name>/ (git-ignored): weights/best.pt, curves,
@@ -73,7 +73,7 @@ def main() -> None:
         seed=0, deterministic=True, plots=True, freeze=args.freeze or None,
     )
 
-    # Ultralytics may add a suffix (seg-v1-2) if the name is taken: use the folder it really wrote.
+    # Ultralytics may add a suffix (railvigil-s-2) if the name is taken: use the folder it really wrote.
     run_dir = Path(model.trainer.save_dir)
     meta = {
         "name": run_dir.name,
