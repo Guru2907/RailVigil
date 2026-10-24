@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { uploadVideo, assignVideoZone, getVideo, getAnnotatedVideoUrl, getIncidentSnapshotUrl } from "../../api/videos.js";
 import TrainLoader from "../../components/video/TrainLoader.jsx";
-import { PageHeader } from "../../components/ui/index.jsx";
+import { PageHeader, btn, inputClass } from "../../components/ui/index.jsx";
 import { fmtTime, fmtPct, sevClass } from "../../utils/incidentFormat.js";
 
 const ACCEPTED_EXT = [".mp4", ".avi", ".mov"];
@@ -28,6 +28,8 @@ export default function VideoAnalysis() {
   const [points, setPoints] = useState([]); // normalized 0..1 relative to the video frame
   const [drawing, setDrawing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [lat, setLat] = useState("");
+  const [lon, setLon] = useState("");
   const [videoId, setVideoId] = useState(null);
   const [job, setJob] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -62,7 +64,8 @@ export default function VideoAnalysis() {
       const zone = zoneReady
         ? points.map((p) => [Math.round(p.x * meta.width), Math.round(p.y * meta.height)])
         : null;
-      const created = await uploadVideo(file, zone);
+      if ((lat === "") !== (lon === "")) throw new Error("Give both latitude and longitude, or neither.");
+      const created = await uploadVideo(file, zone, undefined, { latitude: lat, longitude: lon });
       setVideoId(created.id);
       setJob(created);
     } catch (e) {
@@ -411,10 +414,20 @@ export default function VideoAnalysis() {
               <div className="mt-6">
                 {!analysisStarted ? (
                   <div className="space-y-2">
+                    <div>
+                      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                        Camera location (optional)
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input aria-label="Latitude" className={inputClass} placeholder="Latitude" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} />
+                        <input aria-label="Longitude" className={inputClass} placeholder="Longitude" inputMode="decimal" value={lon} onChange={(e) => setLon(e.target.value)} />
+                      </div>
+                      <p className="mt-1 text-xs text-muted">Confirmed incidents appear on the GIS map at this point.</p>
+                    </div>
                     <button
                       onClick={handleAnalyze}
                       disabled={!meta || submitting}
-                      className="w-full rounded-full bg-tactical-dark text-white font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                      className={`${btn.primary} w-full py-3`}
                     >
                       {submitting
                         ? "Uploading…"
@@ -423,7 +436,7 @@ export default function VideoAnalysis() {
                           : "Upload without zone"}
                     </button>
                     {!zoneReady && (
-                      <p className="text-xs text-tactical-dark/50 text-center">
+                      <p className="text-xs text-muted text-center">
                         You can draw the zone now or after upload.
                       </p>
                     )}

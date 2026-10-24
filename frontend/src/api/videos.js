@@ -1,13 +1,16 @@
 import axiosClient, { API_BASE_URL } from "./axiosClient.js";
 
 // zonePoints: [[x, y], ...] in video pixel coordinates (optional)
-export async function uploadVideo(file, zonePoints, cameraLabel) {
+// location: optional { latitude, longitude } of the camera (incidents are mapped there)
+export async function uploadVideo(file, zonePoints, cameraLabel, location = {}) {
   const form = new globalThis.FormData();
   form.append("video", file);
   if (zonePoints && zonePoints.length >= 3) {
     form.append("zone_points", JSON.stringify(zonePoints));
   }
   if (cameraLabel) form.append("camera_label", cameraLabel);
+  if (location.latitude !== "" && location.latitude != null) form.append("latitude", location.latitude);
+  if (location.longitude !== "" && location.longitude != null) form.append("longitude", location.longitude);
   const { data } = await axiosClient.post("/videos", form);
   return data;
 }
