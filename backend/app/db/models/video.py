@@ -33,6 +33,9 @@ class Video(Base):
 
     zone_json = Column(Text, nullable=True)       # normalized zone points, format and source as JSON
     camera_label = Column(String, nullable=True)
+    # Optional camera location (map pin given at upload); incidents are mapped here.
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     duration_sec = Column(Float, nullable=True)
     fps = Column(Float, nullable=True)

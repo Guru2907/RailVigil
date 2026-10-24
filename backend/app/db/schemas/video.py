@@ -14,6 +14,8 @@ class VideoOut(BaseModel):
     status: str
     progress: float = 0.0
     camera_label: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     error: str | None = None
     created_at: datetime
     output_video_path: str | None = Field(default=None, exclude=True)
