@@ -85,6 +85,22 @@ The draft paper's 96-track benchmark results are not backed by code or data in t
 - mask mAP50 **0.291**, mAP50–95 0.145, P 0.607, R 0.279;
 - per class: vegetation 0.559, vehicle_parked 0.502, structure_permanent 0.261, structure_temporary 0.132.
 
+### Confidence intervals
+95 % bootstrap intervals come from 1000 resamples of the 39 test photos (`training/bootstrap_ci.py`).
+- Box AP50 is computed with the same definition for both models (`rvdata.evaluate_boxes`).
+- Classes with fewer than 5 test objects are excluded, which leaves `material_dump` (1 object) out.
+
+| Class | Baseline | Fine-tuned `railvigil-s` | Test objects |
+|---|---|---|---|
+| `structure_permanent` | 0.673 [0.474, 0.899] | 0.274 [0.115, 0.452] | 35 |
+| `structure_temporary` | 0.698 [0.421, 1.000] | 0.180 [0.019, 0.454] | 18 |
+| `vegetation` | 0.982 [0.941, 1.000] | 0.567 [0.386, 0.714] | 62 |
+| `vehicle_parked` | 0.817 [0.682, 1.000] | 0.489 [0.250, 0.629] | 24 |
+| **Mean of these 4** | **0.792** [0.688, 0.905] | **0.378** [0.301, 0.472] | |
+
+- **Paired difference** (fine-tuned − baseline): **−0.415 [−0.531, −0.304]**. The gap is far larger than chance.
+- The wide per-class intervals (e.g. temporary structures, 18 objects) show how much a bigger test set is needed.
+
 ### Reading the numbers
 - **The fine-tuned model reaches about half the baseline's box AP50, so the baseline stays the default** (`ENC_MODELS` unchanged; `railvigil-s` is not promoted).
   - With ~140 Indian training photos, structures (especially temporary ones) are learned poorly.
@@ -95,7 +111,7 @@ The draft paper's 96-track benchmark results are not backed by code or data in t
 - **Next:** more Indian photos (the team's own trackside photos, structures first), and a test set labelled independently of any model's pre-labels.
 
 ### Reproduce
-`training/build_dataset.py` → `training/train.py --name railvigil-s --epochs 150 --batch 4 --patience 50 --freeze 10` (≈11 min on an RTX 3050 Laptop 4 GB) → `training/evaluate.py --name railvigil-s` → `backend/scripts/evaluate_baseline.py`.
+`training/build_dataset.py` → `training/train.py --name railvigil-s --epochs 150 --batch 4 --patience 50 --freeze 10` (≈11 min on an RTX 3050 Laptop 4 GB) → `training/evaluate.py --name railvigil-s` → `backend/scripts/evaluate_baseline.py` → `training/bootstrap_ci.py --name railvigil-s`.
 
 ## Results log
 | Date | Module | Model / config | Test set | Metrics | Run |

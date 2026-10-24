@@ -4,7 +4,7 @@ Railway right-of-way monitoring with YOLOv8, in two separate modules:
 
 | Module | What it finds | Input | Status |
 |---|---|---|---|
-| **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **Working in the API** (photo upload, sites, reports, map data; pretrained models, accuracy not yet measured). Web screens in Phase 3 — see [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
+| **Physical encroachment** (main module) | Unauthorised structures, vegetation, debris and dumped material on or beside railway land | Images (and video keyframes) | **Working** (photo analysis, sites with review workflow, numbered reports, GIS map, dashboard). Pretrained models are the default; a fine-tuned model was trained and measured — see [docs/EVALUATION.md](docs/EVALUATION.md) and [docs/ENCROACHMENT_SPEC.md](docs/ENCROACHMENT_SPEC.md) |
 | **Intrusion** | People and vehicles entering a track-side safety zone in video | Video | **Working** — see [docs/INTRUSION_SPEC.md](docs/INTRUSION_SPEC.md) |
 
 Results are always *potential* encroachments or intrusions for an officer to review. Software cannot establish that something is illegal.
@@ -12,11 +12,12 @@ Results are always *potential* encroachments or intrusions for an officer to rev
 ## What works today
 - Upload a video with a safety zone (drawn, sidecar file, or per-camera config) → background job → YOLOv8n + ByteTrack → time-based confirmation → risk score → incidents with snapshots.
 - Encroachment (API): upload photos (`POST /api/media`) with the railway land marked and an optional map pin → background job → pretrained YOLOv8 Open Images V7 + YOLO-World → findings with evidence → findings at the same place grouped into **sites** (PostGIS) → numbered **reports** (`RV-ENC-…`) → site review workflow, GeoJSON map layer and dashboard stats. Also as a command line: `backend/scripts/run_image.py`.
-- Job queue with crash recovery, upload validation, PostgreSQL + PostGIS (SQLite fallback), Alembic migrations, ~220 backend tests.
-- React pages: video analysis (upload + zone drawing), incidents list and detail, dashboard.
+- Job queue with crash recovery, upload validation, PostgreSQL + PostGIS (SQLite fallback), Alembic migrations, ~300 backend tests.
+- React pages: photo analysis, sites and reports, GIS map, dashboard for both modules, video analysis (upload + zone drawing), incidents.
+- Dataset and training tools (`training/`): India-only collectors, pre-labelling, location-based splits, GPU training, evaluation.
 
 ## Not built yet
-Encroachment screens in the web app (the API is ready; the upload page, map and dashboard come in Phase 3), a trained encroachment model, intrusion incidents in the new data model (report numbers, map), authentication, deployment. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). No accuracy figures have been measured yet; see [docs/EVALUATION.md](docs/EVALUATION.md).
+The final paper (Phase 5). Future work: automatic zones from detected rails, encroachment on video keyframes, PDF reports, alerts, authentication, Docker deployment, and intrusion events with report numbers. The plan is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); measured results are in [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Run locally
 

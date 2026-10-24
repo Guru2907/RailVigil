@@ -70,6 +70,9 @@ def main() -> None:
     rv.RUNS.mkdir(parents=True, exist_ok=True)
     out = rv.RUNS / f"baseline_eval_{args.split}.json"
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    # Per-photo predictions and ground truth, for confidence intervals (training/bootstrap_ci.py).
+    (rv.RUNS / f"baseline_preds_{args.split}.json").write_text(
+        json.dumps({"preds": preds, "gts": gts}), encoding="utf-8")
 
     print("\n| Class | AP50 (box) | P | R | labelled objects |")
     print("|---|---|---|---|---|")

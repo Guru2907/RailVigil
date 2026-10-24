@@ -31,7 +31,7 @@ Ids are full UUID hex strings. Locations are plain `latitude`/`longitude` column
 | `media` for videos too, replacing `videos` (one job model for photos and videos) | with issue #3 |
 | `intrusion_events` replacing `incidents` (adds location, model version, report numbers `RV-INT-…`) | issue #3, part C |
 | findings: segmentation mask, zone Z1/Z2, distance to rail in metres | Phases 4–5 |
-| reports: PDF file, assignee | Phase 6 |
+| reports: PDF file, assignee | Future work |
 
 **Report numbers:** `RV-ENC-YYYY-NNNNNN` and `RV-INT-YYYY-NNNNNN`, issued from the `report_counters` row inside the same transaction (atomic `UPDATE … RETURNING`), so they are unique under concurrent jobs.
 
