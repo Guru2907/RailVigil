@@ -1,5 +1,6 @@
 export const SEVERITIES = ["critical", "high", "medium", "low"];
 
+// Map marker / chart colours (the map is always dark).
 export const SEVERITY_COLOR = {
   critical: "#F43F5E",
   high: "#F97316",
@@ -45,19 +46,22 @@ export function classLabel(cls) {
   return CLASS_LABEL[cls] || cls;
 }
 
+// High and critical pulse, per the design rules: risk must catch the eye.
 export function severityBadge(sev) {
   const s = (sev || "").toLowerCase();
-  if (s === "critical") return "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30";
-  if (s === "high") return "bg-orange-500/15 text-orange-300 ring-1 ring-orange-500/30";
-  if (s === "medium") return "bg-amber-400/20 text-amber-300 ring-1 ring-amber-500/30";
-  return "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30";
+  const base = "inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset";
+  if (s === "critical") return `${base} bg-danger/12 text-danger ring-danger/40 animate-pulse obsidian:text-rose-300`;
+  if (s === "high") return `${base} bg-orange-500/12 text-orange-700 ring-orange-500/40 animate-pulse obsidian:text-orange-300`;
+  if (s === "medium") return `${base} bg-amber-400/15 text-amber-800 ring-amber-500/40 obsidian:text-amber-300`;
+  return `${base} bg-emerald-500/12 text-emerald-800 ring-emerald-500/40 obsidian:text-emerald-300`;
 }
 
 export function statusBadge(status) {
-  if (status === "resolved") return "bg-emerald-500/15 text-emerald-300";
-  if (status === "false_positive") return "bg-white/10 text-muted";
-  if (status === "reported") return "bg-rose-500/15 text-rose-300";
-  return "bg-sky-500/15 text-sky-300";
+  const base = "inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset";
+  if (status === "resolved") return `${base} bg-emerald-500/12 text-emerald-800 ring-emerald-500/30 obsidian:text-emerald-300`;
+  if (status === "false_positive") return `${base} bg-zinc-500/10 text-muted ring-zinc-500/25`;
+  if (status === "reported") return `${base} bg-danger/10 text-danger ring-danger/30 obsidian:text-rose-300`;
+  return `${base} bg-sky-500/12 text-sky-800 ring-sky-500/30 obsidian:text-sky-300`;
 }
 
 export function shortSite(id) {

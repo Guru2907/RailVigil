@@ -10,7 +10,6 @@ import {
   SEVERITY_COLOR,
   STATUS_LABEL,
   classLabel,
-  severityBadge,
   shortSite,
 } from "../../utils/encroachmentFormat.js";
 import { formatDateTime, timeAgo } from "../../utils/formatDate.js";
@@ -54,7 +53,7 @@ function Clock() {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  return <span>{now.toISOString().slice(11, 19)} UTC</span>;
+  return <span>{now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false })} IST</span>;
 }
 
 function Chip({ active, color, onClick, children }) {
@@ -128,7 +127,7 @@ export default function MapView() {
   const intr = stats?.intrusion;
 
   return (
-    <div className="relative m-4 mt-0 h-[calc(100vh-6.5rem)] overflow-hidden rounded-2xl border border-line bg-black shadow-2xl">
+    <div className="relative h-[calc(100vh-9.6rem)] min-h-[560px] overflow-hidden bg-black">
       <MapContainer center={INDIA_CENTER} zoom={5} minZoom={4} className="h-full w-full rv-map" zoomControl={false}>
         <LayersControl position="bottomright">
           <LayersControl.BaseLayer checked name="Dark">
@@ -171,10 +170,10 @@ export default function MapView() {
       <div className="pointer-events-none absolute inset-0 z-[400] rv-scanlines" />
 
       {/* HUD: title + counters */}
-      <div className="absolute left-4 top-4 z-[500] w-72 rounded-2xl border border-line bg-black/70 p-4 font-mono text-white backdrop-blur-md">
-        <div className="flex items-center justify-between text-[10px] tracking-[0.2em] text-accent">
+      <div className="absolute left-4 top-4 z-[500] w-72 rounded-lg border border-white/10 bg-black/75 p-4 font-mono text-white backdrop-blur-md">
+        <div className="flex items-center justify-between text-[10px] tracking-[0.2em] text-signal">
           <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> LIVE
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal" /> LIVE
           </span>
           <Clock />
         </div>
@@ -182,19 +181,19 @@ export default function MapView() {
         <p className="text-[10px] text-white/40">Railway corridor encroachment watch · India</p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-white/5 p-2">
+          <div className="rounded-md bg-white/5 p-2">
             <div className="text-2xl font-bold text-white">{features.length}</div>
             <div className="text-[9px] uppercase tracking-wider text-white/50">{openOnly ? "Open sites" : "Sites"}</div>
           </div>
-          <div className="rounded-xl bg-rose-500/10 p-2">
+          <div className="rounded-md bg-rose-500/10 p-2">
             <div className="text-2xl font-bold text-rose-400">{enc?.critical_open_sites ?? "–"}</div>
             <div className="text-[9px] uppercase tracking-wider text-white/50">Critical open</div>
           </div>
-          <div className="rounded-xl bg-white/5 p-2">
+          <div className="rounded-md bg-white/5 p-2">
             <div className="text-2xl font-bold">{enc?.reports_last_7_days ?? "–"}</div>
             <div className="text-[9px] uppercase tracking-wider text-white/50">Reports · 7 days</div>
           </div>
-          <div className="rounded-xl bg-white/5 p-2">
+          <div className="rounded-md bg-white/5 p-2">
             <div className="text-2xl font-bold">{intr?.incidents_total ?? "–"}</div>
             <div className="text-[9px] uppercase tracking-wider text-white/50">Intrusions*</div>
           </div>
@@ -225,7 +224,7 @@ export default function MapView() {
       </div>
 
       {/* Filters */}
-      <div className="absolute left-1/2 top-4 z-[500] flex max-w-[60%] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-black/70 px-3 py-2 backdrop-blur-md">
+      <div className="absolute left-1/2 top-4 z-[500] flex max-w-[60%] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-black/70 px-3 py-2 backdrop-blur-md">
         {SEVERITIES.map((s) => (
           <Chip key={s} active={severities.has(s)} color={SEVERITY_COLOR[s]} onClick={() => toggleSeverity(s)}>
             {s}
@@ -251,14 +250,14 @@ export default function MapView() {
 
       {/* Empty state */}
       {!error && lastSync && features.length === 0 && (
-        <div className="absolute bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-xl border border-white/10 bg-black/70 px-4 py-2 font-mono text-xs text-white/70 backdrop-blur">
+        <div className="absolute bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-md border border-white/10 bg-black/70 px-4 py-2 font-mono text-xs text-white/70 backdrop-blur">
           No located sites yet. Upload photos with GPS or a map pin to see them here.
         </div>
       )}
 
       {/* Side panel */}
       {selected && (
-        <aside className="absolute right-4 top-4 z-[500] w-80 overflow-hidden rounded-2xl border border-white/15 bg-black/80 text-white backdrop-blur-md">
+        <aside className="absolute right-4 top-4 z-[500] w-80 overflow-hidden rounded-lg border border-white/15 bg-black/80 text-white backdrop-blur-md">
           {selected.properties.thumbnail_url ? (
             <img
               src={fileUrl(selected.properties.thumbnail_url)}
@@ -271,7 +270,7 @@ export default function MapView() {
           <div className="space-y-3 p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="font-mono text-[10px] tracking-widest text-accent">
+                <div className="font-mono text-[10px] tracking-widest text-signal">
                   {shortSite(selected.properties.site_id)}
                 </div>
                 <div className="text-base font-semibold">{classLabel(selected.properties.cls)}</div>
@@ -281,7 +280,10 @@ export default function MapView() {
               </button>
             </div>
             <div className="flex flex-wrap gap-1.5 text-[11px]">
-              <span className={`rounded-full px-2 py-0.5 font-semibold uppercase ${severityBadge(selected.properties.max_severity)}`}>
+              <span
+                className="rounded px-2 py-0.5 font-semibold uppercase text-black"
+                style={{ background: SEVERITY_COLOR[selected.properties.max_severity] }}
+              >
                 {selected.properties.max_severity}
               </span>
               <span className="rounded-full bg-white/10 px-2 py-0.5">{STATUS_LABEL[selected.properties.status]}</span>
@@ -309,7 +311,7 @@ export default function MapView() {
             </dl>
             <Link
               to={`/sites/${selected.properties.site_id}`}
-              className="block rounded-xl bg-accent py-2 text-center text-sm font-semibold text-white hover:bg-accent-hover"
+              className="block rounded-md bg-signal py-2 text-center text-sm font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
             >
               Open site case →
             </Link>

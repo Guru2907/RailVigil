@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { uploadVideo, assignVideoZone, getVideo, getAnnotatedVideoUrl, getIncidentSnapshotUrl } from "../../api/videos.js";
 import TrainLoader from "../../components/video/TrainLoader.jsx";
+import { PageHeader } from "../../components/ui/index.jsx";
+import { fmtTime, fmtPct, sevClass } from "../../utils/incidentFormat.js";
 
 const ACCEPTED_EXT = [".mp4", ".avi", ".mov"];
 
@@ -14,23 +16,6 @@ function formatDuration(sec) {
   const m = String(Math.floor(sec / 60)).padStart(2, "0");
   const s = String(Math.floor(sec % 60)).padStart(2, "0");
   return `${m}:${s}`;
-}
-
-function fmtTime(sec) {
-  const m = String(Math.floor(sec / 60)).padStart(2, "0");
-  const s = String(Math.floor(sec % 60)).padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-function fmtPct(v) {
-  return `${Math.round(v <= 1 ? v * 100 : v)}%`;
-}
-
-function sevClass(sev) {
-  const s = (sev || "").toUpperCase();
-  if (s === "HIGH" || s === "CRITICAL") return "bg-danger/15 text-danger animate-pulse";
-  if (s === "MEDIUM" || s === "MED") return "bg-amber-500/15 text-amber-300";
-  return "bg-emerald-500/15 text-emerald-300";
 }
 
 export default function VideoAnalysis() {
@@ -188,19 +173,12 @@ export default function VideoAnalysis() {
 
   return (
     <div>
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <div className="text-xs font-mono text-accent mb-2">
-            VIDEO ANALYSIS
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Analyze railway footage
-          </h1>
-          <p className="mt-2 text-white/60 max-w-md">
-            Upload a track video, then define the safety zone to start
-            detection.
-          </p>
-        </div>
+      <div>
+        <PageHeader
+          crumbs={[["Intrusion"], ["Video analysis"]]}
+          title="Video analysis"
+          description="Upload a track video, then define the safety zone to start detection."
+        />
 
         <input
           ref={inputRef}
@@ -219,13 +197,13 @@ export default function VideoAnalysis() {
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className={`cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center shadow-none transition-all duration-200 ${
+            className={`cursor-pointer rounded-lg border-2 border-dashed p-16 text-center shadow-lg transition-all duration-200 ${
               dragging
-                ? "border-accent bg-emerald-500/15 scale-[1.01]"
-                : "border-accent/60/60 bg-surface hover:border-accent"
+                ? "border-signal bg-emerald-500/12 scale-[1.01]"
+                : "border-line bg-surface hover:border-signal"
             }`}
           >
-            <div className="mx-auto w-14 h-14 rounded-full bg-canvas flex items-center justify-center text-accent">
+            <div className="mx-auto w-14 h-14 rounded-full bg-canvas flex items-center justify-center text-signal">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -241,14 +219,14 @@ export default function VideoAnalysis() {
             <div className="mt-5 text-lg font-semibold text-ink">
               Drag &amp; drop a video here
             </div>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-sm text-ink/60">
               or click to browse · MP4, AVI, MOV
             </p>
           </div>
         ) : (
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Video 60% */}
-            <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+            <div className="lg:col-span-3 rounded-lg border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
                 <span>{drawing ? "DRAWING SAFETY ZONE" : "PREVIEW"}</span>
                 <span className="truncate max-w-[60%]">{file.name}</span>
@@ -338,10 +316,10 @@ export default function VideoAnalysis() {
             </div>
 
             {/* Details 40% */}
-            <div className="lg:col-span-2 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line flex flex-col">
+            <div className="lg:col-span-2 rounded-lg bg-surface text-ink p-6 shadow-lg border border-line flex flex-col">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-semibold">Video details</h3>
-                <span className="text-xs font-mono text-emerald-300">
+                <span className="text-xs font-mono text-emerald-700 obsidian:text-emerald-300">
                   UPLOADED
                 </span>
               </div>
@@ -349,9 +327,9 @@ export default function VideoAnalysis() {
                 {rows.map(([k, v]) => (
                   <div
                     key={k}
-                    className="flex items-center justify-between rounded-2xl bg-surface-2 border border-line px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl bg-paper border border-line px-4 py-3"
                   >
-                    <dt className="text-sm text-muted">{k}</dt>
+                    <dt className="text-sm text-ink/60">{k}</dt>
                     <dd className="text-sm font-mono font-medium truncate max-w-[60%]">
                       {v}
                     </dd>
@@ -366,10 +344,10 @@ export default function VideoAnalysis() {
                   <span
                     className={`text-xs font-mono ${
                       zoneReady
-                        ? "text-emerald-300"
+                        ? "text-emerald-700 obsidian:text-emerald-300"
                         : drawing
                           ? "text-danger"
-                          : "text-muted/80"
+                          : "text-ink/40"
                     }`}
                   >
                     {zoneReady ? "READY" : drawing ? "DRAWING" : "NOT SET"} ·{" "}
@@ -381,7 +359,7 @@ export default function VideoAnalysis() {
                   <button
                     onClick={startDrawing}
                     disabled={previewFailed}
-                    className="w-full rounded-full bg-accent text-white font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {points.length ? "Redraw zone" : "Draw safety zone"}
                   </button>
@@ -403,14 +381,14 @@ export default function VideoAnalysis() {
                     <button
                       onClick={finishZone}
                       disabled={points.length < 3}
-                      className="rounded-full bg-accent text-white font-semibold px-3 py-3 text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                      className="rounded-md bg-accent text-accent-ink font-semibold px-3 py-3 text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
                     >
                       Finish
                     </button>
                   </div>
                 )}
 
-                <p className="mt-3 text-xs text-muted leading-relaxed">
+                <p className="mt-3 text-xs text-ink/50 leading-relaxed">
                   {drawing
                     ? "Click each corner of the danger area around the track. You need at least 3 points."
                     : zoneReady
@@ -419,7 +397,7 @@ export default function VideoAnalysis() {
                 </p>
 
                 {points.length > 0 && (
-                  <div className="mt-3 rounded-2xl bg-surface-2 border border-line px-4 py-3 text-[11px] font-mono text-muted leading-relaxed max-h-24 overflow-auto">
+                  <div className="mt-3 rounded-2xl bg-paper border border-line px-4 py-3 text-[11px] font-mono text-ink/60 leading-relaxed max-h-24 overflow-auto">
                     {points.map((p, i) => (
                       <div key={i}>
                         P{i + 1}: {p.x.toFixed(3)}, {p.y.toFixed(3)}
@@ -454,12 +432,12 @@ export default function VideoAnalysis() {
                   <button
                     onClick={handleAssignZone}
                     disabled={!zoneReady || !meta || submitting}
-                    className="w-full rounded-full bg-accent text-white font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {submitting ? "Saving zone…" : "Save zone & start analysis"}
                   </button>
                 ) : (
-                  <div className="rounded-2xl bg-surface-2 border border-line p-4">
+                  <div className="rounded-2xl bg-paper border border-line p-4">
                     <div
                       className={`flex items-center mb-3 ${
                         finished ? "justify-between" : "justify-center"
@@ -471,8 +449,8 @@ export default function VideoAnalysis() {
                           job?.status === "failed"
                             ? "text-danger"
                             : job?.status === "done"
-                              ? "text-emerald-300"
-                              : "text-muted animate-[pulse_3s_ease-in-out_infinite]"
+                              ? "text-emerald-700 obsidian:text-emerald-300"
+                              : "text-ink/60 animate-[pulse_3s_ease-in-out_infinite]"
                         }`}
                       >
                         {finished ? job.status.toUpperCase() : ""}
@@ -520,7 +498,7 @@ export default function VideoAnalysis() {
                             />
                             <span
                               className={
-                                state === "todo" ? "text-muted/80" : ""
+                                state === "todo" ? "text-ink/40" : ""
                               }
                             >
                               {label}
@@ -563,16 +541,16 @@ export default function VideoAnalysis() {
                 ["Max risk score", Math.round(maxRisk)],
                 ["Video duration", meta ? formatDuration(meta.duration) : "--:--"],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
+                <div key={label} className="rounded-lg bg-surface text-ink p-6 shadow-lg border border-line">
                   <div className="text-3xl font-semibold font-mono">{value}</div>
-                  <div className="mt-1 text-sm text-muted">{label}</div>
+                  <div className="mt-1 text-sm text-ink/60">{label}</div>
                 </div>
               ))}
             </div>
 
             {/* 60/40: annotated video + evidence */}
             <div className="grid lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+              <div className="lg:col-span-3 rounded-lg border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
                 <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
                   ANNOTATED OUTPUT
                 </div>
@@ -581,11 +559,11 @@ export default function VideoAnalysis() {
 
               <div
                 ref={evidenceRef}
-                className="lg:col-span-2 rounded-2xl bg-surface text-ink p-6 shadow-none border border-line scroll-mt-24"
+                className="lg:col-span-2 rounded-lg bg-surface text-ink p-6 shadow-lg border border-line scroll-mt-24"
               >
                 <h3 className="font-semibold mb-4">Evidence</h3>
                 {!selected ? (
-                  <p className="text-sm text-muted">
+                  <p className="text-sm text-ink/60">
                     Select an incident from the table below to see its snapshot and details.
                   </p>
                 ) : (
@@ -614,8 +592,8 @@ export default function VideoAnalysis() {
                         ["Max penetration", fmtPct(selected.max_penetration)],
                         ["Risk score", Math.round(selected.risk_score)],
                       ].map(([k, v]) => (
-                        <div key={k} className="rounded-2xl bg-surface-2 border border-line px-3 py-2">
-                          <dt className="text-[11px] text-muted">{k}</dt>
+                        <div key={k} className="rounded-2xl bg-paper border border-line px-3 py-2">
+                          <dt className="text-[11px] text-ink/50">{k}</dt>
                           <dd className="font-mono font-medium truncate">{v}</dd>
                         </div>
                       ))}
@@ -626,19 +604,19 @@ export default function VideoAnalysis() {
             </div>
 
             {/* Incident table */}
-            <div className="rounded-2xl bg-surface text-ink p-6 shadow-none border border-line">
+            <div className="rounded-lg bg-surface text-ink p-6 shadow-lg border border-line">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Confirmed incidents</h3>
-                <span className="text-xs font-mono text-emerald-300">{incidents.length} total · sorted by risk</span>
+                <span className="text-xs font-mono text-emerald-700 obsidian:text-emerald-300">{incidents.length} total · sorted by risk</span>
               </div>
               {incidents.length === 0 ? (
-                <p className="text-sm text-muted">
+                <p className="text-sm text-ink/60">
                   No confirmed incidents. Nothing stayed in the safety zone long enough to count.
                 </p>
               ) : (
-                <div className="max-h-96 overflow-auto rounded-2xl bg-surface-2 border border-line">
+                <div className="max-h-96 overflow-auto rounded-2xl bg-paper border border-line">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-surface-2 text-left text-[11px] font-mono text-muted">
+                    <thead className="sticky top-0 bg-paper text-left text-[11px] font-mono text-ink/50">
                       <tr>
                         {["TIME", "OBJECT", "TYPE", "DWELL", "PENETRATION", "RISK", "SEVERITY", ""].map((h) => (
                           <th key={h} className="px-4 py-3 font-normal">{h}</th>
@@ -654,7 +632,7 @@ export default function VideoAnalysis() {
                             evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                           }}
                           className={`cursor-pointer border-t border-line hover:bg-surface-2 transition-all duration-200 ${
-                            selected?.id === i.id ? "bg-emerald-500/15" : ""
+                            selected?.id === i.id ? "bg-emerald-500/12" : ""
                           }`}
                         >
                           <td className="px-4 py-3">{fmtTime(i.start_ts)}</td>
@@ -668,7 +646,7 @@ export default function VideoAnalysis() {
                               {(i.severity || "").toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-emerald-300">View</td>
+                          <td className="px-4 py-3 text-emerald-700 obsidian:text-emerald-300">View</td>
                         </tr>
                       ))}
                     </tbody>

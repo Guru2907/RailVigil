@@ -15,7 +15,7 @@ export default function ZoneCanvas({ src, points, onChange }) {
   const svgPoints = points.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
 
   return (
-    <div ref={boxRef} onClick={addPoint} className="relative cursor-crosshair select-none overflow-hidden rounded-2xl bg-black">
+    <div ref={boxRef} onClick={addPoint} className="relative cursor-crosshair select-none overflow-hidden rounded-md bg-black">
       <img src={src} alt="Photo to mark" className="block w-full" draggable={false} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full">
         {points.length >= 3 && (

@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { Check, Circle, Loader2, UploadCloud, X } from "lucide-react";
 import { fileUrl, getPhoto, uploadPhotos } from "../../api/encroachment.js";
 import ZoneCanvas from "../../components/encroachment/ZoneCanvas.jsx";
 import FindingList from "../../components/encroachment/FindingList.jsx";
+import { Card, ErrorBanner, PageHeader, Segmented, btn, inputClass } from "../../components/ui/index.jsx";
 import { formatDateTime } from "../../utils/formatDate.js";
 
 const POLL_MS = 2000;
-const BOTTOM_HALF = [
+const LOWER_PART = [
   [0, 0.55],
   [1, 0.55],
   [1, 1],
   [0, 1],
 ];
+const LOCATION_TEXT = { exif: "GPS from photo", pin: "Map pin", none: "No location" };
 
 function errorText(e) {
   const detail = e?.response?.data?.detail;
@@ -19,60 +22,110 @@ function errorText(e) {
   return e?.message || "Something went wrong";
 }
 
-const LOCATION_TEXT = { exif: "GPS from photo", pin: "Map pin", none: "No location" };
+// Pipeline steps derived from the job status the backend reports.
+const STEPS = ["Uploaded", "Queued", "YOLO detection", "Zone & severity", "Recorded"];
+function stepState(status, i) {
+  const reached = { queued: 1, processing: 2, done: 5, failed: 2 }[status] ?? 0;
+  if (status === "failed" && i === 2) return "failed";
+  if (i < reached || (status === "done" && i <= 4)) return "done";
+  if (i === reached) return "active";
+  return "todo";
+}
+
+function Pipeline({ status }) {
+  return (
+    <ol className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs">
+      {STEPS.map((label, i) => {
+        const s = stepState(status, i);
+        return (
+          <li key={label} className="flex items-center gap-2">
+            <span
+              className={`flex items-center gap-1.5 rounded px-2 py-1 font-medium ${
+                s === "done"
+                  ? "bg-accent text-accent-ink"
+                  : s === "active"
+                    ? "bg-paper text-ink ring-1 ring-ink/30"
+                    : s === "failed"
+                      ? "bg-danger/10 text-danger"
+                      : "text-muted"
+              }`}
+            >
+              {s === "done" ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : s === "active" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : s === "failed" ? (
+                <X className="h-3.5 w-3.5" />
+              ) : (
+                <Circle className="h-3 w-3" />
+              )}
+              {label}
+            </span>
+            {i < STEPS.length - 1 && <span className="h-px w-3 bg-line" aria-hidden />}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 function ResultCard({ photo }) {
-  const [view, setView] = useState("annotated");
+  const [view, setView] = useState("after");
   const done = photo.status === "done";
-  const src = done && view === "annotated" ? photo.annotated_url : photo.original_url;
+  const src = done && view === "after" ? photo.annotated_url : photo.original_url;
   return (
-    <div className="rounded-2xl bg-surface p-5 text-ink shadow-none">
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <h3 className="font-semibold">{photo.original_filename}</h3>
-        <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase ${
-            done ? "bg-emerald-500/15 text-emerald-300" : photo.status === "failed" ? "bg-rose-500/15 text-rose-300" : "animate-pulse bg-amber-500/15 text-amber-300"
-          }`}
-        >
-          {photo.status}
-        </span>
-        {photo.duplicate && <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-300">Already uploaded</span>}
-        <span className="ml-auto font-mono text-[11px] text-muted">
+    <Card
+      title={photo.original_filename}
+      subtitle={
+        <span className="font-mono">
           {LOCATION_TEXT[photo.location_source]}
           {photo.latitude != null && ` · ${photo.latitude.toFixed(5)}, ${photo.longitude.toFixed(5)}`}
           {photo.captured_at && ` · taken ${formatDateTime(photo.captured_at)}`}
+          {photo.duplicate && " · already uploaded earlier"}
         </span>
-      </div>
-      {photo.error && <p className="mb-3 text-sm text-rose-300">{photo.error}</p>}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div>
+      }
+      action={<Pipeline status={photo.status} />}
+    >
+      {photo.error && <ErrorBanner>{photo.error}</ErrorBanner>}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <div className="overflow-hidden rounded-md border border-line bg-black">
+            <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5 font-mono text-[10px] tracking-widest text-white/60">
+              <span>{done && view === "after" ? "ANALYSED · ZONE + DETECTIONS" : "ORIGINAL"}</span>
+              <span>
+                {photo.width}×{photo.height}
+              </span>
+            </div>
+            <img src={fileUrl(src)} alt={photo.original_filename} className="block w-full" />
+          </div>
           {done && (
-            <div className="mb-2 inline-flex rounded-full bg-surface-2 p-1 text-xs">
-              {["original", "annotated"].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`rounded-full px-3 py-1 capitalize ${view === v ? "bg-accent text-white" : "text-muted"}`}
-                >
-                  {v === "original" ? "Before" : "After"}
-                </button>
-              ))}
+            <div className="mt-3">
+              <Segmented
+                options={[
+                  ["before", "Before"],
+                  ["after", "After"],
+                ]}
+                value={view}
+                onChange={setView}
+                label="Image view"
+              />
             </div>
           )}
-          <img src={fileUrl(src)} alt={photo.original_filename} className="w-full rounded-2xl bg-black" />
         </div>
-        <div>
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            Findings {done && `(${photo.findings?.length ?? 0})`}
-          </h4>
+        <div className="lg:col-span-2">
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Findings {done && `· ${photo.findings?.length ?? 0}`}
+          </h3>
           {done ? (
-            <FindingList findings={photo.findings} />
+            <div className="[&_ul]:grid-cols-1">
+              <FindingList findings={photo.findings} />
+            </div>
           ) : (
             <p className="text-sm text-muted">{photo.status === "failed" ? "Analysis failed." : "Analysing…"}</p>
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -85,18 +138,20 @@ export default function PhotoUpload() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState([]);
+  const [dragging, setDragging] = useState(false);
 
   const preview = useMemo(() => (files[0] ? URL.createObjectURL(files[0]) : null), [files]);
   useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
 
   // Poll photos that are still being analysed.
-  const pending = results.filter((r) => r.status === "queued" || r.status === "processing").map((r) => r.id);
-  const pendingKey = pending.join(",");
+  const pendingKey = results
+    .filter((r) => r.status === "queued" || r.status === "processing")
+    .map((r) => r.id)
+    .join(",");
   useEffect(() => {
     if (!pendingKey) return;
     const t = setInterval(async () => {
-      const ids = pendingKey.split(",");
-      const fresh = await Promise.all(ids.map((id) => getPhoto(id).catch(() => null)));
+      const fresh = await Promise.all(pendingKey.split(",").map((id) => getPhoto(id).catch(() => null)));
       setResults((prev) =>
         prev.map((r) => {
           const f = fresh.find((x) => x && x.id === r.id);
@@ -106,6 +161,14 @@ export default function PhotoUpload() {
     }, POLL_MS);
     return () => clearInterval(t);
   }, [pendingKey]);
+
+  function choose(list) {
+    const imgs = Array.from(list || []).filter((f) => /\.(jpe?g|png|webp)$/i.test(f.name));
+    if (!imgs.length) return setError("Choose JPG, PNG or WebP photos.");
+    setError("");
+    setFiles(imgs);
+    setPoints([]);
+  }
 
   async function submit() {
     setError("");
@@ -127,112 +190,127 @@ export default function PhotoUpload() {
     }
   }
 
-  const input = "w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent";
+  const fieldLabel = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted";
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Encroachment · Photo analysis</h1>
-        <p className="text-sm text-white/60">
-          Upload track-side photos, outline the railway land, and RailVigil flags structures, vegetation, debris, dumps
-          and vehicles on it.
-        </p>
-      </div>
+    <>
+      <PageHeader
+        crumbs={[["Encroachment"], ["Photo analysis"]]}
+        title="Photo analysis"
+        description="Upload track-side photographs, outline the railway land once, and RailVigil flags structures, vegetation, waste, material dumps and vehicles on it."
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="rounded-2xl bg-surface p-5 text-ink shadow-none">
-          {preview ? (
-            <>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span>
-                  Click to outline the <b>railway land</b> ({points.length} points)
-                  {files.length > 1 && <span className="text-muted"> · same zone used for all {files.length} photos</span>}
-                </span>
-                <div className="flex gap-2">
-                  <button onClick={() => setPoints(BOTTOM_HALF)} className="rounded-full bg-surface-2 px-3 py-1 text-xs hover:bg-line">
-                    Lower part
-                  </button>
-                  <button onClick={() => setPoints(points.slice(0, -1))} className="rounded-full bg-surface-2 px-3 py-1 text-xs hover:bg-line">
-                    Undo
-                  </button>
-                  <button onClick={() => setPoints([])} className="rounded-full bg-surface-2 px-3 py-1 text-xs hover:bg-line">
-                    Clear
-                  </button>
-                </div>
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* 60%: photo and zone */}
+        <Card
+          className="lg:col-span-3"
+          title={preview ? "Mark the railway land" : "Upload photographs"}
+          subtitle={
+            preview
+              ? `Click on the photo to outline the right-of-way · ${points.length} points${files.length > 1 ? ` · applied to all ${files.length} photos` : ""}`
+              : "JPG, PNG or WebP · up to 20 photos · 25 MB each"
+          }
+          action={
+            preview && (
+              <div className="flex gap-2">
+                <button onClick={() => setPoints(LOWER_PART)} className={`${btn.secondary} ${btn.small}`}>
+                  Lower part
+                </button>
+                <button onClick={() => setPoints(points.slice(0, -1))} className={`${btn.secondary} ${btn.small}`} disabled={!points.length}>
+                  Undo
+                </button>
+                <button onClick={() => setPoints([])} className={`${btn.secondary} ${btn.small}`} disabled={!points.length}>
+                  Clear
+                </button>
               </div>
-              <ZoneCanvas src={preview} points={points} onChange={setPoints} />
-            </>
+            )
+          }
+        >
+          {preview ? (
+            <ZoneCanvas src={preview} points={points} onChange={setPoints} />
           ) : (
-            <label className="flex h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line text-muted hover:border-accent">
-              <span className="text-4xl">📷</span>
-              <span className="mt-2 font-medium">Choose photos (JPG, PNG, WebP)</span>
-              <span className="text-xs">Up to 20 at once</span>
-              <input
-                type="file"
-                multiple
-                accept=".jpg,.jpeg,.png,.webp"
-                className="hidden"
-                onChange={(e) => {
-                  setFiles(Array.from(e.target.files || []));
-                  setPoints([]);
-                }}
-              />
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                choose(e.dataTransfer.files);
+              }}
+              className={`flex h-80 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed transition ${
+                dragging ? "border-ink bg-surface-2" : "border-line bg-paper hover:border-ink/40"
+              }`}
+            >
+              <UploadCloud className="h-10 w-10 text-muted" aria-hidden />
+              <span className="mt-3 font-semibold">Drag photos here or click to browse</span>
+              <span className="mt-1 text-sm text-muted">GPS in the photo is used automatically</span>
+              <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" className="sr-only" onChange={(e) => choose(e.target.files)} />
             </label>
           )}
-        </div>
+        </Card>
 
-        <div className="space-y-4 rounded-2xl bg-surface p-5 text-ink shadow-none">
+        {/* 40%: details and action */}
+        <Card className="lg:col-span-2" title="Analysis details" bodyClass="space-y-5 p-6">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Photos</div>
+            <span className={fieldLabel}>Photographs</span>
             {files.length ? (
-              <ul className="mt-1 max-h-32 overflow-auto text-sm">
+              <ul className="max-h-36 divide-y divide-line overflow-auto rounded-md border border-line bg-paper text-sm">
                 {files.map((f) => (
-                  <li key={f.name} className="truncate">
-                    {f.name}
+                  <li key={f.name} className="flex justify-between gap-3 px-3 py-2">
+                    <span className="truncate">{f.name}</span>
+                    <span className="shrink-0 font-mono text-xs text-muted">{(f.size / 1e6).toFixed(1)} MB</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted">None chosen</p>
+              <p className="text-sm text-muted">None chosen yet.</p>
             )}
             {files.length > 0 && (
-              <button
-                onClick={() => {
-                  setFiles([]);
-                  setPoints([]);
-                }}
-                className="mt-1 text-xs text-accent hover:underline"
-              >
-                Change photos
+              <button onClick={() => (setFiles([]), setPoints([]))} className="mt-2 text-xs font-medium underline underline-offset-4">
+                Change photographs
               </button>
             )}
           </div>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Location (optional)</div>
-            <p className="mb-2 text-[11px] text-muted">Used only when a photo has no GPS of its own.</p>
+            <span className={fieldLabel}>Location (optional)</span>
             <div className="grid grid-cols-2 gap-2">
-              <input className={input} placeholder="Latitude" value={lat} onChange={(e) => setLat(e.target.value)} />
-              <input className={input} placeholder="Longitude" value={lon} onChange={(e) => setLon(e.target.value)} />
+              <input aria-label="Latitude" className={inputClass} placeholder="Latitude" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} />
+              <input aria-label="Longitude" className={inputClass} placeholder="Longitude" inputMode="decimal" value={lon} onChange={(e) => setLon(e.target.value)} />
             </div>
+            <p className="mt-1.5 text-xs text-muted">Used only for photos without GPS. Without a location, findings are recorded but not mapped.</p>
           </div>
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Label (optional)</div>
-            <input className={input} placeholder="e.g. Km 42 near Kalyan" value={label} onChange={(e) => setLabel(e.target.value)} />
+            <label htmlFor="camera-label" className={fieldLabel}>
+              Label (optional)
+            </label>
+            <input id="camera-label" className={inputClass} placeholder="e.g. Km 42, near Kalyan" value={label} onChange={(e) => setLabel(e.target.value)} />
           </div>
-          {error && <p className="text-sm text-rose-300">{error}</p>}
-          <button
-            onClick={submit}
-            disabled={busy}
-            className="w-full rounded-full bg-accent py-3 font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
-          >
-            {busy ? "Uploading…" : "Analyse photos"}
+          {error && <ErrorBanner>{error}</ErrorBanner>}
+          <button onClick={submit} disabled={busy} className={`${btn.primary} w-full py-3`}>
+            {busy ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+              </>
+            ) : (
+              "Analyse photographs"
+            )}
           </button>
-        </div>
+        </Card>
       </div>
 
-      {results.map((r) => (
-        <ResultCard key={r.id} photo={r} />
-      ))}
-    </div>
+      {results.length > 0 && (
+        <section aria-label="Results" className="mt-10 space-y-6">
+          <h2 className="border-b border-canvas-line pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-canvas-muted">
+            Results · {results.length} photograph(s)
+          </h2>
+          {results.map((r) => (
+            <ResultCard key={r.id} photo={r} />
+          ))}
+        </section>
+      )}
+    </>
   );
 }

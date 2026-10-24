@@ -15,10 +15,9 @@ import NotFound from "../pages/NotFound.jsx";
 export default function AppRouter() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-
-      {/* App pages: sidebar + top bar */}
+      {/* Every page: utility strip, header, menu bar and footer */}
       <Route element={<PrivateLayout />}>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/upload" element={<VideoAnalysis />} />
         <Route path="/incidents" element={<Incidents />} />
         <Route path="/incidents/:id" element={<IncidentDetails />} />
