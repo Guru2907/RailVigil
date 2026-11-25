@@ -189,3 +189,65 @@ def test_rejected_photos_are_never_added_again(dataset, tmp_path, monkeypatch):
     assert rv.register_image(path, {"source": "wikimedia", "licence": "CC0"}, []) is None
     rv.add_rejected([rv.image_id_for(path)])          # no duplicate lines
     assert len((tmp_path / "rejected.txt").read_text().splitlines()) == 1
+
+
+# --- licence tiers, other countries, near duplicates --------------------------------
+
+import collect_openverse as ov  # noqa: E402
+
+
+def test_tier_b_and_c_photos_are_training_only(dataset):
+    rows = []
+    for n, tier in enumerate(("A", "B", "C")):
+        rv.register_image(_photo(dataset / f"{tier}.jpg", colour=(60 * n, 90, 200)),
+                          {"source": "x", "licence": "some licence", "tier": tier, "country": "Kenya"}, rows)
+    assert [(r["tier"], r["role"], r["country"]) for r in rows] == [
+        ("A", "", "Kenya"), ("B", rv.TRAIN_ONLY, "Kenya"), ("C", rv.TRAIN_ONLY, "Kenya")]
+    rv.assign_splits(rows)
+    assert [r["split"] for r in rows[1:]] == ["train", "train"]
+
+
+def test_unknown_tier_is_refused(dataset):
+    with pytest.raises(ValueError):
+        rv.register_image(_photo(dataset / "a.jpg"), {"source": "x", "licence": "CC0", "tier": "D"}, [])
+
+
+def test_commons_country_mode_needs_that_country():
+    dhaka = _commons_page(title="File:Slum by railway track, Dhaka.jpg", cats=("Slums in Dhaka", "Bangladesh"))
+    assert cc.candidate(dhaka, "Bangladesh")["country"] == "Bangladesh"
+    assert cc.candidate(dhaka, "Kenya") is None
+    plain = "File:Railway track.jpg"
+    dhaka_coords = _commons_page(title=plain, cats=("Railways",), coords=(23.81, 90.41))
+    assert cc.candidate(dhaka_coords, "Bangladesh")["lat"] == 23.81
+    # coordinates inside the loose Bangladesh box but in India (Kolkata) are refused
+    assert cc.candidate(_commons_page(title=plain, cats=("Railways",), coords=(22.57, 88.36)), "Bangladesh") is None
+    # an Indian place name beats the country's own words
+    assert cc.candidate(_commons_page(title=plain, cats=("Dhaka", "Mumbai")), "Bangladesh") is None
+
+
+@pytest.mark.parametrize("code, version, name", [
+    ("by-sa", "2.0", "CC BY-SA 2.0"), ("by", "4.0", "CC BY 4.0"),
+    ("cc0", "1.0", "CC0"), ("pdm", "1.0", "Public domain"),
+])
+def test_openverse_licence_names(code, version, name):
+    assert ov.licence_name({"license": code, "license_version": version}) == name
+    assert cc.is_free(name)
+
+
+def test_openverse_skips_wikimedia_and_unplaced_items():
+    item = {"id": "x1", "title": "Railway slum in Jakarta", "tags": [], "width": 2000, "license": "by",
+            "license_version": "2.0", "source": "flickr", "url": "https://example.org/a.jpg"}
+    assert ov.candidate(item, "Indonesia")["licence"] == "CC BY 2.0"
+    assert ov.candidate({**item, "source": "wikimedia"}, "Indonesia") is None
+    assert ov.candidate({**item, "title": "Railway slum"}, "Indonesia") is None
+    assert ov.candidate({**item, "license": "by-nc"}, "Indonesia") is None
+
+
+def test_near_duplicates_by_difference_hash(tmp_path):
+    img = Image.radial_gradient("L").convert("RGB").resize((200, 150))
+    img.save(tmp_path / "a.jpg")
+    img.resize((120, 90)).save(tmp_path / "b.jpg", quality=60)          # smaller, recompressed copy
+    Image.linear_gradient("L").convert("RGB").resize((200, 150)).save(tmp_path / "c.jpg")
+    hashes = {n: rv.dhash(tmp_path / f"{n}.jpg") for n in "abc"}
+    pairs = {(a, b) for a, b, _ in rv.near_duplicates(hashes)}
+    assert ("a", "b") in pairs and ("a", "c") not in pairs

@@ -31,6 +31,7 @@ datasets/*
 !datasets/intrusion/
 datasets/intrusion/*
 !datasets/intrusion/labels.csv
+!datasets/intrusion/clips.csv
 !datasets/intrusion/README.md
 training/runs/
 training/weights/

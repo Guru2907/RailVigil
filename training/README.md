@@ -42,20 +42,40 @@ filename,source_url,author,licence
 img001.jpg,https://commons.wikimedia.org/wiki/File:...,Jane Doe,CC BY-SA 4.0
 ```
 
-### Automatic collectors (India only)
+### Automatic collectors
 
 ```powershell
-& $T training\collect_mapillary.py --per-city 50   # street-level photos near tracks, 6 metros (needs MAPILLARY_TOKEN in training\.env)
-& $T training\collect_commons.py --limit 100       # freely licensed Wikimedia Commons photos
+& $T training\collect_mapillary.py --per-city 50   # street-level photos near tracks (needs MAPILLARY_TOKEN in training\.env)
+& $T training\collect_commons.py --limit 100       # freely licensed Wikimedia Commons photos, India
+& $T training\collect_commons.py --country all --limit 10   # the same for 13 other countries (see COUNTRIES)
+& $T training\collect_openverse.py --country all --limit 10 # CC photos via Openverse (mostly Flickr)
+& $T training\collect_pixabay.py --limit 40        # free-stock photos, tier B: training only (needs PIXABAY_API_KEY)
+& $T training\ingest_incoming.py                   # photos listed in datasets\incoming\incoming.csv (e.g. by a collection agent)
 & $T training\import_taco.py --limit 400           # TACO litter outlines -> debris_waste, TRAIN ONLY
+& $T training\contact_sheet.py --source any --since 2026-11-25 --name new   # look at new photos in grids
 & $T training\remove_images.py <id> <id> --reason "no track visible"   # drop irrelevant photos after a look
 ```
 
-- **Mapillary:** only photos taken on an OpenStreetMap railway line (within 8 m: from a train or at a level crossing), not on a road or foot bridge, at least 100 m apart. Photos from roads beside the track rarely show it. Licence CC BY-SA 4.0; the photographer is recorded.
-- **Commons:** only free licences (never NC or ND). Photos must be inside India by coordinates, or carry Indian place names and no foreign ones.
-- **TACO** is not Indian, so its photos are marked `train_only`. They never reach val or test, so every reported number is measured on Indian photos only.
+- **Every photo is reviewed by eye** on contact sheets before it counts. Country-name searches return many off-topic photos (temples, mountains, portraits); about 2 in 3 were removed in the 2026-11 collection.
+- **Licence tiers** (`tier` column): **A** Creative Commons or public domain; **B** free stock (Pixabay), training only; **C** licence unclear or all rights reserved (photos saved by hand for `ingest_incoming.py`), training only and never shown or shared. Only tier A can be in val or test.
+- **Country** (`country`, `region` columns): Indian photos by coordinates or Indian place names; other countries by their place names, or coordinates inside the country and outside India.
+- **Mapillary:** only photos taken on an OpenStreetMap railway line (within 8 m: from a train or at a level crossing), not on a road or foot bridge, at least 100 m apart. Licence CC BY-SA 4.0; the photographer is recorded. In whole-state mode (`--hdx`) there is no bridge data, and most hits were cars on road overbridges.
+- **Commons:** only free licences (never NC or ND). Commons refuses fast 2048 px thumbnail requests (HTTP 429); the collector then fetches the original and shrinks it locally.
+- **TACO** is not a railway scene, so its photos are marked `train_only`.
+- **Duplicates:** the same file is never added twice (the id is its SHA-256), and removed photos never come back (`datasets\rejected.txt`). Look-alike copies from different sites are found with `rvdata.near_duplicates` (difference hash).
 - Run the collectors **one at a time**: each rewrites `datasets\manifest.csv`.
-- `MAPILLARY_TOKEN` lives in `training\.env` (git-ignored). Use a READ-only client token, and never commit or share it.
+- `MAPILLARY_TOKEN` and `PIXABAY_API_KEY` live in `training\.env` (git-ignored). Never commit or share them.
+
+### Intrusion clips
+
+```powershell
+& $T training\collect_clips.py --pixabay-preview                       # thumbnail sheets of Pixabay candidates
+& $T training\collect_clips.py --pixabay-ids 3178 384221 --intrusion yes   # download the ones picked by eye
+& $T training\collect_clips.py --add-commons "File:Some_clip.webm" --intrusion no
+& $T training\clip_frames.py                                           # frame sheets with timestamps, for labels.csv
+```
+
+Clips go to `datasets\intrusion\clips\` (not committed); their sources and licences are listed in `datasets\intrusion\clips.csv` (committed). Pixabay's keyword search is loose, so clips are always picked from the preview, never downloaded blindly.
 
 ## 2. Add your own photos to the dataset
 

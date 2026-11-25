@@ -54,10 +54,16 @@ SAME_PLACE_M = 300.0
 MANIFEST_FIELDS = [
     "image_id", "file", "original_name", "source", "source_url", "licence", "author",
     "lat", "lon", "captured_at", "location_source", "group", "split", "added_at", "role",
+    "country", "region", "tier",
 ]
-# role "train_only": extra training data from outside India (e.g. TACO litter). It never
-# enters val/test, so every reported number is measured on Indian photos only.
+# role "train_only": extra training data that must never be measured on: TACO litter
+# (not railway scenes), free-stock photos (tier B) and research-only photos (tier C).
 TRAIN_ONLY = "train_only"
+# Licence tiers. A: Creative Commons or public domain (can be shown and shared).
+# B: free stock licences (Pixabay, Pexels, Mixkit; credit kept, files not redistributed).
+# C: licence unclear or all rights reserved (research use only: never shown, shared or tested).
+TIERS = ("A", "B", "C")
+TEST_TIERS = ("A",)
 
 # --- India check ---------------------------------------------------------------
 # Coarse hand-traced outlines (lon, lat), accurate to roughly 10-30 km: enough to
@@ -302,6 +308,9 @@ def register_image(src: Path, meta: dict, rows: list[dict], known: set[str] | No
 
     if not meta.get("licence"):
         raise ValueError(f"{src}: no licence")
+    tier = meta.get("tier", "A")
+    if tier not in TIERS:
+        raise ValueError(f"{src}: tier must be one of {TIERS}, got {tier!r}")
     known = known if known is not None else {r["image_id"] for r in rows}
     image_id = image_id_for(src)
     if image_id in known or image_id in read_rejected():
@@ -329,10 +338,42 @@ def register_image(src: Path, meta: dict, rows: list[dict], known: set[str] | No
         "group": meta.get("group", ""),
         "split": "",
         "added_at": now_iso(),
-        "role": meta.get("role", ""),
+        # Only tier A may be measured on; everything else is training data only.
+        "role": meta.get("role", "") or ("" if tier in TEST_TIERS else TRAIN_ONLY),
+        "country": meta.get("country", ""),
+        "region": meta.get("region", ""),
+        "tier": tier,
     })
     known.add(image_id)
     return image_id
+
+
+def dhash(path: Path, size: int = 8) -> int:
+    """64-bit difference hash: near-identical photos (resized, recompressed,
+    lightly cropped copies of one picture) differ in only a few bits."""
+    from PIL import Image
+
+    with Image.open(path) as im:
+        g = im.convert("L").resize((size + 1, size), Image.Resampling.LANCZOS)
+        px = list(g.getdata())
+    bits = 0
+    for row in range(size):
+        for col in range(size):
+            left, right = px[row * (size + 1) + col], px[row * (size + 1) + col + 1]
+            bits = (bits << 1) | (left > right)
+    return bits
+
+
+def near_duplicates(hashes: dict[str, int], max_bits: int = 6) -> list[tuple[str, str, int]]:
+    """Pairs of image ids whose difference hashes are within `max_bits` bits."""
+    items = sorted(hashes.items())
+    pairs = []
+    for i, (a, ha) in enumerate(items):
+        for b, hb in items[i + 1:]:
+            d = bin(ha ^ hb).count("1")
+            if d <= max_bits:
+                pairs.append((a, b, d))
+    return pairs
 
 
 # --- YOLO segmentation labels ------------------------------------------------
