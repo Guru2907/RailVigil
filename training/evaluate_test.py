@@ -21,6 +21,16 @@ from other countries.
 
 For fine-tuned models, stage 1 also records Ultralytics' own mask and box mAP on
 the same labels, comparable with the validation tables.
+
+Per-class hybrid (each class taken from the model that is best at it ON
+VALIDATION, then scored on test once):
+
+    python training/evaluate_test.py predict --split val --model baseline --labels datasets/labels \\
+        --out training/runs/val_eval
+    python training/evaluate_test.py score --split val --labels datasets/labels --models baseline v2-m-f10 \\
+        --out training/runs/val_eval --report training/runs/val_eval/report
+    python training/evaluate_test.py hybrid --labels datasets/labels_test/A --models baseline v2-m-f10 \\
+        --val-report training/runs/val_eval/report.json --name hybrid
 """
 
 import argparse
@@ -41,10 +51,32 @@ AP_CONFIDENCE = 0.01
 GROUPS = ("all", "India", "other countries")
 
 
-def test_photos(labels_dir: Path) -> list[dict]:
-    """Manifest rows of the test photos that have a label file in labels_dir."""
+def test_photos(labels_dir: Path, split: str = "test") -> list[dict]:
+    """Manifest rows of the split's photos that have a label file in labels_dir."""
     return [r for r in rv.read_manifest()
-            if r["split"] == "test" and (labels_dir / f"{r['image_id']}.txt").is_file()]
+            if r["split"] == split and (labels_dir / f"{r['image_id']}.txt").is_file()]
+
+
+def route_by_validation(val_report: dict, models: list[str]) -> dict[str, str]:
+    """For each class, the candidate with the highest validation AP50 (ties: the first listed)."""
+    per = val_report["groups"]["all"]["per_class_ap50"]
+    routing = {}
+    for c in val_report["classes"]:
+        scores = [(per[m][c]["value"], -i, m) for i, m in enumerate(models)
+                  if m in per and not math.isnan(per[m][c]["value"])]
+        if scores:
+            routing[c] = max(scores)[2]
+    return routing
+
+
+def combine(preds_by_model: dict[str, dict], routing: dict[str, str], fallback: str) -> dict:
+    """Hybrid predictions: class c comes only from routing[c] (others from the fallback model)."""
+    images = set().union(*(p.keys() for p in preds_by_model.values()))
+    out = {}
+    for img in images:
+        out[img] = [d for m, preds in preds_by_model.items() for d in preds.get(img, [])
+                    if routing.get(d[0], fallback) == m]
+    return out
 
 
 def group_of(row: dict) -> str:
@@ -228,8 +260,11 @@ def markdown(report: dict, models: list[str], extra: dict) -> str:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("stage", choices=["predict", "score"])
+    p.add_argument("stage", choices=["predict", "score", "hybrid"])
     p.add_argument("--labels", type=Path, required=True, help="the test answer key, e.g. datasets/labels_test/A")
+    p.add_argument("--split", default="test", choices=rv.SPLITS, help="which manifest split to use")
+    p.add_argument("--val-report", type=Path, help="hybrid: JSON from 'score --split val' that sets the routing")
+    p.add_argument("--name", default="hybrid", help="hybrid: name of the combined model")
     p.add_argument("--model", help="predict: a training run name, or 'baseline'")
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--models", nargs="+", help="score: models in reporting order")
@@ -240,10 +275,23 @@ def main() -> None:
     p.add_argument("--report", type=Path, help="score: also write the JSON and markdown here (without suffix)")
     args = p.parse_args()
 
-    rows = test_photos(args.labels)
+    rows = test_photos(args.labels, args.split)
     if not rows:
-        raise SystemExit(f"No test photos with labels in {args.labels}")
+        raise SystemExit(f"No {args.split} photos with labels in {args.labels}")
     args.out.mkdir(parents=True, exist_ok=True)
+
+    if args.stage == "hybrid":
+        if not (args.models and args.val_report):
+            raise SystemExit("hybrid needs --models and --val-report")
+        routing = route_by_validation(json.loads(args.val_report.read_text(encoding="utf-8")), args.models)
+        loaded = {m: json.loads((args.out / f"preds_{m}.json").read_text(encoding="utf-8")) for m in args.models}
+        preds = {m: e["preds"] for m, e in loaded.items()}
+        result = {"model": args.name, "routing": routing, "fallback": args.models[0], "candidates": args.models,
+                  "chosen_on": str(args.val_report), "preds": combine(preds, routing, args.models[0]),
+                  "labels": str(args.labels), "photos": len(rows)}
+        (args.out / f"preds_{args.name}.json").write_text(json.dumps(result), encoding="utf-8")
+        print(f"{args.name}: routing chosen on validation: {routing}")
+        return
 
     if args.stage == "predict":
         if not args.model:

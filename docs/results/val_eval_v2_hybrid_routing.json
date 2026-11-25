@@ -1,0 +1,388 @@
+{
+  "classes": [
+    "structure_permanent",
+    "structure_temporary",
+    "vegetation",
+    "material_dump",
+    "vehicle_parked"
+  ],
+  "excluded_classes": {},
+  "test_objects": {
+    "structure_temporary": 36,
+    "material_dump": 5,
+    "vegetation": 115,
+    "structure_permanent": 55,
+    "vehicle_parked": 14
+  },
+  "resamples": 1000,
+  "seed": 0,
+  "groups": {
+    "all": {
+      "photos": 75,
+      "objects": {
+        "structure_permanent": 55,
+        "structure_temporary": 36,
+        "vegetation": 115,
+        "material_dump": 5,
+        "vehicle_parked": 14
+      },
+      "mean_ap50": {
+        "baseline": {
+          "value": 0.594335305469529,
+          "ci95": [
+            0.5236737640712567,
+            0.7355279369104669
+          ]
+        },
+        "v2-m-f10": {
+          "value": 0.27881028663200325,
+          "ci95": [
+            0.2115649216595154,
+            0.4156243531925938
+          ]
+        }
+      },
+      "per_class_ap50": {
+        "baseline": {
+          "structure_permanent": {
+            "value": 0.5425979406531941,
+            "ci95": [
+              0.39600839619392086,
+              0.7374836826229302
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.6513764275828228,
+            "ci95": [
+              0.4335480134589561,
+              0.8250700359298228
+            ]
+          },
+          "vegetation": {
+            "value": 0.9738849237154447,
+            "ci95": [
+              0.9362442568061334,
+              0.999106798686858
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.803817235396183,
+            "ci95": [
+              0.567936507936508,
+              1.0
+            ]
+          }
+        },
+        "v2-m-f10": {
+          "structure_permanent": {
+            "value": 0.13260319066648749,
+            "ci95": [
+              0.06851507538577173,
+              0.2440819009158907
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.22503080004820952,
+            "ci95": [
+              0.07589508645816563,
+              0.41646195489065824
+            ]
+          },
+          "vegetation": {
+            "value": 0.6002702562981331,
+            "ci95": [
+              0.5070807622120931,
+              0.6906383619262778
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.4361471861471861,
+            "ci95": [
+              0.19308582827891774,
+              1.0
+            ]
+          }
+        }
+      },
+      "paired_differences": {
+        "v2-m-f10 - baseline": {
+          "difference": -0.3155250188375257,
+          "ci95": [
+            -0.3968330771761297,
+            -0.1980605853438045
+          ],
+          "share_above_zero": 0.0
+        }
+      }
+    },
+    "India": {
+      "photos": 41,
+      "objects": {
+        "structure_permanent": 36,
+        "structure_temporary": 27,
+        "vegetation": 69,
+        "material_dump": 2,
+        "vehicle_parked": 7
+      },
+      "mean_ap50": {
+        "baseline": {
+          "value": 0.6840917557442694,
+          "ci95": [
+            0.6022284900372157,
+            0.9100375452979788
+          ]
+        },
+        "v2-m-f10": {
+          "value": 0.24917167671875445,
+          "ci95": [
+            0.20173894821378113,
+            0.42717290285512477
+          ]
+        }
+      },
+      "per_class_ap50": {
+        "baseline": {
+          "structure_permanent": {
+            "value": 0.7940020184029871,
+            "ci95": [
+              0.6282780196054789,
+              0.9387241653814865
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.8227013727013727,
+            "ci95": [
+              0.6539145660717973,
+              0.9725732600732598
+            ]
+          },
+          "vegetation": {
+            "value": 0.9670206937394361,
+            "ci95": [
+              0.9050260988508273,
+              1.0
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.836734693877551,
+            "ci95": [
+              0.836734693877551,
+              0.836734693877551
+            ]
+          }
+        },
+        "v2-m-f10": {
+          "structure_permanent": {
+            "value": 0.27663531369740285,
+            "ci95": [
+              0.15279771496342362,
+              0.4329532463777346
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.2911794297962225,
+            "ci95": [
+              0.09880999542241929,
+              0.5331372143645806
+            ]
+          },
+          "vegetation": {
+            "value": 0.5907420527985595,
+            "ci95": [
+              0.4838916989431094,
+              0.7026677800943651
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.0873015873015873,
+            "ci95": [
+              0.05267857142857142,
+              0.17293233082706766
+            ]
+          }
+        }
+      },
+      "paired_differences": {
+        "v2-m-f10 - baseline": {
+          "difference": -0.43492007902551494,
+          "ci95": [
+            -0.5521851173506092,
+            -0.3126408662191895
+          ],
+          "share_above_zero": 0.0
+        }
+      }
+    },
+    "other countries": {
+      "photos": 34,
+      "objects": {
+        "structure_permanent": 19,
+        "structure_temporary": 9,
+        "vegetation": 46,
+        "material_dump": 3,
+        "vehicle_parked": 7
+      },
+      "mean_ap50": {
+        "baseline": {
+          "value": 0.5055330942746429,
+          "ci95": [
+            0.4507819499802402,
+            0.6806664939477044
+          ]
+        },
+        "v2-m-f10": {
+          "value": 0.3077630571140623,
+          "ci95": [
+            0.2759582449831312,
+            0.4458741122958974
+          ]
+        }
+      },
+      "per_class_ap50": {
+        "baseline": {
+          "structure_permanent": {
+            "value": 0.37994336490577096,
+            "ci95": [
+              0.19179377013963478,
+              0.6753950216450213
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.33408748114630465,
+            "ci95": [
+              0.0,
+              0.7617461110318253
+            ]
+          },
+          "vegetation": {
+            "value": 0.9846302963168098,
+            "ci95": [
+              0.950566976127321,
+              1.0
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.8290043290043291,
+            "ci95": [
+              0.5538701113701113,
+              1.0
+            ]
+          }
+        },
+        "v2-m-f10": {
+          "structure_permanent": {
+            "value": 0.04489276210953285,
+            "ci95": [
+              0.0022222222222222222,
+              0.13512860456347392
+            ]
+          },
+          "structure_temporary": {
+            "value": 0.06526383856892332,
+            "ci95": [
+              0.009298029556650246,
+              0.1832098220726271
+            ]
+          },
+          "vegetation": {
+            "value": 0.6191348753680459,
+            "ci95": [
+              0.4690755855796605,
+              0.7619498706714762
+            ]
+          },
+          "material_dump": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "vehicle_parked": {
+            "value": 0.8095238095238095,
+            "ci95": [
+              0.611111111111111,
+              1.0
+            ]
+          }
+        }
+      },
+      "paired_differences": {
+        "v2-m-f10 - baseline": {
+          "difference": -0.19777003716058056,
+          "ci95": [
+            -0.3244138474143703,
+            -0.09536024207913128
+          ],
+          "share_above_zero": 0.001
+        }
+      }
+    }
+  },
+  "labels": "datasets\\labels",
+  "photos": 75,
+  "ultralytics": {
+    "v2-m-f10": {
+      "all": {
+        "photos": 75,
+        "mask_map50": 0.2598952495989445,
+        "mask_map50_95": 0.16410385789462129,
+        "box_map50": 0.2816547101358576,
+        "box_map50_95": 0.1946652789475712
+      },
+      "India": {
+        "photos": 41,
+        "mask_map50": 0.2190446291495692,
+        "mask_map50_95": 0.12925333597256924,
+        "box_map50": 0.25150671402826574,
+        "box_map50_95": 0.16466078245379023
+      },
+      "other countries": {
+        "photos": 34,
+        "mask_map50": 0.3004058123431022,
+        "mask_map50_95": 0.19933259920223345,
+        "box_map50": 0.3186069476563723,
+        "box_map50_95": 0.2242562155324226
+      }
+    }
+  },
+  "baseline_models": [
+    "oiv7-v8s",
+    "world-v8s-railvigil"
+  ]
+}

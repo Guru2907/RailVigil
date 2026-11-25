@@ -193,6 +193,20 @@ Validation tables: `results/val_models_v2.md`, `results/val_ablations_v2.md`. Te
 - **Limits:** one labeller for the full key; 66 photos (11–52 objects per class); `material_dump` cannot be measured (1 object).
 - **App default unchanged:** `ENC_MODELS` stays the pretrained ensemble. A hybrid (pretrained for vegetation and vehicles, `v2-m-f10` for structures) is the obvious next step, but it must be chosen on validation, not on these test numbers.
 
+### Per-class hybrid chosen on validation (declared before scoring)
+Rule fixed in advance: candidates = baseline and `v2-m-f10`; each class goes to the candidate with the higher validation AP50; the hybrid is scored on the test key once (`training/evaluate_test.py hybrid`).
+
+| Class | Baseline, val | `v2-m-f10`, val | Chosen | Baseline, blind test | `v2-m-f10`, blind test |
+|---|---|---|---|---|---|
+| structure_permanent | 0.543 | 0.133 | baseline | 0.065 | 0.059 |
+| structure_temporary | 0.651 | 0.225 | baseline | **0.001** | **0.160** |
+| vegetation | 0.974 | 0.600 | baseline | 0.298 | 0.237 |
+| vehicle_parked | 0.804 | 0.436 | baseline | 0.305 | 0.206 |
+
+- **Validation chose the baseline for every class, so the hybrid is the baseline** (test 0.167, difference 0.000).
+- The reason is the validation key: like the old test key, it was made by correcting pre-labels, so it favours the baseline. On validation the baseline scores 0.651 on temporary structures; on the blind test key it scores 0.001. This is a second, independent sign of the anchoring found above.
+- A fair per-class choice needs a validation key labelled from scratch. Files: `results/val_eval_v2_hybrid_routing.{md,json}`, `results/test_eval_v2_hybrid.{md,json}`.
+
 ### Intrusion results
 15 clips, 13 labelled intrusions (5 crossing traffic, 8 people on the track), 372 s of scored video (`ignore` ranges removed); labels and zones in `datasets/intrusion/`. Default pipeline except `CONFIRM_DWELL_SEC`; RTX 3050 (a CPU run gave identical counts). File: `results/intrusion_sweep_v2.json`.
 

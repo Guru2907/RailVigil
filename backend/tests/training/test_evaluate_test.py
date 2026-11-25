@@ -37,3 +37,16 @@ def test_rare_classes_are_left_out_of_the_mean():
     rep = et.score(["m"], ROWS, gts, preds, resamples=10, min_objects=2, seed=0)
     assert rep["classes"] == ["vegetation"]
     assert rep["excluded_classes"] == {"material_dump": 1}
+
+
+def test_hybrid_routing_is_chosen_per_class_on_validation():
+    val = {"classes": ["vegetation", "structure_temporary"], "groups": {"all": {"per_class_ap50": {
+        "baseline": {"vegetation": {"value": 0.6}, "structure_temporary": {"value": 0.0}},
+        "tuned": {"vegetation": {"value": 0.4}, "structure_temporary": {"value": 0.3}}}}}}
+    routing = et.route_by_validation(val, ["baseline", "tuned"])
+    assert routing == {"vegetation": "baseline", "structure_temporary": "tuned"}
+    preds = {"baseline": {"x": [("vegetation", 0.9, BOX), ("structure_temporary", 0.8, BOX)]},
+             "tuned": {"x": [("vegetation", 0.7, BOX), ("structure_temporary", 0.6, BOX),
+                             ("vehicle_parked", 0.5, BOX)]}}
+    hybrid = et.combine(preds, routing, fallback="baseline")
+    assert sorted((c, s) for c, s, _ in hybrid["x"]) == [("structure_temporary", 0.6), ("vegetation", 0.9)]
