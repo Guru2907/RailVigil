@@ -19,6 +19,7 @@ import rvdata as rv
 CLIPS = rv.DATASETS / "intrusion" / "clips"
 OUT = rv.DATASETS / "intrusion" / "frames"
 TILE_W, TILE_H, COLS = 400, 225, 4
+VIDEO_EXTENSIONS = {".mp4", ".webm", ".ogv", ".mov", ".avi", ".mkv"}
 
 
 def sheet(path: Path, every: float | None, max_tiles: int) -> np.ndarray | None:
@@ -60,7 +61,10 @@ def main() -> None:
     p.add_argument("--every", type=float, help="seconds between frames (default: spread 16 frames)")
     p.add_argument("--max-tiles", type=int, default=16)
     args = p.parse_args()
-    paths = [CLIPS / c for c in args.clips] if args.clips else sorted(x for x in CLIPS.iterdir() if x.is_file())
+    if args.clips:
+        paths = [CLIPS / c for c in args.clips]
+    else:
+        paths = sorted(x for x in CLIPS.iterdir() if x.suffix.lower() in VIDEO_EXTENSIONS)
     OUT.mkdir(parents=True, exist_ok=True)
     for path in paths:
         img = sheet(path, args.every, args.max_tiles)
