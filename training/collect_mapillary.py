@@ -1,4 +1,4 @@
-"""Collect Mapillary street-level photos that look at Indian railway tracks.
+"""Collect Mapillary street-level photos that look at railway tracks (India, plus a few other cities).
 
     python training/collect_mapillary.py --per-city 35
     python training/collect_mapillary.py --cities mumbai,kolkata --per-city 60
@@ -28,6 +28,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
+import collect_commons as cc
 import requests
 import rvdata as rv
 
@@ -39,7 +40,18 @@ CITIES = {
     "chennai": (12.85, 80.05, 13.25, 80.32),
     "bengaluru": (12.85, 77.45, 13.10, 77.75),
     "hyderabad": (17.30, 78.30, 17.55, 78.60),
+    # other countries (training variety): dense informal settlements along the line
+    "jakarta": (-6.30, 106.70, -6.08, 106.98),
+    "manila": (14.50, 120.95, 14.70, 121.08),
+    "dhaka": (23.68, 90.33, 23.90, 90.48),
+    "nairobi": (-1.35, 36.70, -1.24, 36.92),
+    "karachi": (24.82, 66.95, 25.00, 67.15),
+    "lagos": (6.43, 3.30, 6.68, 3.42),
+    "colombo": (6.85, 79.84, 6.99, 79.92),
+    "hanoi": (20.98, 105.81, 21.07, 105.87),
 }
+CITY_COUNTRY = {"jakarta": "Indonesia", "manila": "Philippines", "dhaka": "Bangladesh", "nairobi": "Kenya",
+                "karachi": "Pakistan", "lagos": "Nigeria", "colombo": "Sri Lanka", "hanoi": "Vietnam"}
 # Public Overpass servers, tried in order (they are often overloaded).
 OVERPASS_SERVERS = [
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
@@ -203,6 +215,13 @@ def sample_points(lines, every_m=SAMPLE_EVERY_M):
     return pts
 
 
+def in_area_country(country: str, lat: float, lon: float) -> bool:
+    if country == "India":
+        return rv.in_india(lat, lon)
+    s, w, n, e = cc.COUNTRIES[country][1]
+    return s <= lat <= n and w <= lon <= e and not rv.in_india(lat, lon)
+
+
 def search(token, lon, lat):
     d = SEARCH_RADIUS_DEG
     r = SESSION.get(GRAPH, params={
@@ -270,6 +289,7 @@ def main() -> None:
             areas.append((city, local, lines, bridges, SAMPLE_EVERY_M))
 
     for city, local, lines, bridges, spacing in areas:
+        country = CITY_COUNTRY.get(city, "India")
         tree = STRtree(lines)
         bridge_tree = STRtree(bridges) if bridges else None
         points = sample_points(lines, spacing)
@@ -288,7 +308,7 @@ def main() -> None:
                 if img.get("is_pano") or name in seen_names or not geom or not img.get("thumb_2048_url"):
                     continue
                 ilon, ilat = geom["coordinates"]
-                if not rv.in_india(ilat, ilon):
+                if not in_area_country(country, ilat, ilon):
                     continue
                 x, y = local.xy(ilon, ilat)
                 here = Point(x, y)
@@ -320,6 +340,7 @@ def main() -> None:
                     "lat": ilat, "lon": ilon, "location_source": "mapillary",
                     "captured_at": datetime.fromtimestamp(taken / 1000, UTC).isoformat() if taken else "",
                     "original_name": name,
+                    "country": country, "region": city, "tier": "A",
                 }, rows, known)
                 if image_id:
                     rows[-1]["location_source"] = f"mapillary:{city}"  # which area search found it

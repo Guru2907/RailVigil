@@ -62,7 +62,39 @@ FOREIGN_WORDS = [
     "colombo", "bhutan", "myanmar", "burma", "china", "indonesia", "jakarta", "philippines", "manila", "thailand",
     "bangkok", "vietnam", "cambodia", "kenya", "nairobi", "nigeria", "brazil", "mexico", "peru", "egypt", "cairo",
 ]
+# Other countries with Indian-like railway corridors (training variety; see --country).
+# words: place names that count as evidence; bbox: (south, west, north, east), loose,
+# so a photo with coordinates must also lie outside India.
+COUNTRIES = {
+    "Bangladesh": (["bangladesh", "dhaka", "chittagong", "chattogram", "khulna", "sylhet", "rajshahi", "tongi",
+                    "kamalapur", "narayanganj"], (20.5, 88.0, 26.7, 92.7)),
+    "Pakistan": (["pakistan", "karachi", "lahore", "rawalpindi", "peshawar", "multan", "quetta", "hyderabad sindh",
+                  "faisalabad"], (23.6, 60.8, 37.1, 77.9)),
+    "Sri Lanka": (["sri lanka", "colombo", "kandy", "galle", "jaffna", "maradana", "ella", "anuradhapura"],
+                  (5.8, 79.5, 9.9, 82.0)),
+    "Nepal": (["nepal", "janakpur", "birgunj", "jaynagar", "kathmandu"], (26.3, 80.0, 30.5, 88.3)),
+    "Indonesia": (["indonesia", "jakarta", "bandung", "surabaya", "semarang", "yogyakarta", "medan", "bogor",
+                   "java", "jawa", "sumatra", "kereta"], (-11.0, 95.0, 6.0, 141.0)),
+    "Philippines": (["philippines", "manila", "pnr", "tutuban", "laguna", "naga", "luzon"], (4.5, 116.0, 21.2, 127.0)),
+    "Vietnam": (["vietnam", "viet nam", "hanoi", "ha noi", "saigon", "ho chi minh", "hue", "da nang"],
+                (8.2, 102.1, 23.4, 109.5)),
+    "Kenya": (["kenya", "nairobi", "kibera", "mombasa", "kisumu", "nakuru", "voi"], (-4.7, 33.9, 5.0, 41.9)),
+    "Nigeria": (["nigeria", "lagos", "ibadan", "kano", "abuja", "kaduna", "ilorin", "abeokuta", "oshodi"],
+                (4.2, 2.7, 13.9, 14.7)),
+    "Ghana": (["ghana", "accra", "kumasi", "takoradi", "sekondi", "tema", "tarkwa"], (4.7, -3.3, 11.2, 1.2)),
+    "Ethiopia": (["ethiopia", "addis ababa", "dire dawa", "djibouti railway"], (3.4, 33.0, 14.9, 48.0)),
+    "Tanzania": (["tanzania", "dar es salaam", "tazara", "dodoma", "morogoro", "tabora"], (-11.8, 29.3, -0.9, 40.5)),
+    "Egypt": (["egypt", "cairo", "alexandria", "aswan", "luxor", "giza", "ramses", "ramsis"], (22.0, 24.7, 31.7, 36.9)),
+}
+COUNTRY_QUERIES = [
+    "railway slum {c}", "railway track slum {c}", "railway track houses {c}", "railway squatters {c}",
+    "railway track garbage {c}", "railway track market {c}", "level crossing {c}", "railway track {c}",
+    "railway line {c}", "abandoned railway {c}", "railway encroachment {c}", "train tracks {c}",
+]
 NOT_PHOTOS = re.compile(r"\b(map|diagram|logo|chart|plan|route|schematic|sign|stamp|svg)\b", re.I)
+# Titles that were almost always off-topic in review (a country name matches, but no track is in view).
+OFF_TOPIC = re.compile(r"\b(temple|church|mosque|cathedral|museum|monument|statue|aerial|drone|engraving|painting|"
+                       r"drawing|illustration|portrait|interior|night|glacier|mountain|beach|waterfall)\b", re.I)
 FREE_LICENCE = re.compile(r"^(cc0|cc[ -]by(-sa)?( [\d.]+)?( [a-z]+)?|public domain|pd[- ].*|pd|fal|gfdl.*)$", re.I)
 MIN_WIDTH = 800
 
@@ -106,7 +138,20 @@ def india_evidence(title: str, categories: list[str], coords) -> bool:
     return any(re.search(rf"\b{w}\b", text) for w in INDIA_WORDS)
 
 
-def candidate(page) -> dict | None:
+def country_evidence(country: str, title: str, categories: list[str], coords) -> bool:
+    """For a non-Indian country: coordinates inside its box and outside India, or,
+    without coordinates, its place names and no Indian ones."""
+    words, (s, w, n, e) = COUNTRIES[country]
+    if coords:
+        lat, lon = coords[0]["lat"], coords[0]["lon"]
+        return s <= lat <= n and w <= lon <= e and not rv.in_india(lat, lon)
+    text = " ".join([title, *categories]).lower().replace("_", " ")
+    if any(re.search(rf"\b{x}\b", text) for x in INDIA_WORDS if x not in words):
+        return False
+    return any(re.search(rf"\b{x}\b", text) for x in words)
+
+
+def candidate(page, country: str = "India") -> dict | None:
     """Manifest metadata for a usable Commons file page, or None."""
     info = (page.get("imageinfo") or [{}])[0]
     meta = info.get("extmetadata", {})
@@ -115,10 +160,16 @@ def candidate(page) -> dict | None:
     licence = meta.get("LicenseShortName", {}).get("value", "")
     if info.get("mime") not in ("image/jpeg", "image/png") or (info.get("width") or 0) < MIN_WIDTH:
         return None
-    if NOT_PHOTOS.search(title) or not is_free(licence) or not india_evidence(title, cats, page.get("coordinates")):
+    if NOT_PHOTOS.search(title) or OFF_TOPIC.search(title) or not is_free(licence):
         return None
     coords = page.get("coordinates")
+    placed = (india_evidence(title, cats, coords) if country == "India"
+              else country_evidence(country, title, cats, coords))
+    if not placed:
+        return None
     return {
+        "country": country,
+        "tier": "A",
         "source": "wikimedia",
         "source_url": info.get("descriptionurl", ""),
         "licence": licence,
@@ -129,6 +180,7 @@ def candidate(page) -> dict | None:
         "captured_at": strip_html(meta.get("DateTimeOriginal", {}).get("value", ""))[:40],
         "original_name": title.removeprefix("File:"),
         "_download": info.get("thumburl") or info.get("url"),
+        "_original": info.get("url"),
     }
 
 
@@ -162,45 +214,87 @@ def search_pages(query, max_results=150):
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # photo titles in any language
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--limit", type=int, default=100, help="new photos to add")
+    p.add_argument("--limit", type=int, default=100, help="new photos to add (per country with --country)")
+    p.add_argument("--country", default="India",
+                   help=f"India (default), one of: {', '.join(COUNTRIES)}; or 'all' for every one of those")
+    p.add_argument("--per-query", type=int, default=150, help="search results to check per query")
     args = p.parse_args()
+    countries = list(COUNTRIES) if args.country == "all" else [args.country]
+    for c in countries:
+        if c != "India" and c not in COUNTRIES:
+            raise SystemExit(f"Unknown country {c!r}")
 
     rows = rv.read_manifest()
     known = {r["image_id"] for r in rows}
     seen = {r["original_name"] for r in rows if r["source"] == "wikimedia"}
     tmp = Path(tempfile.mkdtemp(prefix="rv_commons_"))
-    added = checked = 0
 
-    def pages():
+    def pages(country):
         for cat in CATEGORIES:
             yield from category_pages(cat)
-        for q in QUERIES:
-            yield from search_pages(q)
+        queries = QUERIES if country == "India" else [q.format(c=country) for q in COUNTRY_QUERIES]
+        for q in queries:
+            yield from search_pages(q, args.per_query)
 
-    for page in pages():
-        if added >= args.limit:
-            break
-        checked += 1
-        meta = candidate(page)
-        if meta is None or meta["original_name"] in seen:
-            continue
-        seen.add(meta["original_name"])
-        url = meta.pop("_download")
-        resp = requests.get(url, headers=HEADERS, timeout=120)
-        if not resp.ok:
-            continue
-        # Thumbnail URLs carry tracking parameters (?utm_source=...): take the suffix from the path only.
-        path = tmp / f"commons_{len(seen)}{Path(urlparse(url).path).suffix.lower() or '.jpg'}"
-        path.write_bytes(resp.content)
-        if rv.register_image(path, meta, rows, known):
-            added += 1
-            print(f"+ {meta['original_name'][:80]}  [{meta['licence']}]")
-        time.sleep(0.2)
-        if added % 20 == 0:
-            rv.write_manifest(rows)
+    total = 0
+    for country in countries:
+        added = checked = 0
+        for page in pages(country):
+            if added >= args.limit:
+                break
+            checked += 1
+            meta = candidate(page, country)
+            if meta is None or meta["original_name"] in seen:
+                continue
+            seen.add(meta["original_name"])
+            url, original = meta.pop("_download"), meta.pop("_original")
+            # Thumbnail URLs carry tracking parameters (?utm_source=...): take the suffix from the path only.
+            path = download_photo(url, original,
+                                  tmp / f"commons_{len(seen)}{Path(urlparse(url).path).suffix.lower() or '.jpg'}")
+            if path is None:
+                continue
+            if rv.register_image(path, meta, rows, known):
+                added += 1
+                print(f"+ {country}: {meta['original_name'][:80]}  [{meta['licence']}]")
+            time.sleep(1.0)
+            if added % 20 == 0:
+                rv.write_manifest(rows)
+        rv.write_manifest(rows)
+        total += added
+        print(f"{country}: checked {checked} files, added {added} photos.")
+    print(f"\nAdded {total} photos. Manifest: {len(rows)} photos.")
 
-    rv.write_manifest(rows)
-    print(f"\nChecked {checked} files, added {added} photos. Manifest: {len(rows)} photos.")
+
+MAX_SIDE = 2048
+
+
+def download_photo(thumb_url: str | None, original_url: str | None, path: Path) -> Path | None:
+    """Save a Commons photo at most MAX_SIDE px wide/high. The 2048 px thumbnail is
+    rendered on demand and rate-limited (HTTP 429); when it is refused, the original
+    file (served from cache, not limited) is fetched and shrunk locally instead."""
+    from PIL import Image, ImageOps
+
+    for url in (thumb_url, original_url):
+        if not url:
+            continue
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=180)
+        except requests.RequestException:
+            continue
+        if resp.ok and resp.headers.get("content-type", "").startswith("image/"):
+            path.write_bytes(resp.content)
+            with Image.open(path) as im:
+                if max(im.size) <= MAX_SIDE:
+                    return path
+                small = ImageOps.exif_transpose(im)
+                small.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
+                out = path.with_suffix(".jpg")
+                small.convert("RGB").save(out, "JPEG", quality=92)
+            if out != path:
+                path.unlink()
+            return out
+        time.sleep(2)
+    return None
 
 
 if __name__ == "__main__":
