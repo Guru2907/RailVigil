@@ -58,7 +58,7 @@ def _find_video(clips_dir: Path, clip: str) -> Path | None:
     if direct.is_file():
         return direct
     stem = Path(clip).stem
-    for ext in (".mp4", ".mov", ".avi", ".mkv", ".webm"):
+    for ext in (".mp4", ".mov", ".avi", ".mkv", ".webm", ".ogv"):
         candidate = clips_dir / f"{stem}{ext}"
         if candidate.is_file():
             return candidate
