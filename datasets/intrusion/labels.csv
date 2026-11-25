@@ -2,14 +2,13 @@ clip,start_sec,end_sec,class,is_intrusion,notes
 commons_20110525Bahnuebergang_Heuweg,0,34.4,*,0,whole clip
 commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk,0,18.5,*,0,whole clip
 commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie,0,55,*,0,whole clip
-commons_Luebben_Trains_01_webmhd,0,56.2,*,0,whole clip camera moves
 pixabay_385824,0,26,*,0,whole clip
-pixabay_385824,0.4,2.3,car,1,grey SUV drives over the crossing
-pixabay_385824,3.4,5.9,car,1,white car drives over the crossing
-pixabay_385824,17.6,19.6,person,1,person walks over the crossing
+pixabay_385824,0.4,2.3,car,1,crossing traffic: grey SUV drives over the crossing
+pixabay_385824,3.4,5.9,car,1,crossing traffic: white car drives over the crossing
+pixabay_385824,17.6,19.6,person,1,crossing traffic: person walks over the crossing
 pixabay_384221,0,24,*,0,whole clip
-pixabay_384221,4.5,8.8,car,1,silver car drives over the crossing
-pixabay_384221,17.4,19.2,truck,1,blue pickup truck drives over the crossing
+pixabay_384221,4.5,8.8,car,1,crossing traffic: silver car drives over the crossing
+pixabay_384221,17.4,19.2,truck,1,crossing traffic: blue pickup truck drives over the crossing
 pixabay_3178,0,12,*,0,whole clip
 pixabay_3178,0.0,12,person,1,person 1 walking on the tracks
 pixabay_3178,0.0,12,person,1,person 2 walking on the tracks
@@ -20,15 +19,11 @@ pixabay_218495,0,11,*,0,whole clip
 pixabay_18905,0,31,*,0,whole clip
 pixabay_4346,0,13,*,0,whole clip
 showcase_rescue_vangani,0,73.2,*,0,whole clip
-showcase_rescue_vangani,0.0,7.6,person,1,child on the track first showing
-showcase_rescue_vangani,3.0,8.5,person,1,railway worker runs along the track first showing
-showcase_rescue_vangani,10.3,23.4,person,1,child falls onto the track second showing
-showcase_rescue_vangani,13.5,23.4,person,1,railway worker runs along the track second showing
-showcase_rescue_vangani,34.5,41.5,person,1,railway worker runs along the track close view
-showcase_rescue_vangani,51.8,57.5,person,1,child on the track last showing
-showcase_rescue_vangani,52.4,57.5,person,1,railway worker runs along the track last showing
+showcase_rescue_vangani,0,10,*,ignore,teaser of the same rescue
+showcase_rescue_vangani,24,73.2,*,ignore,second camera the zone does not fit then CCTV replay and title cards
+showcase_rescue_vangani,10.3,23.4,person,1,child falls onto the track
+showcase_rescue_vangani,13.5,23.4,person,1,railway worker runs along the track
 showcase_shivamogga,0,26.6,*,0,whole clip
-showcase_ludhiana,0,197.1,*,0,whole clip camera moves
 showcase_malavli_crossing,0,41.5,*,0,whole clip
 showcase_malavli_crossing,9.2,41.5,person,1,man walks onto the foot crossing and waits between tracks while train passes
 showcase_malavli_crossing,28.0,41.5,person,1,crowd crossing behind the train
