@@ -170,7 +170,11 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
     return marks.filter((m) => counts[spot(m)] > 1).length;
   }, [marks]);
   const away = fitAll ? 0 : marks.length - local.length;
-  useEffect(() => setFitAll(false), [focusId, marks]);
+  // Choosing a site, or turning to another sheet, ends the pulled-back view. Clearing the choice does not.
+  useEffect(() => {
+    if (focusId) setFitAll(false);
+  }, [focusId]);
+  useEffect(() => setFitAll(false), [marks]);
   const unplotted = sheet ? sheet.onSheet - marks.length : 0;
 
   return (
