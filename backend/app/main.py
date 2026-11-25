@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
 from app.core import config
@@ -60,8 +59,6 @@ add_error_handlers(app)
 add_cors(app)
 
 app.include_router(api_router)
-
-# Serves snapshots/annotated videos by direct URL -- used as <img src>
-# and fallback <video src> in the frontend.
-Path(config.OUTPUTS_DIR).mkdir(parents=True, exist_ok=True)
-app.mount("/static/outputs", StaticFiles(directory=str(config.OUTPUTS_DIR)), name="outputs")
+# Output files (snapshots, annotated videos) are served only through their API
+# endpoints, which look the file up by id. There is no static mount of
+# OUTPUTS_DIR: it would expose every output file to anyone who can guess a path.
