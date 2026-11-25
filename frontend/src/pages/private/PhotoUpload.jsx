@@ -81,7 +81,7 @@ export default function PhotoUpload() {
     }
   }
 
-  const fieldLabel = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted";
+  const fieldLabel = "mb-1.5 block text-[11px] font-semibold text-muted";
 
   return (
     <>
@@ -194,7 +194,7 @@ export default function PhotoUpload() {
 
       {results.length > 0 && (
         <section aria-label="Results" className="mt-10 space-y-6">
-          <h2 className="border-b border-canvas-line pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-canvas-muted">
+          <h2 className="border-b border-canvas-line pb-3 font-mono text-[11px] text-canvas-muted">
             Results · {results.length} photograph(s)
           </h2>
           {results.map((r) => (

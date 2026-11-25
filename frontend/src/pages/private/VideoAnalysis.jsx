@@ -415,7 +415,7 @@ export default function VideoAnalysis() {
                 {!analysisStarted ? (
                   <div className="space-y-2">
                     <div>
-                      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                      <div className="mb-1.5 text-[11px] font-semibold text-muted">
                         Camera location (optional)
                       </div>
                       <div className="grid grid-cols-2 gap-2">

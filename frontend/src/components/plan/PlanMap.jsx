@@ -155,7 +155,8 @@ function Legend({ present, shared, away, othersInView, className = "" }) {
   );
 }
 
-export default function PlanMap({ marks, others = [], selectedId, focusId, onSelect, onFitAll, sheet, className = "h-[380px]" }) {
+// `compact` is for small plans inside another sheet: no title block; the legend sits underneath.
+export default function PlanMap({ marks, others = [], selectedId, focusId, onSelect, onFitAll, sheet, compact = false, className = "h-[380px]" }) {
   const focus = useMemo(() => marks.find((m) => m.id === focusId) || null, [marks, focusId]);
   const present = SEVERITIES.filter((s) => marks.some((m) => normaliseSeverity(m.severity) === s));
   const [fitKey, setFitKey] = useState(0);
@@ -200,7 +201,7 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
         </MapContainer>
 
         {/* Title block, as on a plan sheet: what this sheet holds and how to read it. */}
-        <div className="absolute right-0 top-0 z-[500] hidden w-60 border-b-2 border-l-2 border-rule bg-surface text-xs sm:block">
+        <div className={`absolute right-0 top-0 z-[500] hidden w-60 border-b-2 border-l-2 border-rule bg-surface text-xs ${compact ? "" : "sm:block"}`}>
           <div className="flex items-start justify-between gap-3 border-b border-rule px-3 py-2">
             <div>
               <div className="text-[13px] font-bold tracking-tight">Site plan</div>
@@ -240,7 +241,7 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
       </div>
 
       {/* Small screens: the legend as a strip under the plan, so marks never rely on colour alone. */}
-      <Legend present={present} shared={shared} away={away} othersInView={othersInView} className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs sm:hidden" />
+      <Legend present={present} shared={shared} away={away} othersInView={othersInView} className={`flex flex-wrap gap-x-4 gap-y-1 text-xs ${compact ? "border-t border-line px-5 py-2" : "mt-2 sm:hidden"}`} />
       {unplotted > 0 && marks.length > 0 && (
         <p className="mt-2 text-xs text-muted">
           {unplotted} listed {unplotted === 1 ? "site has" : "sites have"} no recorded position and {unplotted === 1 ? "is" : "are"} not on the plan.

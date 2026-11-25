@@ -76,7 +76,7 @@ export default function PhotoResult({ photo }) {
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <div className="overflow-hidden rounded-sm border border-line bg-black">
-            <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5 font-mono text-[11px] tracking-widest text-white/60">
+            <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5 font-mono text-[11px] text-white/60">
               <span>{done && view === "after" ? "ANALYSED · ZONE + DETECTIONS" : "ORIGINAL"}</span>
               <span>
                 {photo.width}×{photo.height}
@@ -99,7 +99,7 @@ export default function PhotoResult({ photo }) {
           )}
         </div>
         <div className="lg:col-span-2">
-          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <h3 className="mb-3 text-[11px] font-semibold text-muted">
             Findings {done && `· ${photo.findings?.length ?? 0}`}
           </h3>
           {done ? (

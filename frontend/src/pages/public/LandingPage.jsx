@@ -63,7 +63,7 @@ function useLatestEvidence() {
 function EvidenceFrame({ evidence }) {
   return (
     <figure className="overflow-hidden rounded-sm border border-canvas-line bg-black shadow-2xl shadow-black/40">
-      <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">
+      <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[11px] text-white/60">
         <span className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-danger" /> LATEST EVIDENCE
         </span>
@@ -81,13 +81,13 @@ function EvidenceFrame({ evidence }) {
         )}
         {evidence && (
           <figcaption className="absolute inset-x-3 bottom-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-sm bg-black/80 px-3 py-2 font-mono text-[11px] text-white backdrop-blur">
-            <span className="font-semibold uppercase">{classLabel(evidence.worst.cls)}</span>
+            <span className="font-semibold">{classLabel(evidence.worst.cls)}</span>
             <span className="text-white/40">|</span>
             <span className="tabular">{(evidence.worst.confidence * 100).toFixed(1)}%</span>
             <span className="text-white/40">|</span>
             <span className="tabular">ON RAILWAY LAND {Math.round(evidence.worst.overlap_ratio * 100)}%</span>
             <span
-              className="ml-auto rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black"
+              className="ml-auto rounded px-2 py-0.5 text-[11px] font-bold text-black"
               style={{ background: SEVERITY_COLOR[evidence.worst.severity] }}
             >
               {evidence.worst.severity}
@@ -129,7 +129,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="grid items-center gap-10 pt-4 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-signal">Railway right-of-way monitoring</div>
+          <div className="font-mono text-[11px] text-signal">Railway right-of-way monitoring</div>
           <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-canvas-ink md:text-5xl">
             Intelligent Railway Track-Side Encroachment Detection
           </h1>
@@ -164,7 +164,7 @@ export default function LandingPage() {
       <section aria-labelledby="method">
         <div className="mb-6 flex items-end justify-between gap-4 border-b border-canvas-line pb-4">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-signal">Methodology</div>
+            <div className="font-mono text-[11px] text-signal">Methodology</div>
             <h2 id="method" className="mt-2 text-2xl font-semibold tracking-tight">From evidence to action</h2>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function LandingPage() {
                 <Icon className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <div className="font-mono text-[11px] font-semibold tracking-widest text-muted">{code}</div>
+                <div className="font-mono text-[11px] font-semibold text-muted">{code}</div>
                 <h3 className="text-lg font-semibold">{title}</h3>
               </div>
             </div>

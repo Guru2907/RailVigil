@@ -37,7 +37,7 @@ export const linkClass = "font-medium text-accent underline decoration-accent/30
 
 export function Card({ title, subtitle, action, children, className = "", bodyClass = "p-6" }) {
   return (
-    <section className={`min-w-0 border border-rule bg-surface text-ink ${className}`}>
+    <section className={`min-w-0 border-2 border-rule bg-surface text-ink ${className}`}>
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4">
           <div>
@@ -73,7 +73,7 @@ export function PageHeader({ crumbs = [], title, description, actions, meta }) {
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-balance text-2xl font-semibold tracking-tight text-canvas-ink">{title}</h1>
+          <h1 className="text-balance text-[32px] font-bold leading-none tracking-tight text-canvas-ink">{title}</h1>
           {description && <p className="mt-1.5 max-w-[68ch] text-sm text-canvas-muted">{description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-3">

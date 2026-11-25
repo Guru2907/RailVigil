@@ -158,6 +158,7 @@ export default function ReportDetails() {
           {located && (
             <Block title="Location">
               <PlanMap
+                compact
                 className="h-[280px]"
                 marks={[{ id: site.id, number: 1, lat: site.latitude, lon: site.longitude, severity: site.max_severity, label: shortSite(site.id) }]}
                 selectedId={site.id}

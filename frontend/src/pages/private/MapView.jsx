@@ -130,7 +130,7 @@ function Chip({ active, color, onClick, children, shape = "dot" }) {
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-mono uppercase tracking-wide transition ${
+      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-mono tracking-wide transition ${
         active ? "border-white/40 bg-white/10 text-white" : "border-white/10 text-white/40 hover:text-white/70"
       }`}
     >
@@ -151,7 +151,7 @@ function Stat({ value, label, tone }) {
       <div className={`text-2xl font-bold ${tone === "danger" ? "text-rose-400" : tone === "info" ? "text-sky-300" : "text-white"}`}>
         {value}
       </div>
-      <div className="text-[11px] uppercase tracking-wider text-white/50">{label}</div>
+      <div className="text-[11px] text-white/50">{label}</div>
     </div>
   );
 }
@@ -242,10 +242,10 @@ export default function MapView() {
 
       {/* HUD */}
       <div className="absolute left-4 top-4 z-[500] w-72 rounded-sm border border-white/10 bg-black/75 p-4 font-mono text-white backdrop-blur-md">
-        <div className="flex items-center gap-1.5 text-[11px] tracking-[0.2em] text-signal">
+        <div className="flex items-center gap-1.5 text-[11px] text-signal">
           <span className="h-1.5 w-1.5 rounded-full bg-signal" /> LIVE
         </div>
-        <h1 className="mt-2 text-sm font-semibold tracking-[0.25em]">RAILVIGIL // GEO-INT</h1>
+        <h1 className="mt-2 text-sm font-semibold">RAILVIGIL // GEO-INT</h1>
         <p className="text-[11px] text-white/40">Encroachment sites and intrusion incidents · India</p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
@@ -260,7 +260,7 @@ export default function MapView() {
             const pct = sites.length ? (counts[s] / sites.length) * 100 : 0;
             return (
               <div key={s} className="flex items-center gap-2 text-[11px]">
-                <span className="w-14 uppercase text-white/60">{s}</span>
+                <span className="w-14 text-white/60">{s}</span>
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full rounded-full"
@@ -304,7 +304,7 @@ export default function MapView() {
           aria-label="Class"
           value={cls}
           onChange={(e) => setCls(e.target.value)}
-          className="rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] uppercase text-white/80 outline-none"
+          className="rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-white/80 outline-none"
         >
           <option value="">All classes</option>
           {Object.entries(CLASS_LABEL).map(([k, v]) => (
@@ -336,7 +336,7 @@ function PanelHead({ code, title, onClose }) {
   return (
     <div className="flex items-start justify-between gap-2">
       <div>
-        <div className="font-mono text-[11px] tracking-widest text-signal">{code}</div>
+        <div className="font-mono text-[11px] text-signal">{code}</div>
         <div className="text-base font-semibold">{title}</div>
       </div>
       <button
@@ -374,7 +374,7 @@ function SitePanel({ f, onClose }) {
       <div className="space-y-3 p-4">
         <PanelHead code={shortSite(p.site_id)} title={classLabel(p.cls)} onClose={onClose} />
         <div className="flex flex-wrap gap-1.5 text-[11px]">
-          <span className="rounded px-2 py-0.5 font-semibold uppercase text-black" style={{ background: SEVERITY_COLOR[p.max_severity] }}>
+          <span className="rounded px-2 py-0.5 font-semibold text-black" style={{ background: SEVERITY_COLOR[p.max_severity] }}>
             {p.max_severity}
           </span>
           <span className="rounded-full bg-white/10 px-2 py-0.5">{STATUS_LABEL[p.status]}</span>
@@ -402,7 +402,7 @@ function IntrusionPanel({ f, onClose }) {
     <div className="space-y-3 p-4">
       <PanelHead code={shortId(p.incident_id)} title={`${p.object_class} in track zone`} onClose={onClose} />
       <div className="flex flex-wrap gap-1.5 text-[11px]">
-        <span className="rounded px-2 py-0.5 font-semibold uppercase text-black" style={{ background: SEVERITY_COLOR[sev] || INTRUSION_COLOR }}>
+        <span className="rounded px-2 py-0.5 font-semibold text-black" style={{ background: SEVERITY_COLOR[sev] || INTRUSION_COLOR }}>
           {sev}
         </span>
         <span className="rounded-full bg-white/10 px-2 py-0.5">{p.event_type}</span>

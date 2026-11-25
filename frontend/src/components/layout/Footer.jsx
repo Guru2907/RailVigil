@@ -17,7 +17,7 @@ export default function Footer() {
           </p>
         </div>
         <div>
-          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-widest text-canvas-ink">Services</h2>
+          <h2 className="mb-3 font-mono text-[11px] text-canvas-ink">Services</h2>
           <ul className="space-y-2">
             {menu
               .flatMap((g) => g.items)
@@ -31,7 +31,7 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h2 className="mb-3 font-mono text-[11px] uppercase tracking-widest text-canvas-ink">Data &amp; credits</h2>
+          <h2 className="mb-3 font-mono text-[11px] text-canvas-ink">Data &amp; credits</h2>
           <ul className="space-y-2">
             <li>Detection: Ultralytics YOLOv8, YOLO-World</li>
             <li>Tracking: ByteTrack</li>
