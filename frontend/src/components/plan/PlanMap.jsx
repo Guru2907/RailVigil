@@ -55,16 +55,17 @@ function layOut(map, marks) {
   });
 }
 
-function Marks({ marks, selectedId, onSelect }) {
+function Marks({ marks, selectedId, onSelect, refresh }) {
   const map = useMap();
   const [tick, setTick] = useState(0);
   // Lay the marks out again whenever the scale of the sheet changes, including
   // the first fit, which happens just after these marks mount.
-  useMapEvents({ zoomend: () => setTick((t) => t + 1), viewreset: () => setTick((t) => t + 1) });
+  const again = () => setTick((t) => t + 1);
+  useMapEvents({ zoomend: again, moveend: again, viewreset: again });
   useEffect(() => {
-    const id = requestAnimationFrame(() => setTick((t) => t + 1));
+    const id = requestAnimationFrame(again);
     return () => cancelAnimationFrame(id);
-  }, [marks]);
+  }, [marks, refresh]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const placed = useMemo(() => layOut(map, marks), [map, marks, tick]);
 
@@ -113,12 +114,15 @@ function View({ marks, local, focus, fitAll, fitKey }) {
 }
 
 // How many "other sheet" ticks are inside the frame, so the legend only names what can be seen.
-function OthersInView({ others, onCount }) {
+function OthersInView({ others, onCount, refresh }) {
   const map = useMap();
   const count = () => onCount(others.filter((o) => map.getBounds().contains([o.lat, o.lon])).length);
-  useMapEvents({ moveend: count });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(count, [others]);
+  useMapEvents({ moveend: count, zoomend: count });
+  useEffect(() => {
+    const id = requestAnimationFrame(count);
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [others, refresh]);
   return null;
 }
 
@@ -187,12 +191,12 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
           <TileLayer {...RAILWAYS} attribution="&copy; OpenRailwayMap" className="rv-plan-track" minZoom={9} />
           <ScaleControl position="bottomleft" imperial={false} />
           <View marks={marks} local={local} focus={focus} fitAll={fitAll} fitKey={fitKey} />
-          <OthersInView others={others} onCount={setOthersInView} />
+          <OthersInView others={others} onCount={setOthersInView} refresh={`${fitKey}-${fitAll}-${focusId}`} />
           {others.map((o) => (
             <CircleMarker key={o.id} center={[o.lat, o.lon]} radius={3.5} pathOptions={{ color: INK, fillColor: SURFACE, fillOpacity: 1, weight: 1.5, interactive: false }} />
           ))}
           {focus && <Circle center={[focus.lat, focus.lon]} radius={SITE_RADIUS_M} pathOptions={{ color: INK, weight: 1, dashArray: "4 3", fill: false, interactive: false }} />}
-          <Marks marks={marks} selectedId={selectedId} onSelect={onSelect} />
+          <Marks marks={marks} selectedId={selectedId} onSelect={onSelect} refresh={`${fitKey}-${fitAll}-${focusId}`} />
         </MapContainer>
 
         {/* Title block, as on a plan sheet: what this sheet holds and how to read it. */}
