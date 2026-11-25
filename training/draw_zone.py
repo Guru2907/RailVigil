@@ -7,7 +7,8 @@
 A window shows one frame. Left-click around the area where a person, vehicle or
 animal must not be (the track and its safety strip). Keys:
     Enter / s   save and go to the next clip      u   undo the last point
-    r           start again                       n   skip this clip
+    y           redo a point you undid            b   back to the previous clip
+    r           start again (y brings it back)    n   skip this clip
     q / Esc     quit
 The zone is saved in normalised coordinates (0-1), the same sidecar format the
 intrusion pipeline and evaluate_intrusion.py read, so it fits any resolution.
@@ -57,11 +58,14 @@ def draw(path: Path, at_sec: float) -> str:
         old = json.loads(existing.read_text(encoding="utf-8"))["points"]
         points = [(int(x * base.shape[1]), int(y * base.shape[0])) for x, y in old]
 
+    undone: list[tuple[int, int]] = []     # points taken off by undo/reset, newest last
+
     def on_click(event, x, y, *_):
         if event == cv2.EVENT_LBUTTONDOWN:
             points.append((x, y))
+            undone.clear()
 
-    title = f"{path.name}  |  click around the track zone  |  Enter=save  u=undo  r=reset  n=skip  q=quit"
+    title = f"{path.name}  |  Enter=save  u=undo  y=redo  r=reset  b=back  n=skip  q=quit"
     cv2.namedWindow(title)
     cv2.setMouseCallback(title, on_click)
     try:
@@ -88,9 +92,14 @@ def draw(path: Path, at_sec: float) -> str:
                 print(f"  saved {existing.name} ({len(pts)} points)")
                 return "saved"
             if key == ord("u") and points:
-                points.pop()
+                undone.append(points.pop())
+            elif key == ord("y") and undone:
+                points.append(undone.pop())
             elif key == ord("r"):
+                undone.extend(reversed(points))
                 points.clear()
+            elif key == ord("b"):
+                return "back"
             elif key == ord("n"):
                 return "skipped"
             elif key in (ord("q"), 27):
@@ -112,9 +121,12 @@ def main() -> None:
     else:
         files = [args.target]
     print(f"{len(files)} file(s) to draw")
-    for f in files:
-        if draw(f, args.at) == "quit":
+    i = 0
+    while 0 <= i < len(files):
+        result = draw(files[i], args.at)
+        if result == "quit":
             break
+        i += -1 if result == "back" and i > 0 else (0 if result == "back" else 1)
 
 
 if __name__ == "__main__":
