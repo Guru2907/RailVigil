@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import { CircleMarker, MapContainer, TileLayer } from "react-leaflet";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { getSite, updateSiteStatus } from "../../api/encroachment.js";
 import FindingList from "../../components/encroachment/FindingList.jsx";
 import { Card, ErrorBanner, PageHeader, btn, inputClass } from "../../components/ui/index.jsx";
@@ -37,7 +37,7 @@ function Lifecycle({ status }) {
             <div className="flex w-full items-center">
               <span className={`h-0.5 flex-1 ${i === 0 ? "opacity-0" : done || active ? "bg-ink" : "bg-line"}`} />
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-bold ${
                   done ? "border-ink bg-ink text-surface" : active ? "border-ink bg-surface text-ink" : "border-line bg-surface text-muted"
                 }`}
               >
@@ -45,7 +45,7 @@ function Lifecycle({ status }) {
               </span>
               <span className={`h-0.5 flex-1 ${i === LIFECYCLE.length - 1 ? "opacity-0" : done ? "bg-ink" : "bg-line"}`} />
             </div>
-            <span className={`text-[10px] leading-tight ${active ? "font-semibold text-ink" : "text-muted"}`}>{STATUS_LABEL[s]}</span>
+            <span className={`text-[11px] leading-tight ${active ? "font-semibold text-ink" : "text-muted"}`}>{STATUS_LABEL[s]}</span>
           </li>
         );
       })}
@@ -170,8 +170,13 @@ export default function SiteDetails() {
               {site.history.map((h, i) => (
                 <li key={i} className="relative text-sm">
                   <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-surface bg-ink" aria-hidden />
-                  <div className="font-medium">
-                    {h.from_status ? `${STATUS_LABEL[h.from_status]} → ` : ""}
+                  <div className="flex flex-wrap items-center gap-1.5 font-medium">
+                    {h.from_status && (
+                      <>
+                        <span className="text-muted">{STATUS_LABEL[h.from_status]}</span>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted" aria-label="to" />
+                      </>
+                    )}
                     {STATUS_LABEL[h.to_status]}
                   </div>
                   <div className="font-mono text-[11px] text-muted">

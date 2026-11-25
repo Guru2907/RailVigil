@@ -63,9 +63,9 @@ function useLatestEvidence() {
 function EvidenceFrame({ evidence }) {
   return (
     <figure className="overflow-hidden rounded-lg border border-canvas-line bg-black shadow-2xl shadow-black/40">
-      <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[10px] tracking-widest text-white/60">
+      <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">
         <span className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-danger" /> LATEST EVIDENCE
+          <span className="h-1.5 w-1.5 rounded-full bg-danger" /> LATEST EVIDENCE
         </span>
         <span className="truncate pl-4">{evidence ? evidence.photo.original_filename : "AWAITING DATA"}</span>
       </div>
@@ -87,7 +87,7 @@ function EvidenceFrame({ evidence }) {
             <span className="text-white/40">|</span>
             <span className="tabular">ON RAILWAY LAND {Math.round(evidence.worst.overlap_ratio * 100)}%</span>
             <span
-              className="ml-auto rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-black"
+              className="ml-auto rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black"
               style={{ background: SEVERITY_COLOR[evidence.worst.severity] }}
             >
               {evidence.worst.severity}
@@ -194,7 +194,7 @@ export default function LandingPage() {
                 <Icon className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <div className="font-mono text-[10px] font-semibold tracking-widest text-muted">{code}</div>
+                <div className="font-mono text-[11px] font-semibold tracking-widest text-muted">{code}</div>
                 <h3 className="text-lg font-semibold">{title}</h3>
               </div>
             </div>
