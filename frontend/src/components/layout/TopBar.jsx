@@ -35,7 +35,7 @@ export default function TopBar() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-[1000] bg-accent text-accent-ink">
+    <header className="sticky top-0 z-[1000] bg-accent text-accent-ink print:hidden">
       <div className="flex h-[60px] items-stretch gap-2 px-4 md:px-8">
         <Link to="/" className="mr-3 flex items-center gap-2.5" aria-label="RailVigil home">
           <Seal size="h-8 w-8" onAccent />

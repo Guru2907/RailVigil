@@ -217,7 +217,7 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
           <Legend present={present} shared={shared} away={away} othersInView={othersInView} className="flex flex-col gap-1 px-3 py-2 leading-5" />
         </div>
 
-        {marks.length > 0 && (focus || marks.length > 1) && (
+        {marks.length > 1 && (
           <button
             type="button"
             onClick={() => {

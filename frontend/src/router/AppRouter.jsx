@@ -12,6 +12,7 @@ import PhotoDetails from "../pages/private/PhotoDetails.jsx";
 import Sites from "../pages/private/Sites.jsx";
 import SiteDetails from "../pages/private/SiteDetails.jsx";
 import Reports from "../pages/private/Reports.jsx";
+import ReportDetails from "../pages/private/ReportDetails.jsx";
 import NotFound from "../pages/NotFound.jsx";
 
 export default function AppRouter() {
@@ -34,6 +35,7 @@ export default function AppRouter() {
         <Route path="/sites" element={<Sites />} />
         <Route path="/sites/:id" element={<SiteDetails />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/reports/:reportNo" element={<ReportDetails />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import TopBar from "../components/layout/TopBar.jsx";
 
@@ -11,6 +12,10 @@ const skip =
 export default function AppLayout() {
   const { pathname } = useLocation();
   const fullBleed = FULL_BLEED.includes(pathname);
+  // A new page starts at its top, not where the last one was scrolled to.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return (
     <div className="flex min-h-screen flex-col bg-canvas font-sans text-canvas-ink antialiased">
       <a href="#main" className={skip}>
@@ -21,7 +26,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       {!fullBleed && (
-        <footer className="mx-auto w-full max-w-[1440px] px-4 pb-6 text-xs text-canvas-muted md:px-8">
+        <footer className="mx-auto w-full max-w-[1440px] px-4 pb-6 text-xs text-canvas-muted print:hidden md:px-8">
           <div className="border-t border-canvas-line pt-3">
             RailVigil is an academic prototype. Detections are candidates for officer review, not determinations.
           </div>

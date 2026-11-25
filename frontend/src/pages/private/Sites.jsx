@@ -159,7 +159,7 @@ export default function Sites() {
             />
           )}
 
-          <div className="mt-4 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
             <section className="order-2 min-w-0 border-2 border-rule bg-surface lg:order-1" aria-label="Site register">
               {/* Wide screens: the ruled register */}
               <div className="hidden sm:block">
@@ -241,7 +241,7 @@ export default function Sites() {
               )}
             </section>
 
-            <div className="order-1 lg:order-2">{!loading && <CasePanel site={selected} />}</div>
+            <div className="order-1 min-w-0 lg:order-2">{!loading && <CasePanel site={selected} />}</div>
           </div>
         </>
       )}

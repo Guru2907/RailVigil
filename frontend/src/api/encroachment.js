@@ -66,3 +66,8 @@ export async function getStatsSummary() {
   const { data } = await axiosClient.get("/stats/summary");
   return data;
 }
+
+export async function getReport(reportNo) {
+  const { data } = await axiosClient.get(`/reports/${encodeURIComponent(reportNo)}`);
+  return data;
+}

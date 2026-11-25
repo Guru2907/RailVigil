@@ -18,3 +18,16 @@ export function sevClass(sev) {
 export function shortId(id) {
   return `INC-${String(id).slice(0, 6).toUpperCase()}`;
 }
+// Plain words for the pipeline's event types.
+export const EVENT_LABEL = {
+  human_intrusion: "Person on the track",
+  persistent_human_presence: "Person staying on the track",
+  vehicle_intrusion: "Vehicle on the track",
+  animal_intrusion: "Animal on the track",
+  persistent_animal_presence: "Animal staying on the track",
+  other_intrusion: "Other object on the track",
+};
+
+export function eventLabel(type) {
+  return EVENT_LABEL[type] || type;
+}
