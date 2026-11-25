@@ -7,6 +7,7 @@ CVAT, fix by hand, export, and bring back with import_labels.py.
 
     python training/prelabel.py --name batch01                # all photos without labels yet
     python training/prelabel.py --name batch01 --limit 50 --no-sam
+    python training/prelabel.py --name new_train --splits train,val    # never pre-label the test set
 
 Output: datasets/upload/<name>/{images,labels}/ + data.yaml
   Roboflow: Upload > select the folder (format: YOLOv8 / YOLO segmentation)
@@ -61,13 +62,16 @@ def main() -> None:
     p.add_argument("--no-sam", action="store_true", help="rectangles only (faster, worse masks)")
     p.add_argument("--skip-source", default="taco", help="comma-separated sources not to pre-label (default: taco)")
     p.add_argument("--device", default=None, help="e.g. 0 for the GPU, cpu for the CPU (default: auto)")
+    p.add_argument("--splits", default="",
+                   help="only these splits, e.g. train,val (test photos are labelled blind: export_for_labelling.py)")
     args = p.parse_args()
 
     from ultralytics import SAM, YOLO
 
     rows = rv.read_manifest()
     skip = {s.strip() for s in args.skip_source.split(",") if s.strip()}
-    todo = [r for r in rows if r["source"] not in skip
+    splits = {s.strip() for s in args.splits.split(",") if s.strip()}
+    todo = [r for r in rows if r["source"] not in skip and (not splits or r["split"] in splits)
             and (args.include_labelled or not (rv.LABELS / f"{r['image_id']}.txt").exists())]
     if args.limit:
         todo = todo[: args.limit]
@@ -119,7 +123,7 @@ def main() -> None:
     names = "\n".join(f"  {i}: {c}" for i, c in enumerate(CLASSES))
     (out / "data.yaml").write_text(f"path: .\ntrain: images\nval: images\nnames:\n{names}\n", encoding="utf-8")
     print(f"\n{len(todo)} photos, {total} pre-labels -> {out}")
-    print("Next: upload this folder to Roboflow/CVAT, correct every label, export as YOLO segmentation,")
+    print("Next: upload this folder to Roboflow/CVAT, correct every label, export as COCO Segmentation,")
     print("then run: python training/import_labels.py <export folder>")
 
 

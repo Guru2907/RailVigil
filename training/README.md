@@ -100,6 +100,8 @@ This writes `datasets\upload\batch01\`: images, labels and a `data.yaml`.
 
 ## 4. Correct the labels (the main human work)
 
+Step-by-step Roboflow instructions, including blind test labelling by two people and the `railway_zone` polygon: [LABELLING_GUIDE.md](LABELLING_GUIDE.md).
+
 **Roboflow (easiest, free tier):**
 1. Create a project of type **Instance Segmentation** with the six classes, named **exactly** as below:
    - `structure_permanent`

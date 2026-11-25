@@ -355,7 +355,7 @@ def dhash(path: Path, size: int = 8) -> int:
 
     with Image.open(path) as im:
         g = im.convert("L").resize((size + 1, size), Image.Resampling.LANCZOS)
-        px = list(g.getdata())
+        px = list(g.tobytes())  # one byte per pixel in mode L
     bits = 0
     for row in range(size):
         for col in range(size):
@@ -416,15 +416,26 @@ CLASS_ALIASES = {
 }
 
 
+# The railway-land polygon drawn on test photos is labelled like an object
+# class in the labelling tool, but it is not one: import_labels.py saves it as
+# the photo's zone. It gets this index so it can never be mistaken for a class.
+ZONE_CLASS = "railway_zone"
+ZONE_INDEX = -1
+ZONE_ALIASES = {"railway_zone", "zone", "railway_land", "right_of_way"}
+
+
 def class_remap(export_names: list[str]) -> dict[int, int]:
     """Export class index -> RailVigil class index, matched by name (labelling
-    tools may reorder or rename classes). Unknown names are an error."""
+    tools may reorder or rename classes). The railway-zone polygon maps to
+    ZONE_INDEX. Unknown names are an error."""
     ours = {c: i for i, c in enumerate(CLASSES)}
     remap, unknown = {}, []
     for i, name in enumerate(export_names):
         key = _norm_name(name)
         key = CLASS_ALIASES.get(key, key)
-        if key in ours:
+        if key in ZONE_ALIASES:
+            remap[i] = ZONE_INDEX
+        elif key in ours:
             remap[i] = ours[key]
         else:
             unknown.append(name)
