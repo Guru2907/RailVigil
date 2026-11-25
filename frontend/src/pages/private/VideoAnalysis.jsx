@@ -200,9 +200,9 @@ export default function VideoAnalysis() {
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className={`cursor-pointer rounded-lg border-2 border-dashed p-16 text-center shadow-lg transition-all duration-200 ${
+            className={`cursor-pointer rounded-lg border-2 border-dashed p-16 text-center shadow-lg transition-colors duration-200 ${
               dragging
-                ? "border-signal bg-emerald-500/12 scale-[1.01]"
+                ? "border-signal bg-sev-low/12 scale-[1.01]"
                 : "border-line bg-surface hover:border-signal"
             }`}
           >
@@ -322,7 +322,7 @@ export default function VideoAnalysis() {
             <div className="lg:col-span-2 rounded-lg bg-surface text-ink p-6 shadow-lg border border-line flex flex-col">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-semibold">Video details</h3>
-                <span className="text-xs font-mono text-emerald-700 obsidian:text-emerald-300">
+                <span className="text-xs font-mono text-sev-low">
                   UPLOADED
                 </span>
               </div>
@@ -347,7 +347,7 @@ export default function VideoAnalysis() {
                   <span
                     className={`text-xs font-mono ${
                       zoneReady
-                        ? "text-emerald-700 obsidian:text-emerald-300"
+                        ? "text-sev-low"
                         : drawing
                           ? "text-danger"
                           : "text-ink/40"
@@ -362,7 +362,7 @@ export default function VideoAnalysis() {
                   <button
                     onClick={startDrawing}
                     disabled={previewFailed}
-                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {points.length ? "Redraw zone" : "Draw safety zone"}
                   </button>
@@ -371,20 +371,20 @@ export default function VideoAnalysis() {
                     <button
                       onClick={undoPoint}
                       disabled={!points.length}
-                      className="rounded-full border border-line font-medium px-3 py-3 text-sm hover:bg-surface-2 active:scale-[0.98] transition-all duration-200 disabled:opacity-40"
+                      className="rounded-full border border-line font-medium px-3 py-3 text-sm hover:bg-surface-2 transition-colors duration-200 disabled:opacity-40"
                     >
                       Undo
                     </button>
                     <button
                       onClick={clearZone}
-                      className="rounded-full border border-line font-medium px-3 py-3 text-sm hover:bg-surface-2 active:scale-[0.98] transition-all duration-200"
+                      className="rounded-full border border-line font-medium px-3 py-3 text-sm hover:bg-surface-2 transition-colors duration-200"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={finishZone}
                       disabled={points.length < 3}
-                      className="rounded-md bg-accent text-accent-ink font-semibold px-3 py-3 text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                      className="rounded-md bg-accent text-accent-ink font-semibold px-3 py-3 text-sm press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                     >
                       Finish
                     </button>
@@ -445,7 +445,7 @@ export default function VideoAnalysis() {
                   <button
                     onClick={handleAssignZone}
                     disabled={!zoneReady || !meta || submitting}
-                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {submitting ? "Saving zone…" : "Save zone & start analysis"}
                   </button>
@@ -462,7 +462,7 @@ export default function VideoAnalysis() {
                           job?.status === "failed"
                             ? "text-danger"
                             : job?.status === "done"
-                              ? "text-emerald-700 obsidian:text-emerald-300"
+                              ? "text-sev-low"
                               : "text-ink/60 animate-[pulse_3s_ease-in-out_infinite]"
                         }`}
                       >
@@ -536,7 +536,7 @@ export default function VideoAnalysis() {
 
               <button
                 onClick={handleRemove}
-                className="mt-6 rounded-full border border-line text-ink font-medium px-5 py-3 hover:bg-surface-2 active:scale-[0.98] transition-all duration-200"
+                className="mt-6 rounded-full border border-line text-ink font-medium px-5 py-3 hover:bg-surface-2 transition-colors duration-200"
               >
                 Choose a different video
               </button>
@@ -620,7 +620,7 @@ export default function VideoAnalysis() {
             <div className="rounded-lg bg-surface text-ink p-6 shadow-lg border border-line">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Confirmed incidents</h3>
-                <span className="text-xs font-mono text-emerald-700 obsidian:text-emerald-300">{incidents.length} total · sorted by risk</span>
+                <span className="text-xs font-mono text-sev-low">{incidents.length} total · sorted by risk</span>
               </div>
               {incidents.length === 0 ? (
                 <p className="text-sm text-ink/60">
@@ -644,8 +644,8 @@ export default function VideoAnalysis() {
                             setSelected(i);
                             evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                           }}
-                          className={`cursor-pointer border-t border-line hover:bg-surface-2 transition-all duration-200 ${
-                            selected?.id === i.id ? "bg-emerald-500/12" : ""
+                          className={`cursor-pointer border-t border-line hover:bg-surface-2 transition-colors duration-200 ${
+                            selected?.id === i.id ? "bg-sev-low/12" : ""
                           }`}
                         >
                           <td className="px-4 py-3">{fmtTime(i.start_ts)}</td>
@@ -655,11 +655,11 @@ export default function VideoAnalysis() {
                           <td className="px-4 py-3">{fmtPct(i.max_penetration)}</td>
                           <td className="px-4 py-3">{Math.round(i.risk_score)}</td>
                           <td className="px-4 py-3">
-                            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${sevClass(i.severity)}`}>
+                            <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${sevClass(i.severity)}`}>
                               {(i.severity || "").toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-emerald-700 obsidian:text-emerald-300">View</td>
+                          <td className="px-4 py-3 text-sev-low">View</td>
                         </tr>
                       ))}
                     </tbody>

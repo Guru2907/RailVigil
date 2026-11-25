@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Seal } from "../components/layout/Header.jsx";
+import { Seal } from "../components/layout/Seal.jsx";
 import { btn } from "../components/ui/index.jsx";
 
 export default function NotFound() {

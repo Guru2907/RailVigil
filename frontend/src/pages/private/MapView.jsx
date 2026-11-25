@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight, X } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import L from "../../utils/leafletPlugins.js";
 import { LayersControl, MapContainer, TileLayer, useMap } from "react-leaflet";
@@ -150,7 +151,7 @@ function Stat({ value, label, tone }) {
       <div className={`text-2xl font-bold ${tone === "danger" ? "text-rose-400" : tone === "info" ? "text-sky-300" : "text-white"}`}>
         {value}
       </div>
-      <div className="text-[9px] uppercase tracking-wider text-white/50">{label}</div>
+      <div className="text-[11px] uppercase tracking-wider text-white/50">{label}</div>
     </div>
   );
 }
@@ -215,7 +216,7 @@ export default function MapView() {
   const enc = stats?.encroachment;
 
   return (
-    <div className="relative h-[calc(100vh-7.5rem)] min-h-[560px] overflow-hidden bg-black">
+    <div className="relative h-[calc(100vh-3.5rem)] min-h-[560px] overflow-hidden bg-black">
       <MapContainer center={INDIA_CENTER} zoom={5} minZoom={4} className="h-full w-full rv-map" zoomControl={false}>
         <LayersControl position="bottomright">
           <LayersControl.BaseLayer checked name="Dark">
@@ -241,11 +242,11 @@ export default function MapView() {
 
       {/* HUD */}
       <div className="absolute left-4 top-4 z-[500] w-72 rounded-lg border border-white/10 bg-black/75 p-4 font-mono text-white backdrop-blur-md">
-        <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] text-signal">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal" /> LIVE
+        <div className="flex items-center gap-1.5 text-[11px] tracking-[0.2em] text-signal">
+          <span className="h-1.5 w-1.5 rounded-full bg-signal" /> LIVE
         </div>
         <h1 className="mt-2 text-sm font-semibold tracking-[0.25em]">RAILVIGIL // GEO-INT</h1>
-        <p className="text-[10px] text-white/40">Encroachment sites and intrusion incidents · India</p>
+        <p className="text-[11px] text-white/40">Encroachment sites and intrusion incidents · India</p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Stat value={sites.length} label={openOnly ? "Open sites" : "Sites"} />
@@ -258,7 +259,7 @@ export default function MapView() {
           {SEVERITIES.map((s) => {
             const pct = sites.length ? (counts[s] / sites.length) * 100 : 0;
             return (
-              <div key={s} className="flex items-center gap-2 text-[10px]">
+              <div key={s} className="flex items-center gap-2 text-[11px]">
                 <span className="w-14 uppercase text-white/60">{s}</span>
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                   <div
@@ -271,11 +272,11 @@ export default function MapView() {
             );
           })}
         </div>
-        <p className="mt-3 text-[9px] leading-snug text-white/30">
+        <p className="mt-3 text-[11px] leading-snug text-white/30">
           Clusters show the worst severity inside. Intrusions appear when the video has a camera location.
           {lastSync && <> · synced {lastSync.toLocaleTimeString()}</>}
         </p>
-        {error && <p className="mt-2 text-[10px] text-rose-400">Backend unreachable: {error}</p>}
+        {error && <p className="mt-2 text-[11px] text-rose-400">Backend unreachable: {error}</p>}
       </div>
 
       {/* Filters and layers */}
@@ -335,11 +336,15 @@ function PanelHead({ code, title, onClose }) {
   return (
     <div className="flex items-start justify-between gap-2">
       <div>
-        <div className="font-mono text-[10px] tracking-widest text-signal">{code}</div>
+        <div className="font-mono text-[11px] tracking-widest text-signal">{code}</div>
         <div className="text-base font-semibold">{title}</div>
       </div>
-      <button onClick={onClose} className="text-white/50 hover:text-white" aria-label="Close">
-        ✕
+      <button
+        onClick={onClose}
+        className="press -mr-2 -mt-2 flex h-10 w-10 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+        aria-label="Close panel"
+      >
+        <X className="h-4 w-4" aria-hidden />
       </button>
     </div>
   );
@@ -355,7 +360,7 @@ function Row({ k, v }) {
 }
 
 const panelButton =
-  "block rounded-md bg-signal py-2 text-center text-sm font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]";
+  "block rounded-md bg-signal py-2 text-center text-sm font-semibold text-black transition-colors duration-200 hover:brightness-110";
 
 function SitePanel({ f, onClose }) {
   const p = f.properties;
@@ -382,7 +387,8 @@ function SitePanel({ f, onClose }) {
           <Row k="Coords" v={`${f.geometry.coordinates[1].toFixed(5)}, ${f.geometry.coordinates[0].toFixed(5)}`} />
         </dl>
         <Link to={`/sites/${p.site_id}`} className={panelButton}>
-          Open site case →
+          Open site case
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
     </>
@@ -408,7 +414,8 @@ function IntrusionPanel({ f, onClose }) {
         <Row k="Coords" v={`${f.geometry.coordinates[1].toFixed(5)}, ${f.geometry.coordinates[0].toFixed(5)}`} />
       </dl>
       <Link to={`/incidents/${p.incident_id}`} className={panelButton}>
-        Open incident →
+        Open incident
+        <ArrowRight className="h-4 w-4" aria-hidden />
       </Link>
     </div>
   );

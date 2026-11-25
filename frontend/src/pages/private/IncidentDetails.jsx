@@ -9,7 +9,7 @@ import { fmtTime, fmtPct, sevClass, shortId } from "../../utils/incidentFormat.j
 function MediaFrame({ label, children }) {
   return (
     <figure className="overflow-hidden rounded-lg border border-canvas-line bg-black shadow-lg shadow-black/30">
-      <figcaption className="border-b border-white/10 px-4 py-2 font-mono text-[10px] tracking-widest text-white/60">{label}</figcaption>
+      <figcaption className="border-b border-white/10 px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">{label}</figcaption>
       {children}
     </figure>
   );

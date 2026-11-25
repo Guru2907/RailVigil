@@ -81,8 +81,8 @@ export default function TrainLoader() {
           position: relative;
           overflow: hidden;
           border-radius: 16px;
-          background: #FFFFFF;
-          border: 1px solid rgba(0, 0, 0, 0.05);
+          background: var(--color-paper);
+          border: 1px solid var(--color-line);
           box-sizing: border-box;
           container-type: inline-size;
         }
@@ -130,7 +130,7 @@ export default function TrainLoader() {
           font-family: ui-monospace, "JetBrains Mono", monospace;
           font-size: 14px;
           letter-spacing: 0.05em;
-          color: #18181B;
+          color: var(--color-ink);
           display: inline-flex;
           align-items: baseline;
           user-select: none;

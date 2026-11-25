@@ -7,13 +7,9 @@ import { Card, EmptyState, ErrorBanner, StatCard, Table, btn, cellClass, rowClas
 import { fmtTime, sevClass, shortId } from "../../utils/incidentFormat.js";
 import { formatDateTime } from "../../utils/formatDate.js";
 import { chartTheme } from "../../utils/preferences.js";
+import { SEVERITY_COLOR, normaliseSeverity } from "../../utils/severity.js";
 
-function sevColor(name) {
-  if (name === "CRITICAL") return "#E11D48";
-  if (name === "HIGH") return "#F97316";
-  if (name === "MEDIUM" || name === "MED") return "#F59E0B";
-  return "#10B981";
-}
+const sevColor = (name) => SEVERITY_COLOR[normaliseSeverity(name)];
 
 function countBy(list, keyFn) {
   const counts = {};
@@ -25,10 +21,10 @@ function countBy(list, keyFn) {
 }
 
 const statusStyle = {
-  done: "bg-emerald-500/12 text-emerald-800 obsidian:text-emerald-300",
-  processing: "bg-amber-400/15 text-amber-800 obsidian:text-amber-300",
-  queued: "bg-amber-400/15 text-amber-800 obsidian:text-amber-300",
-  failed: "bg-danger/10 text-danger",
+  done: "bg-sev-low/12 text-sev-low",
+  processing: "bg-sev-medium/12 text-sev-medium",
+  queued: "bg-sev-medium/12 text-sev-medium",
+  failed: "bg-sev-critical/12 text-sev-critical",
 };
 
 const SEV_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "MED", "LOW"];
@@ -105,7 +101,7 @@ export default function IntrusionDashboard() {
                   </td>
                   <td className={`${cellClass} tabular font-mono`}>{Math.round(i.risk_score)}</td>
                   <td className={cellClass}>
-                    <span className={`px-2 py-0.5 text-[10px] font-bold ${sevClass(i.severity)}`}>{i.severity}</span>
+                    <span className={`px-2 py-0.5 text-[11px] font-bold ${sevClass(i.severity)}`}>{i.severity}</span>
                   </td>
                 </tr>
               ))}
@@ -132,7 +128,7 @@ export default function IntrusionDashboard() {
                 <li key={v.id} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="truncate text-sm font-medium">{v.original_filename || v.filename}</span>
-                    <span className={`shrink-0 rounded px-2 py-0.5 font-mono text-[10px] font-semibold uppercase ${statusStyle[v.status] || "text-muted"}`}>
+                    <span className={`shrink-0 rounded px-2 py-0.5 font-mono text-[11px] font-semibold uppercase ${statusStyle[v.status] || "text-muted"}`}>
                       {v.status}
                     </span>
                   </div>

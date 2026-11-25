@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Seal, menu } from "./Header.jsx";
+import { menu } from "./nav.js";
+import { Seal } from "./Seal.jsx";
 
 export default function Footer() {
   return (
@@ -20,8 +21,7 @@ export default function Footer() {
           <ul className="space-y-2">
             {menu
               .flatMap((g) => g.items)
-              .filter(([to]) => to !== "/")
-              .map(([to, label]) => (
+              .map(({ to, label }) => (
                 <li key={to}>
                   <Link to={to} className="hover:text-canvas-ink">
                     {label}

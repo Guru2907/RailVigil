@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { TriangleAlert } from "lucide-react";
 import { fileUrl } from "../../api/encroachment.js";
 import { classLabel, severityBadge, shortSite } from "../../utils/encroachmentFormat.js";
 import { linkClass } from "../ui/index.jsx";
@@ -28,7 +29,10 @@ export default function FindingList({ findings, showSite = true }) {
               conf {(f.confidence * 100).toFixed(1)}% · on railway land {Math.round(f.overlap_ratio * 100)}%
             </div>
             {f.notes?.length > 0 && (
-              <div className="mt-1 text-[11px] font-medium text-amber-800 obsidian:text-amber-300">⚠ {f.notes.join(" · ")}</div>
+              <div className="mt-1 flex items-start gap-1.5 text-xs font-medium text-sev-medium">
+                <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+                <span>{f.notes.join(" · ")}</span>
+              </div>
             )}
             {showSite &&
               (f.site_id ? (

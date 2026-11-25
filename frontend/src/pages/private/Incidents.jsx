@@ -93,7 +93,7 @@ export default function Incidents() {
                 <td className={`${cellClass} tabular font-mono`}>{fmtPct(i.max_penetration)}</td>
                 <td className={`${cellClass} tabular font-mono font-semibold`}>{Math.round(i.risk_score)}</td>
                 <td className={cellClass}>
-                  <span className={`px-2 py-0.5 text-[10px] font-bold ${sevClass(i.severity)}`}>{i.severity}</span>
+                  <span className={`px-2 py-0.5 text-[11px] font-bold ${sevClass(i.severity)}`}>{i.severity}</span>
                 </td>
               </tr>
             ))}
