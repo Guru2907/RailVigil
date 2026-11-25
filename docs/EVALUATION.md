@@ -173,6 +173,17 @@ Per class (all photos):
 
 Ultralytics mask mAP50 on the same key (all photos): `railvigil-s` 0.086, `v2-s-f10` 0.069, `v2-m-f10` 0.151. Files: `results/test_eval_v2.{md,json}`.
 
+Per-class paired differences for `v2-m-f10` (box AP50, 1000 paired resamples, seed 0):
+
+| Class | vs baseline | vs `railvigil-s` |
+|---|---|---|
+| structure_temporary | **+0.159 [+0.006, +0.500]** (98 % of resamples above 0) | +0.110 [−0.002, +0.326] (96 %) |
+| structure_permanent | −0.005 [−0.090, +0.086] | +0.041 [−0.026, +0.138] |
+| vegetation | −0.061 [−0.158, +0.032] | +0.030 [−0.058, +0.106] |
+| vehicle_parked | −0.099 [−0.357, +0.428] | +0.013 [−0.327, +0.635] |
+
+Temporary structures (shacks, huts, stalls) are the only class where a difference clears zero: the fine-tuned model finds them and the pretrained ensemble does not. With 8 comparisons, read it as strong evidence rather than proof; 12 test objects is few.
+
 ### Seeds and ablations on the test set (reported, not used to choose)
 | `v2-s-f10` variant | All | India | Other countries |
 |---|---|---|---|
