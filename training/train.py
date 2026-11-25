@@ -3,6 +3,12 @@
     python training/train.py --name railvigil-s                 # defaults suit an RTX 3050 (4 GB)
     python training/train.py --name railvigil-s --batch 4       # if you see "CUDA out of memory"
     python training/train.py --name smoke --epochs 3       # quick end-to-end check
+    python training/train.py --name s-seed1 --seed 1             # same run, another random start
+    python training/train.py --name s-india --exclude foreign    # ablation: train without foreign railway photos
+    python training/train.py --name s-notaco --exclude taco      # ablation: train without the TACO litter photos
+
+--exclude only removes photos from the train split; val and test stay the same,
+so runs remain comparable.
 
 Runs go to training/runs/<name>/ (git-ignored): weights/best.pt, curves,
 confusion matrix, and railvigil_run.json recording exactly what was trained
@@ -17,13 +23,35 @@ from pathlib import Path
 
 import rvdata as rv
 
+EXCLUDE = {
+    # foreign railway photos; TACO (litter, no country) is kept so only one thing changes
+    "foreign": lambda r: r.get("source") != "taco" and r.get("country") != "India",
+    "taco": lambda r: r.get("source") == "taco",
+}
 
-def dataset_fingerprint() -> tuple[str, dict]:
+
+def train_subset(exclude: list[str]) -> tuple[list[Path], dict]:
+    """Train images left after dropping the excluded groups, and how many each group removed."""
+    rows = {r["image_id"]: r for r in rv.read_manifest()}
+    kept, dropped = [], {e: 0 for e in exclude}
+    for img in sorted((rv.BUILD / "images" / "train").glob("*")):
+        row = rows.get(img.stem, {})
+        hit = [e for e in exclude if EXCLUDE[e](row)]
+        for e in hit:
+            dropped[e] += 1
+        if not hit:
+            kept.append(img)
+    return kept, dropped
+
+
+def dataset_fingerprint(train_images: list[Path] | None = None) -> tuple[str, dict]:
     """Hash of every image name and label file per split: changes whenever the data does."""
     digest = hashlib.sha256()
     counts = {}
     for split in rv.SPLITS:
         labels = sorted((rv.BUILD / "labels" / split).glob("*.txt"))
+        if split == "train" and train_images is not None:
+            labels = [rv.BUILD / "labels" / "train" / f"{img.stem}.txt" for img in train_images]
         counts[split] = len(labels)
         for f in labels:
             digest.update(f"{split}/{f.name}".encode())
@@ -49,6 +77,9 @@ def main() -> None:
     p.add_argument("--device", default="0", help="0 = first GPU, cpu = CPU (very slow)")
     p.add_argument("--freeze", type=int, default=0,
                    help="freeze the first N layers (e.g. 10 = backbone) to keep pretrained features on small data")
+    p.add_argument("--seed", type=int, default=0, help="random seed; repeat a run with other seeds to measure noise")
+    p.add_argument("--exclude", nargs="+", choices=sorted(EXCLUDE), default=[],
+                   help="drop these photos from the train split only (ablations)")
     args = p.parse_args()
 
     data = rv.BUILD / "data.yaml"
@@ -64,13 +95,26 @@ def main() -> None:
     if args.device != "cpu" and not torch.cuda.is_available():
         raise SystemExit("PyTorch cannot see the GPU. Run training/setup_training.ps1, or pass --device cpu.")
 
-    fingerprint, counts = dataset_fingerprint()
+    dropped = {}
+    train_images = None
+    if args.exclude:
+        train_images, dropped = train_subset(args.exclude)
+        lists = rv.BUILD.parent / "lists" / args.name
+        lists.mkdir(parents=True, exist_ok=True)
+        (lists / "train.txt").write_text("\n".join(str(i) for i in train_images), encoding="utf-8")
+        train_list = (lists / "train.txt").as_posix()
+        text = data.read_text(encoding="utf-8").replace("train: images/train", f"train: {train_list}")
+        data = lists / "data.yaml"
+        data.write_text(text, encoding="utf-8")
+        print(f"Excluded from train: {dropped}; {len(train_images)} train photos left")
+
+    fingerprint, counts = dataset_fingerprint(train_images)
     rv.WEIGHTS.mkdir(parents=True, exist_ok=True)
     model = YOLO(str(rv.WEIGHTS / args.base))  # downloaded once on first use (~24 MB)
     model.train(
         data=str(data), epochs=args.epochs, imgsz=args.imgsz, batch=args.batch, patience=args.patience,
         workers=args.workers, device=args.device, project=str(rv.RUNS), name=args.name, exist_ok=False,
-        seed=0, deterministic=True, plots=True, freeze=args.freeze or None,
+        seed=args.seed, deterministic=True, plots=True, freeze=args.freeze or None,
     )
 
     # Ultralytics may add a suffix (railvigil-s-2) if the name is taken: use the folder it really wrote.
@@ -79,7 +123,8 @@ def main() -> None:
         "name": run_dir.name,
         "created_at": rv.now_iso(),
         "git": git_state(),
-        "dataset": {"fingerprint": fingerprint, "labelled_photos": counts, "data_yaml": str(data)},
+        "dataset": {"fingerprint": fingerprint, "labelled_photos": counts, "data_yaml": str(data),
+                    "excluded_from_train": dropped},
         "settings": vars(args),
         "torch": torch.__version__,
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
