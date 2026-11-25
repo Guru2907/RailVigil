@@ -100,3 +100,26 @@ def test_agreement_between_two_labellers(tmp_path):
     assert (v["boxes_a"], v["boxes_b"], v["matched"], v["box_agreement"]) == (1, 1, 0, 0.0)
     assert res["zone_mean_iou"] == pytest.approx(0.8)
     assert "| structure_permanent | 1 | 1 | 1 | 1.00 |" in la.table(res)
+
+
+# --- reviewed label fixes ----------------------------------------------------------
+
+import apply_label_fixes as alf  # noqa: E402
+
+
+def test_fix_list_deletes_by_number_and_by_class(tmp_path):
+    fixes = tmp_path / "fixes.txt"
+    fixes.write_text("# comment\nabcdef123456: 0 C | wrong shapes\n", encoding="utf-8")
+    [(image_id, (numbers, classes, reason))] = alf.parse(fixes).items()
+    assert (image_id, numbers, reason) == ("abcdef123456", {0}, "wrong shapes")
+    car = rv.CLASSES.index("vehicle_parked")
+    labels = [(STRUCT, _box(0, 0, 1, 1)), (VEG, _box(0, 0, 1, 1)), (car, _box(0, 0, 1, 1))]
+    kept, deleted = alf.apply(labels, numbers, classes)
+    assert [c for c, _ in kept] == [VEG] and len(deleted) == 2
+
+
+def test_fix_list_refuses_unknown_tokens(tmp_path):
+    fixes = tmp_path / "fixes.txt"
+    fixes.write_text("abcdef123456: X | ?\n", encoding="utf-8")
+    with pytest.raises(ValueError):
+        alf.parse(fixes)
