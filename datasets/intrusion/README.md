@@ -6,7 +6,7 @@ This folder holds the answer key for measuring the intrusion module: **which cli
 |---|---|---|
 | `clips.csv` | yes | the 17 clips: source, licence, author, duration, size, and a guess (`intrusion_hint`) |
 | `labels.csv` | yes | **you fill this**: one row per intrusion, plus one whole-clip row per clip |
-| `clips/` | **no** (videos) | the clips, plus `<clip>.zone.json` zone files you draw |
+| `clips/` | videos **no**, `*.zone.json` **yes** | the clips, plus `<clip>.zone.json` zone files you draw |
 | `frames/` | no | one sheet per clip: 16 frames stamped with their time |
 
 ## 0. Get set up (once)
@@ -117,7 +117,7 @@ From `backend/`:
 .venv\Scripts\python.exe scripts\evaluate_intrusion.py --clips-dir ..\datasets\intrusion\clips --run-pipeline
 .venv\Scripts\python.exe scripts\evaluate_intrusion.py --clips-dir ..\datasets\intrusion\clips --run-pipeline --sweep confirm_dwell 0.3,0.6,1.0,2.0
 ```
-The first prints precision, recall, false alerts per hour and mean confirmation delay; the second repeats it for several confirmation times (CPU: a few minutes per run). Save both outputs and share them, along with `labels.csv` and the zone files, in a PR (only `labels.csv` is committed; zip the `.zone.json` files for Gurpreet).
+The first prints precision, recall, false alerts per hour and mean confirmation delay; the second repeats it for several confirmation times (CPU: a few minutes per run). Save both outputs and share them, along with `labels.csv` and the zone files, in a PR (`labels.csv` and the `.zone.json` files are committed; the videos are not).
 
 ## Rules
 - **Only label clips that are in `clips/`**; times must come from watching the clip. No placeholder rows.
