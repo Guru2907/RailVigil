@@ -60,6 +60,21 @@ def polygon_iou(p: list, q: list) -> float:
     return a.intersection(b).area / union if union else 0.0
 
 
+def zone_shape(path: Path):
+    """A zone file as one shape: the union of its pieces (or its single polygon)."""
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return unary_union([Polygon(p).buffer(0) for p in data.get("pieces") or [data["points"]]])
+
+
+def zone_iou(fa: Path, fb: Path) -> float:
+    a, b = zone_shape(fa), zone_shape(fb)
+    union = a.union(b).area
+    return a.intersection(b).area / union if union else 0.0
+
+
 def agreement(dir_a: Path, dir_b: Path) -> dict:
     ids = sorted({f.stem for f in dir_a.glob("*.txt")} & {f.stem for f in dir_b.glob("*.txt")})
     per = {}
@@ -81,7 +96,7 @@ def agreement(dir_a: Path, dir_b: Path) -> dict:
     for i in ids:
         fa, fb = za / f"{i}.json", zb / f"{i}.json"
         if fa.is_file() and fb.is_file():
-            zones.append(polygon_iou(json.loads(fa.read_text())["points"], json.loads(fb.read_text())["points"]))
+            zones.append(zone_iou(fa, fb))
     return {"photos": len(ids), "per_class": per,
             "zone_mean_iou": sum(zones) / len(zones) if zones else float("nan"), "zones_compared": len(zones)}
 

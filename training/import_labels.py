@@ -16,7 +16,10 @@ label file: a "clean corridor" negative example, which is useful.
 
 A polygon labelled `railway_zone` is not an object: it is the photo's railway
 land, saved as <zones-dir>/<id>.json (normalised points), the same format as a
-zone sidecar. It is used to evaluate the app's real decision rule.
+zone sidecar. It is used to evaluate the app's real decision rule. If the
+railway land was drawn as several pieces (one per track, say), every piece is
+kept under "pieces" and "points" holds the largest; tiny pieces under 2 % of the
+zone's area are stray clicks and are dropped.
 """
 
 import argparse
@@ -62,18 +65,23 @@ def load_export(export: Path) -> dict[str, list]:
     }
 
 
+STRAY_PIECE = 0.02   # a zone piece smaller than this share of the zone's area is a stray click
+
+
+def polygon_area(pts) -> float:
+    return abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1], strict=True))) / 2
+
+
 def split_zone(labels):
-    """(object labels, railway-zone points or None). If several zone polygons were
-    drawn, the largest is kept (a stray click makes a tiny one)."""
+    """(object labels, railway-zone pieces or None). Pieces are sorted largest first;
+    pieces under STRAY_PIECE of the total area (a stray click) are dropped."""
     objects = [(c, pts) for c, pts in labels if c != rv.ZONE_INDEX]
-    zones = [pts for c, pts in labels if c == rv.ZONE_INDEX]
+    zones = sorted((pts for c, pts in labels if c == rv.ZONE_INDEX), key=polygon_area, reverse=True)
     if not zones:
         return objects, None
-
-    def area(pts):
-        return abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1], strict=True))) / 2
-
-    return objects, [[round(x, 6), round(y, 6)] for x, y in max(zones, key=area)]
+    total = sum(polygon_area(z) for z in zones) or 1.0
+    kept = [z for i, z in enumerate(zones) if i == 0 or polygon_area(z) / total >= STRAY_PIECE]
+    return objects, [[[round(x, 6), round(y, 6)] for x, y in z] for z in kept]
 
 
 def main() -> None:
@@ -101,6 +109,7 @@ def main() -> None:
     labels_by_name = load_export(args.export)
     images = [f for f in args.export.rglob("*") if f.suffix.lower() in rv.IMAGE_EXTENSIONS]
     written = skipped = negatives = objects = zones = 0
+    multi_piece = []
     unmatched = []
     for img in images:
         image_id = rv.image_id_from_export_name(img.name, known)
@@ -111,12 +120,15 @@ def main() -> None:
         if target.exists() and not args.overwrite:
             skipped += 1
             continue
-        labels, zone = split_zone(labels_by_name.get(img.name, []))
+        labels, pieces = split_zone(labels_by_name.get(img.name, []))
         rv.write_labels(target, labels)
-        if zone:
+        if pieces:
             zones_dir.mkdir(parents=True, exist_ok=True)
-            (zones_dir / f"{image_id}.json").write_text(json.dumps({"format": "normalized", "points": zone}),
-                                                        encoding="utf-8")
+            zone = {"format": "normalized", "points": pieces[0]}
+            if len(pieces) > 1:
+                zone["pieces"] = pieces
+                multi_piece.append(image_id)
+            (zones_dir / f"{image_id}.json").write_text(json.dumps(zone), encoding="utf-8")
             zones += 1
         written += 1
         objects += len(labels)
@@ -124,6 +136,10 @@ def main() -> None:
 
     print(f"Imported {written} label files into {labels_dir} ({objects} objects, {negatives} clean negatives, "
           f"{zones} railway zones); skipped {skipped} already imported (use --overwrite to replace).")
+    if multi_piece:
+        print(f"{len(multi_piece)} zones were drawn in several pieces; all pieces kept: {', '.join(multi_piece[:8])}")
+    if written - zones:
+        print(f"WARNING: {written - zones} photos have no railway_zone")
     if unmatched:
         print(f"WARNING: {len(unmatched)} exported images are not in the manifest "
               f"(renamed, or never added with add_images.py): {', '.join(unmatched[:8])}")
