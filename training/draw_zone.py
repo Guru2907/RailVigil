@@ -10,6 +10,8 @@ animal must not be (the track and its safety strip). Keys:
     y           redo a point you undid            b   back to the previous clip
     r           start again (y brings it back)    n   skip this clip
     q / Esc     quit
+Leaving a clip with b, n, q or Esc while it has unsaved changes asks for the
+same key a second time, so a zone is never thrown away by one stray key.
 The zone is saved in normalised coordinates (0-1), the same sidecar format the
 intrusion pipeline and evaluate_intrusion.py read, so it fits any resolution.
 """
@@ -24,6 +26,17 @@ import numpy as np
 VIDEO = {".mp4", ".webm", ".ogv", ".mov", ".avi", ".mkv"}
 PHOTO = {".jpg", ".jpeg", ".png", ".webp"}
 MAX_W, MAX_H = 1280, 760
+LEAVE = {ord("b"): "back", ord("n"): "skipped", ord("q"): "quit", 27: "quit"}
+
+
+def leave_or_warn(key: int, changed: bool, armed: int | None) -> tuple[str | None, int | None]:
+    """For a leave key: (result, None) to leave now, or (None, key) to warn first.
+
+    With unsaved changes the same key has to be pressed twice in a row.
+    """
+    if changed and armed != key:
+        return None, key
+    return LEAVE[key], None
 
 
 def sidecar(path: Path) -> Path:
@@ -44,7 +57,7 @@ def frame_of(path: Path, at_sec: float):
 
 
 def draw(path: Path, at_sec: float) -> str:
-    """'saved', 'skipped' or 'quit'."""
+    """'saved', 'skipped', 'back' or 'quit'."""
     frame = frame_of(path, at_sec)
     if frame is None:
         print(f"  {path.name}: could not read a frame, skipped")
@@ -59,11 +72,14 @@ def draw(path: Path, at_sec: float) -> str:
         points = [(int(x * base.shape[1]), int(y * base.shape[0])) for x, y in old]
 
     undone: list[tuple[int, int]] = []     # points taken off by undo/reset, newest last
+    saved = list(points)                   # what is on disk, to spot unsaved changes
+    armed: list[int | None] = [None]       # leave key pressed once with unsaved changes
 
     def on_click(event, x, y, *_):
         if event == cv2.EVENT_LBUTTONDOWN:
             points.append((x, y))
             undone.clear()
+            armed[0] = None
 
     title = f"{path.name}  |  Enter=save  u=undo  y=redo  r=reset  b=back  n=skip  q=quit"
     cv2.namedWindow(title)
@@ -83,6 +99,16 @@ def draw(path: Path, at_sec: float) -> str:
                 cv2.line(view, points[-1], points[0], (0, 255, 255), 1)
             cv2.imshow(title, view)
             key = cv2.waitKey(30) & 0xFF
+            if key == 0xFF:                    # no key pressed
+                continue
+            if key in LEAVE:
+                result, armed[0] = leave_or_warn(key, points != saved, armed[0])
+                if result:
+                    return result
+                name = "Esc" if key == 27 else chr(key)
+                print(f"  unsaved changes: press {name} again to leave without saving, or Enter to save")
+                continue
+            armed[0] = None
             if key in (13, ord("s")):
                 if len(points) < 3:
                     print("  need at least 3 points")
@@ -98,12 +124,6 @@ def draw(path: Path, at_sec: float) -> str:
             elif key == ord("r"):
                 undone.extend(reversed(points))
                 points.clear()
-            elif key == ord("b"):
-                return "back"
-            elif key == ord("n"):
-                return "skipped"
-            elif key in (ord("q"), 27):
-                return "quit"
     finally:
         cv2.destroyWindow(title)
 
