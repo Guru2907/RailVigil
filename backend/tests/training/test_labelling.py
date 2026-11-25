@@ -31,14 +31,30 @@ def test_railway_zone_maps_to_the_zone_index_not_a_class():
         rv.class_remap(["railway_track"])
 
 
-def test_zone_is_split_off_and_the_largest_polygon_is_kept():
+def test_zone_is_split_off_and_a_stray_click_is_dropped():
     labels = [(STRUCT, _box(0.1, 0.1, 0.2, 0.2)),
               (rv.ZONE_INDEX, _box(0.0, 0.5, 1.0, 1.0)),       # the real zone
               (rv.ZONE_INDEX, _box(0.4, 0.4, 0.41, 0.41))]     # a stray click
-    objects, zone = il.split_zone(labels)
+    objects, pieces = il.split_zone(labels)
     assert objects == [(STRUCT, _box(0.1, 0.1, 0.2, 0.2))]
-    assert zone == [[0.0, 0.5], [1.0, 0.5], [1.0, 1.0], [0.0, 1.0]]
+    assert pieces == [[[0.0, 0.5], [1.0, 0.5], [1.0, 1.0], [0.0, 1.0]]]
     assert il.split_zone([(STRUCT, _box(0, 0, 1, 1))])[1] is None
+
+
+def test_zone_drawn_in_several_pieces_keeps_every_piece_largest_first():
+    labels = [(rv.ZONE_INDEX, _box(0.0, 0.5, 0.3, 1.0)),       # one track
+              (rv.ZONE_INDEX, _box(0.4, 0.5, 1.0, 1.0))]       # the other, larger
+    _, pieces = il.split_zone(labels)
+    assert [len(pieces), pieces[0][0], pieces[1][0]] == [2, [0.4, 0.5], [0.0, 0.5]]
+
+
+def test_zone_iou_uses_the_union_of_pieces(tmp_path):
+    whole = tmp_path / "whole.json"
+    whole.write_text(json.dumps({"format": "normalized", "points": _box(0, 0.5, 1, 1)}))
+    split = tmp_path / "split.json"
+    halves = [_box(0, 0.5, 0.5, 1), _box(0.5, 0.5, 1, 1)]
+    split.write_text(json.dumps({"format": "normalized", "points": halves[0], "pieces": halves}))
+    assert la.zone_iou(whole, split) == pytest.approx(1.0)
 
 
 def test_coco_export_with_a_zone_category():
