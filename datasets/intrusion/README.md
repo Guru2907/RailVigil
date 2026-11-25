@@ -59,6 +59,12 @@ Open the frame sheet `frames/<clip>.jpg` to see roughly when things happen, then
 - A group walking together across the track = **one row per person** if you can tell them apart; a crowd that you cannot count = one row with `person` and the note `crowd`.
 - Someone **near** the track but never inside the zone is **not** an intrusion: no row (the whole-clip row covers it).
 - A train passing through the zone is **not** an intrusion.
+- A car, truck or person using a **level crossing** normally is still a zone entry (the system cannot know whether a train is due), but start its notes with `crossing traffic:`, so results can also be reported without them.
+
+**c) Don't-care ranges** (only when needed): a time range that must not be scored, such as a replay of the same event, another camera angle the zone does not fit, or a title card. Alerts starting inside it are dropped, and its length is not counted as video time.
+```
+<clip>,<start_sec>,<end_sec>,*,ignore,<why>
+```
 
 Example, using two of our clips:
 ```csv
@@ -90,6 +96,19 @@ Use the **file name without the extension** in `clip`. Keep `notes` short and wi
 | `showcase_ludhiana` | 197.1 | station platform; **people step down onto the track** |
 | `showcase_malavli_crossing` | 41.5 | **people crossing near a moving train** (stock footage: numbers only, never shown) |
 | `showcase_man_on_tracks` | 9.1 | **man walking on the tracks** (stock footage: numbers only, never shown) |
+
+### Clips left out of the evaluation
+
+| Clip | Why |
+|---|---|
+| `commons_Luebben_Trains_01_webmhd` | the camera moves, so no fixed zone fits (no zone file) |
+| `showcase_ludhiana` | handheld: the view shifts every few seconds, so the zone lands on the platform and the people on it; nobody goes onto the track |
+
+### Review of the labels (2026-11-26)
+
+- `showcase_rescue_vangani` shows one rescue three times from two cameras. Only 10–24 s (the full CCTV view the zone was drawn on) is scored; 0–10 s (a teaser of the same rescue) and 24–73.2 s (second camera, CCTV replay, title cards) are don't-care ranges.
+- Times were spot-checked against frame sheets (0.5–1.5 s apart) for `pixabay_385824`, `pixabay_384221`, `pixabay_3178`, `showcase_malavli_crossing` and `showcase_man_on_tracks`. All agree with the footage to within about a second.
+- 13 intrusions in 15 clips: 5 are crossing traffic, 8 are people on the track away from a crossing.
 
 ## 3. Run the evaluation
 
