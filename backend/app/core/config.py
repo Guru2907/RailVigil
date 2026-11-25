@@ -22,6 +22,12 @@ OUTPUTS_DIR = Path(os.getenv("OUTPUTS_DIR", BASE_DIR / "outputs"))
 # Stored media and evidence for the encroachment module (services/storage_service.py).
 STORAGE_DIR = Path(os.getenv("STORAGE_DIR", BASE_DIR / "storage"))
 
+# --- web --------------------------------------------------------------------
+# Browser origins allowed to call the API (comma-separated). The default is the
+# Vite dev server; set CORS_ORIGINS to the real frontend address when deploying.
+CORS_ORIGINS = [o.strip() for o in os.getenv(
+    "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
+
 # --- database -----------------------------------------------------------
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'railvigil.db'}")
 

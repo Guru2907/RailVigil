@@ -1,17 +1,14 @@
 from fastapi.middleware.cors import CORSMiddleware
 
-# Vite's default dev port. Permissive on purpose for the demo stage --
-# tighten this before any real deployment.
-DEV_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+from app.core import config
 
 
-def add_cors(app):
+def add_cors(app, origins: list[str] | None = None):
+    """Allow the configured frontend origins (config.CORS_ORIGINS, from the
+    CORS_ORIGINS environment variable) to call the API from the browser."""
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=DEV_ORIGINS,
+        allow_origins=config.CORS_ORIGINS if origins is None else origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
