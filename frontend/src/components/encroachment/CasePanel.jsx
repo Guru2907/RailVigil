@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { getSite } from "../../api/encroachment.js";
+import { fileUrl, getSite } from "../../api/encroachment.js";
 import EvidencePlan from "./EvidencePlan.jsx";
 import { KeyValue, SeverityBadge, Skeleton, StatusBadge, btn } from "../ui/index.jsx";
 import { SEVERITY_COLOR, normaliseSeverity } from "../../utils/severity.js";
@@ -70,9 +70,17 @@ export default function CasePanel({ site }) {
         )}
 
         {onPhoto.length > 0 && (
-          <ol className="mt-3 space-y-1.5 text-sm">
+          <ol className="mt-3 space-y-2 text-sm">
             {onPhoto.map((f, i) => (
               <li key={f.id} className="flex items-center gap-2.5">
+                {f.crop_url && (
+                  <img
+                    src={fileUrl(f.crop_url)}
+                    alt={`Finding ${i + 1}, enlarged: ${classLabel(f.cls)}`}
+                    className="h-14 w-20 shrink-0 border border-rule object-cover"
+                    loading="lazy"
+                  />
+                )}
                 <span
                   className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-bold text-white"
                   style={{ background: SEVERITY_COLOR[normaliseSeverity(f.severity)] }}
@@ -80,8 +88,10 @@ export default function CasePanel({ site }) {
                 >
                   {i + 1}
                 </span>
-                <span className="min-w-0 flex-1 truncate">{classLabel(f.cls)}</span>
-                <span className="shrink-0 text-muted">{Math.round(f.overlap_ratio * 100)} % on railway land</span>
+                <span className="min-w-0 flex-1 leading-snug">
+                  <span className="block truncate font-medium">{classLabel(f.cls)}</span>
+                  <span className="block text-xs text-muted">{Math.round(f.overlap_ratio * 100)} % on railway land</span>
+                </span>
               </li>
             ))}
             {elsewhere > 0 && (

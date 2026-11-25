@@ -69,8 +69,8 @@ export default function EvidencePlan({ findings, className = "" }) {
             <g key={f.id}>
               <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="none" stroke="#fff" strokeWidth={stroke * 2.2} />
               <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="none" stroke={colour} strokeWidth={stroke * 1.2} />
-              <circle cx={x1} cy={y1} r={label * 0.62} fill={colour} stroke="#fff" strokeWidth={stroke * 0.8} />
-              <text x={x1} y={y1} textAnchor="middle" dominantBaseline="central" fontSize={label * 0.72} fontWeight="700" fill="#fff">
+              <circle cx={x1 - label * 0.7} cy={y1 - label * 0.7} r={label * 0.62} fill={colour} stroke="#fff" strokeWidth={stroke * 0.8} />
+              <text x={x1 - label * 0.7} y={y1 - label * 0.7} textAnchor="middle" dominantBaseline="central" fontSize={label * 0.72} fontWeight="700" fill="#fff">
                 {i + 1}
               </text>
             </g>
