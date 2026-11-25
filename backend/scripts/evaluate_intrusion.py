@@ -14,7 +14,7 @@ Examples (from backend/):
       --sweep confirm_dwell 0.3,0.6,1.0,2.0,3.0
 
 Prediction JSON schema: list of
-  {clip, start_sec, end_sec, class|object_class, dwell_time_sec?, event_type?}
+  {clip, start_sec, end_sec, class|object_class, dwell_time_sec?, event_type?, confirmed_ts?}
 """
 
 from __future__ import annotations
@@ -48,6 +48,7 @@ def _load_preds(path: Path) -> list[PredEvent]:
                 object_class=str(row.get("object_class") or row.get("class") or "person"),
                 dwell_time_sec=float(row.get("dwell_time_sec") or 0.0),
                 event_type=str(row.get("event_type") or ""),
+                alert_sec=None if row.get("confirmed_ts") is None else float(row["confirmed_ts"]),
             )
         )
     return out
@@ -100,6 +101,7 @@ def _run_pipeline(clips_dir: Path, clip_names: list[str], out_root: Path) -> tup
                     object_class=str(inc["object_class"]),
                     dwell_time_sec=float(inc["dwell_time_sec"]),
                     event_type=str(inc["event_type"]),
+                    alert_sec=None if inc.get("confirmed_ts") is None else float(inc["confirmed_ts"]),
                 )
             )
     return preds, processed
@@ -109,7 +111,7 @@ def _print_metrics(title: str, metrics: dict) -> None:
     print(f"\n=== {title} ===")
     for key in (
         "tp", "fp", "fn", "precision", "recall",
-        "false_alerts_per_hour", "mean_confirmation_delay_sec",
+        "false_alerts_per_hour", "mean_confirmation_delay_sec", "mean_first_seen_delay_sec", "alert_time_known",
         "fp_duplicate", "fp_other", "n_positive_labels", "n_predictions", "n_ignored_predictions", "n_clips",
         "video_hours_est",
         "skipped_clips",

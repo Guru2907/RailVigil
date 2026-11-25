@@ -1,5 +1,7 @@
 """Unit tests for event-level matching (issue #3 part B) — no weights needed."""
 
+import pytest
+
 from app.cv.intrusion.evaluation import LabelRow, PredEvent, intervals_overlap, load_labels, match_events
 
 
@@ -128,3 +130,19 @@ def test_load_labels_reads_ignore(tmp_path):
     )
     rows = load_labels(path)
     assert [(r.is_intrusion, r.ignore) for r in rows] == [(False, False), (True, False), (False, True)]
+
+
+def test_time_to_alert_uses_the_moment_the_alert_fired():
+    labels = [LabelRow("a", 2.0, 8.0, "person", True)]
+    preds = [PredEvent("a", 2.3, 7.0, "person", alert_sec=3.3)]   # seen at 2.3 s, confirmed at 3.3 s
+    m = match_events(labels, preds)
+    assert m["mean_confirmation_delay_sec"] == pytest.approx(1.3)
+    assert m["mean_first_seen_delay_sec"] == pytest.approx(0.3)
+    assert m["alert_time_known"] is True
+
+
+def test_without_an_alert_time_the_first_sighting_is_used():
+    labels = [LabelRow("a", 2.0, 8.0, "person", True)]
+    m = match_events(labels, [PredEvent("a", 2.5, 7.0, "person")])
+    assert m["mean_confirmation_delay_sec"] == pytest.approx(0.5)
+    assert m["alert_time_known"] is False

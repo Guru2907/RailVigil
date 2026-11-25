@@ -154,6 +154,8 @@ def process_video(video_path: str, zone_points: list | dict | None, video_id: st
             "start_frame": state.start_frame,
             "end_frame": state.last_frame,
             "start_ts": round(state.start_ts, 2),
+            # when the alert fired (dwell reached CONFIRM_DWELL_SEC); for evaluation, not stored
+            "confirmed_ts": None if state.confirmed_ts is None else round(state.confirmed_ts, 2),
             "end_ts": round(state.last_ts, 2),
             "dwell_time_sec": round(dwell, 2),
             "max_penetration": round(state.max_penetration(), 3),

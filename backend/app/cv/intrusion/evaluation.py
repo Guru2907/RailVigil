@@ -35,6 +35,7 @@ class PredEvent:
     object_class: str
     dwell_time_sec: float = 0.0
     event_type: str = ""
+    alert_sec: float | None = None   # when the alert fired; None = unknown, use start_sec
 
 
 def intervals_overlap(a0: float, a1: float, b0: float, b1: float) -> bool:
@@ -117,6 +118,7 @@ def match_events(
     tp = 0
     matched_pred_ids: set[int] = set()
     confirmation_delays: list[float] = []
+    first_seen_delays: list[float] = []
 
     # group by clip
     labels_by_clip: dict[str, list[LabelRow]] = {}
@@ -147,7 +149,10 @@ def match_events(
                 pid = available[best_i][0]
                 matched_pred_ids.add(pid)
                 # confirmation delay ≈ how long after label start the event starts
-                confirmation_delays.append(max(0.0, best.start_sec - lab.start_sec))
+                # time to alert: from the moment the intrusion starts to the moment the alert fires
+                fired = best.alert_sec if best.alert_sec is not None else best.start_sec
+                confirmation_delays.append(max(0.0, fired - lab.start_sec))
+                first_seen_delays.append(max(0.0, best.start_sec - lab.start_sec))
                 available.pop(best_i)
 
     unmatched = [p for i, p in enumerate(preds) if i not in matched_pred_ids]
@@ -205,6 +210,10 @@ def match_events(
         "recall": round(recall, 4),
         "false_alerts_per_hour": None if false_per_hour is None else round(false_per_hour, 4),
         "mean_confirmation_delay_sec": None if mean_delay is None else round(mean_delay, 4),
+        "mean_first_seen_delay_sec": (
+            round(sum(first_seen_delays) / len(first_seen_delays), 4) if first_seen_delays else None
+        ),
+        "alert_time_known": all(p.alert_sec is not None for p in preds) if preds else None,
         "video_hours_est": None if video_hours is None else round(video_hours, 4),
         "n_clips": len(per_clip),
         "skipped_clips": skipped,
