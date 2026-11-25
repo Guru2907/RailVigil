@@ -1,0 +1,1307 @@
+{
+  "old_key": {
+    "classes": [
+      "structure_permanent",
+      "structure_temporary",
+      "vegetation",
+      "vehicle_parked"
+    ],
+    "excluded_classes": {},
+    "test_objects": {
+      "structure_temporary": 18,
+      "structure_permanent": 35,
+      "vegetation": 62,
+      "vehicle_parked": 24
+    },
+    "resamples": 1000,
+    "seed": 0,
+    "groups": {
+      "all": {
+        "photos": 39,
+        "objects": {
+          "structure_permanent": 35,
+          "structure_temporary": 18,
+          "vegetation": 62,
+          "vehicle_parked": 24
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": 0.7922455962506545,
+            "ci95": [
+              0.6880676536213594,
+              0.9049200822792068
+            ]
+          },
+          "railvigil-s": {
+            "value": 0.3776738420056825,
+            "ci95": [
+              0.30139198809047324,
+              0.47226348246845096
+            ]
+          },
+          "v2-s-f10": {
+            "value": 0.35998488901059555,
+            "ci95": [
+              0.2849185978317881,
+              0.4927417737295952
+            ]
+          },
+          "v2-m-f10": {
+            "value": 0.27222144969834405,
+            "ci95": [
+              0.22600141842004956,
+              0.3695102023505331
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": 0.6728225124636322,
+              "ci95": [
+                0.47364876361161523,
+                0.8985204122042428
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.6975214328155503,
+              "ci95": [
+                0.420948038856305,
+                1.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.9816054437293389,
+              "ci95": [
+                0.9405303954063254,
+                1.0
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.8170329959940967,
+              "ci95": [
+                0.6824480233463609,
+                1.0
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": 0.2742678339191044,
+              "ci95": [
+                0.11548642874365643,
+                0.4522689768778423
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.18002667960223137,
+              "ci95": [
+                0.019366052027068974,
+                0.4541755494811561
+              ]
+            },
+            "vegetation": {
+              "value": 0.5671795508250151,
+              "ci95": [
+                0.3860720772130247,
+                0.7137996922749573
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.4892213036763791,
+              "ci95": [
+                0.2499465811965812,
+                0.6294925880041012
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": 0.22784400817511274,
+              "ci95": [
+                0.10158012998004735,
+                0.4151378477623381
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.249051841389412,
+              "ci95": [
+                0.07091381629378095,
+                0.48489289689549203
+              ]
+            },
+            "vegetation": {
+              "value": 0.5784765711042705,
+              "ci95": [
+                0.4118521590981389,
+                0.7319008660602999
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.384567135373587,
+              "ci95": [
+                0.2045320855614973,
+                0.7989685955027171
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": 0.2289966242907419,
+              "ci95": [
+                0.10114630021249764,
+                0.39412245847242094
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.15425894728960768,
+              "ci95": [
+                0.01595533603512327,
+                0.338498466492036
+              ]
+            },
+            "vegetation": {
+              "value": 0.5702135605463601,
+              "ci95": [
+                0.4126568299675904,
+                0.720709770996542
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.13541666666666666,
+              "ci95": [
+                0.036944444444444446,
+                0.4756249999999994
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": -0.414571754244972,
+            "ci95": [
+              -0.5313378121982536,
+              -0.3043252801080599
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - baseline": {
+            "difference": -0.43226070724005894,
+            "ci95": [
+              -0.5496477250205598,
+              -0.27857079672540963
+            ],
+            "share_above_zero": 0.001
+          },
+          "v2-m-f10 - baseline": {
+            "difference": -0.5200241465523104,
+            "ci95": [
+              -0.6280570195022199,
+              -0.3793350470272345
+            ],
+            "share_above_zero": 0.001
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": -0.017688952995086937,
+            "ci95": [
+              -0.0793043252141719,
+              0.08212075663868047
+            ],
+            "share_above_zero": 0.398
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": -0.10545239230733844,
+            "ci95": [
+              -0.17480043841632767,
+              -0.007713960153121098
+            ],
+            "share_above_zero": 0.021
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": -0.0877634393122515,
+            "ci95": [
+              -0.17817724646669275,
+              -0.017279588443427762
+            ],
+            "share_above_zero": 0.006
+          }
+        }
+      },
+      "India": {
+        "photos": 39,
+        "objects": {
+          "structure_permanent": 35,
+          "structure_temporary": 18,
+          "vegetation": 62,
+          "vehicle_parked": 24
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": 0.7922455962506545,
+            "ci95": [
+              0.6748359066628927,
+              0.9140135818742373
+            ]
+          },
+          "railvigil-s": {
+            "value": 0.3776738420056825,
+            "ci95": [
+              0.28984231281460476,
+              0.4759059942780651
+            ]
+          },
+          "v2-s-f10": {
+            "value": 0.35998488901059555,
+            "ci95": [
+              0.2873597446542646,
+              0.4977419851586864
+            ]
+          },
+          "v2-m-f10": {
+            "value": 0.27222144969834405,
+            "ci95": [
+              0.22376881385908187,
+              0.37094754384323103
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": 0.6728225124636322,
+              "ci95": [
+                0.4720359202404157,
+                0.9012638646712231
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.6975214328155503,
+              "ci95": [
+                0.39350708616780045,
+                1.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.9816054437293389,
+              "ci95": [
+                0.9389552486854117,
+                1.0
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.8170329959940967,
+              "ci95": [
+                0.636282967032967,
+                1.0
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": 0.2742678339191044,
+              "ci95": [
+                0.11611089519424811,
+                0.46095005215582563
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.18002667960223137,
+              "ci95": [
+                0.020391564454064454,
+                0.44258530418856495
+              ]
+            },
+            "vegetation": {
+              "value": 0.5671795508250151,
+              "ci95": [
+                0.39788549366970116,
+                0.7105038015656289
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.4892213036763791,
+              "ci95": [
+                0.21402597402597404,
+                0.6654977236372587
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": 0.22784400817511274,
+              "ci95": [
+                0.1033170954092614,
+                0.4204816421661582
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.249051841389412,
+              "ci95": [
+                0.06529644185260311,
+                0.47059155299142347
+              ]
+            },
+            "vegetation": {
+              "value": 0.5784765711042705,
+              "ci95": [
+                0.42767025443230267,
+                0.72118261042319
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.384567135373587,
+              "ci95": [
+                0.18738425925925928,
+                0.8
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": 0.2289966242907419,
+              "ci95": [
+                0.11026287557751738,
+                0.4035399755097413
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.15425894728960768,
+              "ci95": [
+                0.0222208808896693,
+                0.3258172493188817
+              ]
+            },
+            "vegetation": {
+              "value": 0.5702135605463601,
+              "ci95": [
+                0.41353718325848093,
+                0.7088910879880022
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.13541666666666666,
+              "ci95": [
+                0.04988095238095239,
+                0.45898809523809464
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": -0.414571754244972,
+            "ci95": [
+              -0.5333835653412897,
+              -0.2958489350249022
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - baseline": {
+            "difference": -0.43226070724005894,
+            "ci95": [
+              -0.5537034421113214,
+              -0.2645602346011
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - baseline": {
+            "difference": -0.5200241465523104,
+            "ci95": [
+              -0.6338778694380146,
+              -0.3516481324554223
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": -0.017688952995086937,
+            "ci95": [
+              -0.08469982871132829,
+              0.08200848453334011
+            ],
+            "share_above_zero": 0.428
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": -0.10545239230733844,
+            "ci95": [
+              -0.1746204985762671,
+              2.327579686683442e-06
+            ],
+            "share_above_zero": 0.026
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": -0.0877634393122515,
+            "ci95": [
+              -0.1785012327581835,
+              -0.009684937433334347
+            ],
+            "share_above_zero": 0.01
+          }
+        }
+      },
+      "other countries": {
+        "photos": 0,
+        "objects": {
+          "structure_permanent": 0,
+          "structure_temporary": 0,
+          "vegetation": 0,
+          "vehicle_parked": 0
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "railvigil-s": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "v2-s-f10": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "v2-m-f10": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          }
+        }
+      }
+    }
+  },
+  "blind_key_A": {
+    "classes": [
+      "structure_permanent",
+      "structure_temporary",
+      "vegetation",
+      "vehicle_parked"
+    ],
+    "excluded_classes": {},
+    "test_objects": {
+      "structure_temporary": 6,
+      "vegetation": 35,
+      "structure_permanent": 13,
+      "vehicle_parked": 8
+    },
+    "resamples": 1000,
+    "seed": 0,
+    "groups": {
+      "all": {
+        "photos": 39,
+        "objects": {
+          "structure_permanent": 13,
+          "structure_temporary": 6,
+          "vegetation": 35,
+          "vehicle_parked": 8
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": 0.23581981946562294,
+            "ci95": [
+              0.10211753087132444,
+              0.34895246119744494
+            ]
+          },
+          "railvigil-s": {
+            "value": 0.18138473205467903,
+            "ci95": [
+              0.05609158418439262,
+              0.26489207997560094
+            ]
+          },
+          "v2-s-f10": {
+            "value": 0.11642016758296271,
+            "ci95": [
+              0.06311488442571254,
+              0.32469183936351326
+            ]
+          },
+          "v2-m-f10": {
+            "value": 0.16413807723768406,
+            "ci95": [
+              0.08205481937591352,
+              0.3420590120449176
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": 0.0421646441525439,
+              "ci95": [
+                0.011903686528675265,
+                0.1417507461496903
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.33332831802725366,
+              "ci95": [
+                0.18447567467974815,
+                0.5444361747985579
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.5677863156826942,
+              "ci95": [
+                0.05059322033898306,
+                1.0
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": 0.014479638009049774,
+              "ci95": [
+                0.0010983102918586793,
+                0.06169263078645226
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.2492945843273134,
+              "ci95": [
+                0.10577396656998746,
+                0.46880088457814123
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.46176470588235297,
+              "ci95": [
+                0.0,
+                0.6752406417112299
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": 0.022514522514522513,
+              "ci95": [
+                0.0005181352914997775,
+                0.11330011407078547
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.008771929824561403,
+              "ci95": [
+                0.0,
+                0.10064102564102564
+              ]
+            },
+            "vegetation": {
+              "value": 0.26719336329191223,
+              "ci95": [
+                0.09462920636711314,
+                0.4812707509533268
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.16720085470085472,
+              "ci95": [
+                0.0,
+                1.0
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": 0.07889546351084813,
+              "ci95": [
+                0.0,
+                0.22231735159817342
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.041666666666666664,
+              "ci95": [
+                0.0,
+                0.32000000000000006
+              ]
+            },
+            "vegetation": {
+              "value": 0.19224017877322147,
+              "ci95": [
+                0.08782574075675995,
+                0.3630987769207142
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.34375,
+              "ci95": [
+                0.0,
+                1.0
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": -0.05443508741094391,
+            "ci95": [
+              -0.1608111790129158,
+              0.0004840883657856546
+            ],
+            "share_above_zero": 0.026
+          },
+          "v2-s-f10 - baseline": {
+            "difference": -0.11939965188266023,
+            "ci95": [
+              -0.18281807351020554,
+              0.032798537251654374
+            ],
+            "share_above_zero": 0.101
+          },
+          "v2-m-f10 - baseline": {
+            "difference": -0.07168174222793888,
+            "ci95": [
+              -0.14238563872234475,
+              0.16503303478925083
+            ],
+            "share_above_zero": 0.242
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": -0.06496456447171632,
+            "ci95": [
+              -0.15467176193659024,
+              0.13825600192179544
+            ],
+            "share_above_zero": 0.382
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": -0.017246654816994972,
+            "ci95": [
+              -0.10110109721804576,
+              0.24286949468540486
+            ],
+            "share_above_zero": 0.503
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": 0.04771790965472135,
+            "ci95": [
+              -0.030683171741695305,
+              0.14118533976899394
+            ],
+            "share_above_zero": 0.849
+          }
+        }
+      },
+      "India": {
+        "photos": 39,
+        "objects": {
+          "structure_permanent": 13,
+          "structure_temporary": 6,
+          "vegetation": 35,
+          "vehicle_parked": 8
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": 0.23581981946562294,
+            "ci95": [
+              0.09422280611709694,
+              0.35620928080615843
+            ]
+          },
+          "railvigil-s": {
+            "value": 0.18138473205467903,
+            "ci95": [
+              0.05270573520714808,
+              0.2730326245356581
+            ]
+          },
+          "v2-s-f10": {
+            "value": 0.11642016758296271,
+            "ci95": [
+              0.06384242460880411,
+              0.30745026204301723
+            ]
+          },
+          "v2-m-f10": {
+            "value": 0.16413807723768406,
+            "ci95": [
+              0.07848277486692566,
+              0.3405299407913373
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": 0.0421646441525439,
+              "ci95": [
+                0.011584883633350909,
+                0.15925307029522245
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.33332831802725366,
+              "ci95": [
+                0.18411310297313332,
+                0.5503738667557897
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.5677863156826942,
+              "ci95": [
+                0.051558355437665786,
+                1.0
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": 0.014479638009049774,
+              "ci95": [
+                0.0011357323232323235,
+                0.07298952832783276
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ]
+            },
+            "vegetation": {
+              "value": 0.2492945843273134,
+              "ci95": [
+                0.12196841195861852,
+                0.45952974134024094
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.46176470588235297,
+              "ci95": [
+                0.0,
+                0.6666666666666666
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": 0.022514522514522513,
+              "ci95": [
+                0.0007933407738095239,
+                0.11689232551074653
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.008771929824561403,
+              "ci95": [
+                0.0,
+                0.1
+              ]
+            },
+            "vegetation": {
+              "value": 0.26719336329191223,
+              "ci95": [
+                0.11290943484655026,
+                0.4839241622814839
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.16720085470085472,
+              "ci95": [
+                0.0,
+                1.0
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": 0.07889546351084813,
+              "ci95": [
+                0.0,
+                0.2222222222222222
+              ]
+            },
+            "structure_temporary": {
+              "value": 0.041666666666666664,
+              "ci95": [
+                0.0,
+                0.3333333333333333
+              ]
+            },
+            "vegetation": {
+              "value": 0.19224017877322147,
+              "ci95": [
+                0.09145475503850767,
+                0.37108523534133536
+              ]
+            },
+            "vehicle_parked": {
+              "value": 0.34375,
+              "ci95": [
+                0.0,
+                1.0
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": -0.05443508741094391,
+            "ci95": [
+              -0.1655812312549833,
+              -0.0033199848333414967
+            ],
+            "share_above_zero": 0.019
+          },
+          "v2-s-f10 - baseline": {
+            "difference": -0.11939965188266023,
+            "ci95": [
+              -0.18764066610996769,
+              0.04455470540335518
+            ],
+            "share_above_zero": 0.09
+          },
+          "v2-m-f10 - baseline": {
+            "difference": -0.07168174222793888,
+            "ci95": [
+              -0.14142843695836496,
+              0.18418605972035582
+            ],
+            "share_above_zero": 0.246
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": -0.06496456447171632,
+            "ci95": [
+              -0.15893381735522302,
+              0.14548138067841668
+            ],
+            "share_above_zero": 0.382
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": -0.017246654816994972,
+            "ci95": [
+              -0.10595861210863342,
+              0.24588967076297005
+            ],
+            "share_above_zero": 0.522
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": 0.04771790965472135,
+            "ci95": [
+              -0.03158579974642111,
+              0.1456680987166772
+            ],
+            "share_above_zero": 0.862
+          }
+        }
+      },
+      "other countries": {
+        "photos": 0,
+        "objects": {
+          "structure_permanent": 0,
+          "structure_temporary": 0,
+          "vegetation": 0,
+          "vehicle_parked": 0
+        },
+        "mean_ap50": {
+          "baseline": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "railvigil-s": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "v2-s-f10": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          },
+          "v2-m-f10": {
+            "value": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ]
+          }
+        },
+        "per_class_ap50": {
+          "baseline": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "railvigil-s": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "v2-s-f10": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          },
+          "v2-m-f10": {
+            "structure_permanent": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "structure_temporary": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vegetation": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            },
+            "vehicle_parked": {
+              "value": NaN,
+              "ci95": [
+                NaN,
+                NaN
+              ]
+            }
+          }
+        },
+        "paired_differences": {
+          "railvigil-s - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - baseline": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-s-f10 - railvigil-s": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - railvigil-s": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          },
+          "v2-m-f10 - v2-s-f10": {
+            "difference": NaN,
+            "ci95": [
+              NaN,
+              NaN
+            ],
+            "share_above_zero": 0.0
+          }
+        }
+      }
+    }
+  },
+  "note": "Same 39 photos (the original test split), same 4 classes (material_dump removed from both keys); old_key = labels made by correcting the baseline's pre-labels, blind_key_A = labelled from scratch by labeller A without seeing predictions."
+}
