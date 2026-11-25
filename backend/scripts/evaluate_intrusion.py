@@ -65,10 +65,13 @@ def _find_video(clips_dir: Path, clip: str) -> Path | None:
     return None
 
 
-def _run_pipeline(clips_dir: Path, clip_names: list[str], out_root: Path) -> list[PredEvent]:
+def _run_pipeline(clips_dir: Path, clip_names: list[str], out_root: Path) -> tuple[list[PredEvent], set[str]]:
+    """Predictions, and the clips the pipeline really ran on (missing clips and
+    clips without a usable zone are skipped, so they must not count as video time)."""
     from app.cv.intrusion.video_processor import process_video
 
     preds: list[PredEvent] = []
+    processed: set[str] = set()
     config.OUTPUTS_DIR = out_root
     for clip in clip_names:
         video = _find_video(clips_dir, clip)
@@ -87,6 +90,7 @@ def _run_pipeline(clips_dir: Path, clip_names: list[str], out_root: Path) -> lis
         except Exception as exc:  # noqa: BLE001
             logging.error("pipeline failed for %s: %s", clip, exc)
             continue
+        processed.add(video.stem)
         for inc in incidents:
             preds.append(
                 PredEvent(
@@ -98,7 +102,7 @@ def _run_pipeline(clips_dir: Path, clip_names: list[str], out_root: Path) -> lis
                     event_type=str(inc["event_type"]),
                 )
             )
-    return preds
+    return preds, processed
 
 
 def _print_metrics(title: str, metrics: dict) -> None:
@@ -106,9 +110,18 @@ def _print_metrics(title: str, metrics: dict) -> None:
     for key in (
         "tp", "fp", "fn", "precision", "recall",
         "false_alerts_per_hour", "mean_confirmation_delay_sec",
-        "n_positive_labels", "n_predictions", "video_hours_est",
+        "fp_duplicate", "fp_other", "n_positive_labels", "n_predictions", "n_ignored_predictions", "n_clips",
+        "video_hours_est",
+        "skipped_clips",
     ):
         print(f"  {key}: {metrics.get(key)}")
+    per_clip = metrics.get("per_clip") or {}
+    if per_clip:
+        print("  per clip: positives / caught / missed / false alerts (of which duplicates)")
+        width = max(len(c) for c in per_clip)
+        for clip, row in per_clip.items():
+            print(f"    {clip:<{width}}  {row['positives']:>3} {row['tp']:>3} {row['fn']:>3} "
+                  f"{row['fp']:>3} ({row['fp_duplicate']})")
 
 
 def main() -> None:
@@ -136,17 +149,8 @@ def main() -> None:
         raise SystemExit("--sweep requires --run-pipeline")
 
     if args.preds:
-        preds = _load_preds(args.preds)
-        # normalize clip stems so labels without extension still match
-        normalized = []
-        for p in preds:
-            normalized.append(p)
-            stem = Path(p.clip).stem
-            if stem != p.clip:
-                normalized.append(
-                    PredEvent(stem, p.start_sec, p.end_sec, p.object_class, p.dwell_time_sec, p.event_type)
-                )
-        metrics = match_events(labels, normalized)
+        # match_events already treats 'foo.mp4' and 'foo' as one clip
+        metrics = match_events(labels, _load_preds(args.preds))
         _print_metrics("baseline", metrics)
         print(json.dumps(metrics, indent=2))
         return
@@ -175,8 +179,8 @@ def main() -> None:
             if attr == "FRAME_SAMPLE_INTERVAL":
                 value = int(value)
             setattr(config, attr, value)
-            preds = _run_pipeline(args.clips_dir, clip_names, args.out / f"sweep_{key}_{value}")
-            metrics = match_events(labels, preds)
+            preds, processed = _run_pipeline(args.clips_dir, clip_names, args.out / f"sweep_{key}_{value}")
+            metrics = match_events(labels, preds, processed)
             metrics["param"] = key
             metrics["value"] = value
             results.append(metrics)
@@ -184,8 +188,8 @@ def main() -> None:
         print(json.dumps(results, indent=2))
         return
 
-    preds = _run_pipeline(args.clips_dir, clip_names, args.out)
-    metrics = match_events(labels, preds)
+    preds, processed = _run_pipeline(args.clips_dir, clip_names, args.out)
+    metrics = match_events(labels, preds, processed)
     _print_metrics("baseline", metrics)
     print(json.dumps(metrics, indent=2))
 
