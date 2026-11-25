@@ -17,8 +17,7 @@ Three jobs. Do them in this order; each one ends with sending the export back, t
 | `structure_permanent` | brick/concrete houses, walls, shops built on or against railway land |
 | `structure_temporary` | huts, shacks, tarpaulin or tin shelters, stalls, tents |
 | `vegetation` | bushes, overgrowth, crops on the track bed or right beside it (not distant trees) |
-| `debris_waste` | garbage, litter piles, scrap |
-| `material_dump` | heaps of sand, bricks, gravel, sleepers, construction leftovers |
+| `material_dump` | garbage, litter piles and scrap, **and** heaps of sand, bricks, gravel, construction leftovers (waste is labelled here too; `debris_waste` is not used) |
 | `vehicle_parked` | vehicles that look parked or abandoned (not ones driving past) |
 | `railway_zone` | **test photos only (job 2):** ONE polygon around the railway land |
 
@@ -58,7 +57,7 @@ File to upload: `datasets\upload\test_blind\test_blind.zip` (66 photos, **no** g
 
 1. Each person makes **their own** project: **Instance Segmentation**, named `railvigil-test-A` (you) and `railvigil-test-B` (teammate).
 2. **Upload** the zip → **Save and Continue** (everything in Train is fine).
-3. **Add the 7 classes** (Classes tab, or the first time you draw), spelled exactly as in the table above, including `railway_zone`.
+3. **Add the 6 classes** (Classes & Tags → Add Class, or type the name the first time you draw), spelled exactly as in the table above, including `railway_zone`. Both labellers must use the same 6 names.
 4. **Annotate** each photo:
    - **objects:** press **B** (Bounding Box) and drag a box. A box is enough on the test set; outlines are not needed.
    - **railway_zone:** press **P** (Polygon) and click around the railway land: the track bed and the land beside it up to the fence, wall, drain or the edge of the railway strip. Enter to finish. **One per photo.** If you cannot tell where railway land ends, follow the ballast and a few metres beyond it.

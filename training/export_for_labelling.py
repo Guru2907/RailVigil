@@ -39,7 +39,9 @@ def main() -> None:
     for r in rows:
         src = rv.DATASETS / r["file"]
         shutil.copy2(src, out / "images" / f"{r['image_id']}{src.suffix.lower()}")
-    (out / "classes.txt").write_text("\n".join([*rv.CLASSES, rv.ZONE_CLASS]) + "\n", encoding="utf-8")
+    # debris_waste is not used: waste is labelled material_dump (see LABELLING_GUIDE.md).
+    used = [c for c in rv.CLASSES if c != "debris_waste"]
+    (out / "classes.txt").write_text("\n".join([*used, rv.ZONE_CLASS]) + "\n", encoding="utf-8")
     with zipfile.ZipFile(out / f"{name}.zip", "w", zipfile.ZIP_STORED) as z:
         for img in sorted((out / "images").iterdir()):
             z.write(img, f"images/{img.name}")

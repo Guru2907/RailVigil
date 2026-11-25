@@ -72,7 +72,8 @@ def test_blind_export_has_only_images_of_the_split(tmp_path, monkeypatch):
     out = tmp_path / "upload" / "test_blind"
     assert sorted(p.name for p in (out / "images").iterdir()) == ["000000000000.jpg", "000000000001.jpg"]
     assert not (out / "labels").exists()                                 # no model guesses
-    assert (out / "classes.txt").read_text().split() == [*rv.CLASSES, "railway_zone"]
+    used = [c for c in rv.CLASSES if c != "debris_waste"]                 # waste is labelled material_dump
+    assert (out / "classes.txt").read_text().split() == [*used, "railway_zone"]
     assert (out / "test_blind.zip").is_file()
 
 
