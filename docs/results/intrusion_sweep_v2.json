@@ -1,0 +1,647 @@
+[
+  {
+    "tp": 13,
+    "fp": 22,
+    "fn": 0,
+    "fp_duplicate": 20,
+    "fp_other": 2,
+    "n_positive_labels": 13,
+    "n_negative_labels": 15,
+    "n_predictions": 35,
+    "n_ignored_predictions": 4,
+    "precision": 0.3714,
+    "recall": 1.0,
+    "false_alerts_per_hour": 212.6974,
+    "mean_confirmation_delay_sec": 0.7915,
+    "mean_first_seen_delay_sec": 0.49,
+    "alert_time_known": true,
+    "video_hours_est": 0.1034,
+    "n_clips": 15,
+    "skipped_clips": [],
+    "per_clip": {
+      "commons_20110525Bahnuebergang_Heuweg": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_132311": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_18905": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_218495": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_3178": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 6,
+        "fp_duplicate": 6
+      },
+      "pixabay_384221": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_385824": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_4346": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_48588": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_malavli_crossing": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 11,
+        "fp_duplicate": 11
+      },
+      "showcase_man_on_tracks": {
+        "positives": 1,
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_rescue_vangani": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 3,
+        "fp_duplicate": 3
+      },
+      "showcase_shivamogga": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      }
+    },
+    "param": "confirm_dwell",
+    "value": 0.3
+  },
+  {
+    "tp": 13,
+    "fp": 18,
+    "fn": 0,
+    "fp_duplicate": 17,
+    "fp_other": 1,
+    "n_positive_labels": 13,
+    "n_negative_labels": 15,
+    "n_predictions": 31,
+    "n_ignored_predictions": 4,
+    "precision": 0.4194,
+    "recall": 1.0,
+    "false_alerts_per_hour": 174.0251,
+    "mean_confirmation_delay_sec": 1.16,
+    "mean_first_seen_delay_sec": 0.49,
+    "alert_time_known": true,
+    "video_hours_est": 0.1034,
+    "n_clips": 15,
+    "skipped_clips": [],
+    "per_clip": {
+      "commons_20110525Bahnuebergang_Heuweg": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_132311": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_18905": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_218495": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_3178": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 4,
+        "fp_duplicate": 4
+      },
+      "pixabay_384221": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_385824": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_4346": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_48588": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_malavli_crossing": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 11,
+        "fp_duplicate": 11
+      },
+      "showcase_man_on_tracks": {
+        "positives": 1,
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_rescue_vangani": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 2,
+        "fp_duplicate": 2
+      },
+      "showcase_shivamogga": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      }
+    },
+    "param": "confirm_dwell",
+    "value": 0.6
+  },
+  {
+    "tp": 13,
+    "fp": 13,
+    "fn": 0,
+    "fp_duplicate": 12,
+    "fp_other": 1,
+    "n_positive_labels": 13,
+    "n_negative_labels": 15,
+    "n_predictions": 26,
+    "n_ignored_predictions": 4,
+    "precision": 0.5,
+    "recall": 1.0,
+    "false_alerts_per_hour": 125.6848,
+    "mean_confirmation_delay_sec": 1.7531,
+    "mean_first_seen_delay_sec": 0.76,
+    "alert_time_known": true,
+    "video_hours_est": 0.1034,
+    "n_clips": 15,
+    "skipped_clips": [],
+    "per_clip": {
+      "commons_20110525Bahnuebergang_Heuweg": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_132311": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_18905": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_218495": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_3178": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 2,
+        "fp_duplicate": 2
+      },
+      "pixabay_384221": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_385824": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_4346": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_48588": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_malavli_crossing": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 9,
+        "fp_duplicate": 9
+      },
+      "showcase_man_on_tracks": {
+        "positives": 1,
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_rescue_vangani": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 1
+      },
+      "showcase_shivamogga": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      }
+    },
+    "param": "confirm_dwell",
+    "value": 1.0
+  },
+  {
+    "tp": 11,
+    "fp": 11,
+    "fn": 2,
+    "fp_duplicate": 10,
+    "fp_other": 1,
+    "n_positive_labels": 13,
+    "n_negative_labels": 15,
+    "n_predictions": 22,
+    "n_ignored_predictions": 3,
+    "precision": 0.5,
+    "recall": 0.8462,
+    "false_alerts_per_hour": 106.3487,
+    "mean_confirmation_delay_sec": 2.3164,
+    "mean_first_seen_delay_sec": 0.8236,
+    "alert_time_known": true,
+    "video_hours_est": 0.1034,
+    "n_clips": 15,
+    "skipped_clips": [],
+    "per_clip": {
+      "commons_20110525Bahnuebergang_Heuweg": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_132311": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_18905": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_218495": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_3178": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 2,
+        "fp_duplicate": 2
+      },
+      "pixabay_384221": {
+        "positives": 2,
+        "tp": 1,
+        "fn": 1,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_385824": {
+        "positives": 3,
+        "tp": 2,
+        "fn": 1,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_4346": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_48588": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_malavli_crossing": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 7,
+        "fp_duplicate": 7
+      },
+      "showcase_man_on_tracks": {
+        "positives": 1,
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_rescue_vangani": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 1
+      },
+      "showcase_shivamogga": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      }
+    },
+    "param": "confirm_dwell",
+    "value": 1.5
+  },
+  {
+    "tp": 10,
+    "fp": 11,
+    "fn": 3,
+    "fp_duplicate": 10,
+    "fp_other": 1,
+    "n_positive_labels": 13,
+    "n_negative_labels": 15,
+    "n_predictions": 21,
+    "n_ignored_predictions": 3,
+    "precision": 0.4762,
+    "recall": 0.7692,
+    "false_alerts_per_hour": 106.3487,
+    "mean_confirmation_delay_sec": 2.844,
+    "mean_first_seen_delay_sec": 0.846,
+    "alert_time_known": true,
+    "video_hours_est": 0.1034,
+    "n_clips": 15,
+    "skipped_clips": [],
+    "per_clip": {
+      "commons_20110525Bahnuebergang_Heuweg": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_Caltrain_locomotive_905_passing_by_San_Mateo_gk": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "commons_FR_17_Saint_Vaize__Passage_niveau_de_la_Borderie": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 0
+      },
+      "pixabay_132311": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_18905": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_218495": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_3178": {
+        "positives": 3,
+        "tp": 3,
+        "fn": 0,
+        "fp": 2,
+        "fp_duplicate": 2
+      },
+      "pixabay_384221": {
+        "positives": 2,
+        "tp": 1,
+        "fn": 1,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_385824": {
+        "positives": 3,
+        "tp": 1,
+        "fn": 2,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_4346": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "pixabay_48588": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_malavli_crossing": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 7,
+        "fp_duplicate": 7
+      },
+      "showcase_man_on_tracks": {
+        "positives": 1,
+        "tp": 1,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      },
+      "showcase_rescue_vangani": {
+        "positives": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 1,
+        "fp_duplicate": 1
+      },
+      "showcase_shivamogga": {
+        "positives": 0,
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "fp_duplicate": 0
+      }
+    },
+    "param": "confirm_dwell",
+    "value": 2.0
+  }
+]
