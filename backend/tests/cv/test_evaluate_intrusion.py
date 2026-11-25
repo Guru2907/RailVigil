@@ -50,3 +50,42 @@ def test_two_objects_need_two_labels():
     assert m["tp"] == 2
     assert m["fp"] == 0
     assert m["fn"] == 0
+
+
+def test_skipped_clips_do_not_count_as_video_time():
+    labels = [
+        LabelRow("ran", 0, 3600, "*", False),
+        LabelRow("no_zone", 0, 3600, "*", False),
+    ]
+    preds = [PredEvent("ran", 10, 12, "person")]
+    m = match_events(labels, preds, processed_clips={"ran.mp4"})
+    assert m["video_hours_est"] == 1.0
+    assert m["false_alerts_per_hour"] == 1.0
+    assert m["skipped_clips"] == ["no_zone"]
+    assert m["n_clips"] == 1
+
+
+def test_skipped_clip_positives_are_not_misses():
+    labels = [LabelRow("no_zone", 2, 5, "person", True)]
+    m = match_events(labels, [], processed_clips=set())
+    assert m["fn"] == 0
+    assert m["n_positive_labels"] == 0
+
+
+def test_duplicate_alerts_are_split_from_other_false_alerts():
+    labels = [LabelRow("a", 0, 10, "person", True)]
+    preds = [
+        PredEvent("a", 1, 4, "person"),    # matched
+        PredEvent("a", 6, 9, "person"),    # same person, new track id: duplicate
+        PredEvent("a", 20, 25, "person"),  # nothing labelled there
+        PredEvent("a", 2, 5, "car"),       # wrong class: not a duplicate
+    ]
+    m = match_events(labels, preds)
+    assert (m["tp"], m["fp"], m["fp_duplicate"], m["fp_other"]) == (1, 3, 1, 2)
+    assert m["per_clip"]["a"] == {"positives": 1, "tp": 1, "fn": 0, "fp": 3, "fp_duplicate": 1}
+
+
+def test_extension_and_stem_are_one_clip_for_hours():
+    labels = [LabelRow("c", 0, 1800, "*", False)]
+    preds = [PredEvent("c.mp4", 100, 200, "person")]
+    assert match_events(labels, preds)["video_hours_est"] == 0.5
