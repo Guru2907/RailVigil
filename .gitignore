@@ -33,6 +33,10 @@ datasets/intrusion/*
 !datasets/intrusion/labels.csv
 !datasets/intrusion/clips.csv
 !datasets/intrusion/README.md
+# zone files are small and the evaluation needs them; the videos beside them stay out
+!datasets/intrusion/clips/
+datasets/intrusion/clips/*
+!datasets/intrusion/clips/*.zone.json
 training/runs/
 training/weights/
 *.pt
