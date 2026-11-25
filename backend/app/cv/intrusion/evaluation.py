@@ -3,6 +3,10 @@
 Labels: clip, start_sec, end_sec, class, is_intrusion, notes
 A predicted event matches a positive label when time intervals overlap
 and the object class matches (or label class is '*').
+
+is_intrusion = ``ignore`` marks a don't-care time range (a replay, another
+camera angle the zone does not fit, a title card): alerts starting inside it
+are dropped, and its length is not counted as video time.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ class LabelRow:
     object_class: str
     is_intrusion: bool
     notes: str = ""
+    ignore: bool = False
 
 
 @dataclass(frozen=True)
@@ -51,6 +56,7 @@ def load_labels(path: Path | str) -> list[LabelRow]:
                 continue
             flag = str(raw.get("is_intrusion", "1")).strip().lower()
             is_intrusion = flag in {"1", "true", "yes", "y"}
+            ignore = flag == "ignore"
             rows.append(
                 LabelRow(
                     clip=raw["clip"].strip(),
@@ -59,6 +65,7 @@ def load_labels(path: Path | str) -> list[LabelRow]:
                     object_class=(raw.get("class") or "*").strip(),
                     is_intrusion=is_intrusion,
                     notes=(raw.get("notes") or "").strip(),
+                    ignore=ignore,
                 )
             )
     return rows
@@ -93,8 +100,19 @@ def match_events(
         labels = [lab for lab in labels if _clip_key(lab.clip) in keep]
         preds = [p for p in preds if _clip_key(p.clip) in keep]
 
-    positives = [lab for lab in labels if lab.is_intrusion]
-    negatives = [lab for lab in labels if not lab.is_intrusion]
+    ignored_ranges: dict[str, list[tuple[float, float]]] = {}
+    for lab in labels:
+        if lab.ignore:
+            ignored_ranges.setdefault(_clip_key(lab.clip), []).append((lab.start_sec, lab.end_sec))
+
+    def in_ignored(pred: PredEvent) -> bool:
+        return any(a <= pred.start_sec < b for a, b in ignored_ranges.get(_clip_key(pred.clip), []))
+
+    n_ignored_preds = sum(1 for p in preds if in_ignored(p))
+    preds = [p for p in preds if not in_ignored(p)]
+
+    positives = [lab for lab in labels if lab.is_intrusion and not lab.ignore]
+    negatives = [lab for lab in labels if not lab.is_intrusion and not lab.ignore]
 
     tp = 0
     matched_pred_ids: set[int] = set()
@@ -147,6 +165,8 @@ def match_events(
 
     per_clip: dict[str, dict] = {}
     for lab in labels:
+        if lab.ignore:
+            continue
         per_clip.setdefault(_clip_key(lab.clip), {"positives": 0, "tp": 0, "fn": 0, "fp": 0, "fp_duplicate": 0})
     for pred in preds:
         per_clip.setdefault(_clip_key(pred.clip), {"positives": 0, "tp": 0, "fn": 0, "fp": 0, "fp_duplicate": 0})
@@ -180,6 +200,7 @@ def match_events(
         "n_positive_labels": len(positives),
         "n_negative_labels": len(negatives),
         "n_predictions": len(preds),
+        "n_ignored_predictions": n_ignored_preds,
         "precision": round(precision, 4),
         "recall": round(recall, 4),
         "false_alerts_per_hour": None if false_per_hour is None else round(false_per_hour, 4),
@@ -191,11 +212,32 @@ def match_events(
     }
 
 
+def _merged_length(ranges: list[tuple[float, float]], limit: float) -> float:
+    """Length of the union of time ranges, clipped to [0, limit]."""
+    total, cur_a, cur_b = 0.0, None, None
+    for a, b in sorted((max(0.0, a), min(limit, b)) for a, b in ranges):
+        if b <= a:
+            continue
+        if cur_b is None or a > cur_b:
+            total += 0.0 if cur_b is None else cur_b - cur_a
+            cur_a, cur_b = a, b
+        else:
+            cur_b = max(cur_b, b)
+    return total + (0.0 if cur_b is None else cur_b - cur_a)
+
+
 def _estimate_hours(labels: list[LabelRow], preds: list[PredEvent]) -> float:
-    """Rough duration estimate: max end_sec per clip, summed ('foo.mp4' and 'foo' are one clip)."""
+    """Duration estimate: max end_sec per clip, minus its don't-care ranges, summed.
+
+    'foo.mp4' and 'foo' are one clip.
+    """
     ends: dict[str, float] = {}
     for clip, end in [(lab.clip, lab.end_sec) for lab in labels] + [(p.clip, p.end_sec) for p in preds]:
         key = _clip_key(clip)
         ends[key] = max(ends.get(key, 0.0), end)
-    total_sec = sum(ends.values())
+    ignored: dict[str, list[tuple[float, float]]] = {}
+    for lab in labels:
+        if lab.ignore:
+            ignored.setdefault(_clip_key(lab.clip), []).append((lab.start_sec, lab.end_sec))
+    total_sec = sum(end - _merged_length(ignored.get(clip, []), end) for clip, end in ends.items())
     return total_sec / 3600.0 if total_sec > 0 else 0.0

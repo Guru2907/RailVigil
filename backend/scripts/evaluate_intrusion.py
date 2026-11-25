@@ -110,7 +110,8 @@ def _print_metrics(title: str, metrics: dict) -> None:
     for key in (
         "tp", "fp", "fn", "precision", "recall",
         "false_alerts_per_hour", "mean_confirmation_delay_sec",
-        "fp_duplicate", "fp_other", "n_positive_labels", "n_predictions", "n_clips", "video_hours_est",
+        "fp_duplicate", "fp_other", "n_positive_labels", "n_predictions", "n_ignored_predictions", "n_clips",
+        "video_hours_est",
         "skipped_clips",
     ):
         print(f"  {key}: {metrics.get(key)}")

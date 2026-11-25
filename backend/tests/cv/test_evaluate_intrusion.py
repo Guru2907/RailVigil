@@ -1,6 +1,6 @@
 """Unit tests for event-level matching (issue #3 part B) — no weights needed."""
 
-from app.cv.intrusion.evaluation import LabelRow, PredEvent, intervals_overlap, match_events
+from app.cv.intrusion.evaluation import LabelRow, PredEvent, intervals_overlap, load_labels, match_events
 
 
 def test_intervals_overlap():
@@ -89,3 +89,42 @@ def test_extension_and_stem_are_one_clip_for_hours():
     labels = [LabelRow("c", 0, 1800, "*", False)]
     preds = [PredEvent("c.mp4", 100, 200, "person")]
     assert match_events(labels, preds)["video_hours_est"] == 0.5
+
+
+def test_ignored_ranges_drop_alerts_and_video_time():
+    labels = [
+        LabelRow("v", 0, 3600, "*", False),
+        LabelRow("v", 10, 20, "person", True),
+        LabelRow("v", 1800, 3600, "*", False, ignore=True),   # replay from another camera
+    ]
+    preds = [
+        PredEvent("v", 12, 15, "person"),       # caught
+        PredEvent("v", 2000, 2010, "person"),   # inside the ignored range: dropped
+        PredEvent("v", 900, 905, "dog"),        # a real false alert
+    ]
+    m = match_events(labels, preds)
+    assert (m["tp"], m["fp"], m["fn"]) == (1, 1, 0)
+    assert m["n_ignored_predictions"] == 1
+    assert m["video_hours_est"] == 0.5
+    assert m["false_alerts_per_hour"] == 2.0
+
+
+def test_overlapping_ignored_ranges_are_not_subtracted_twice():
+    labels = [
+        LabelRow("v", 0, 100, "*", False),
+        LabelRow("v", 10, 40, "*", False, ignore=True),
+        LabelRow("v", 30, 60, "*", False, ignore=True),
+        LabelRow("v", 90, 150, "*", False, ignore=True),      # runs past the clip end
+    ]
+    assert match_events(labels, [])["video_hours_est"] == round(40 / 3600, 4)
+
+
+def test_load_labels_reads_ignore(tmp_path):
+    path = tmp_path / "labels.csv"
+    path.write_text(
+        "clip,start_sec,end_sec,class,is_intrusion,notes\n"
+        "v,0,60,*,0,whole clip\nv,5,9,person,1,man\nv,30,60,*,ignore,other camera\n",
+        encoding="utf-8",
+    )
+    rows = load_labels(path)
+    assert [(r.is_intrusion, r.ignore) for r in rows] == [(False, False), (True, False), (False, True)]
