@@ -2,9 +2,16 @@ from sqlalchemy.orm import Session
 
 from app.db.models.incident import Incident
 
+# keys process_video returns for evaluation only; they have no column
+PIPELINE_ONLY_KEYS = {"confirmed_ts"}
+
+
+def _row(video_id: str, event: dict) -> Incident:
+    return Incident(video_id=video_id, **{k: v for k, v in event.items() if k not in PIPELINE_ONLY_KEYS})
+
 
 def bulk_create(db: Session, video_id: str, events: list[dict]) -> list[Incident]:
-    rows = [Incident(video_id=video_id, **event) for event in events]
+    rows = [_row(video_id, event) for event in events]
     db.add_all(rows)
     db.commit()
     for row in rows:
@@ -21,7 +28,7 @@ def replace_for_video(db: Session, video_id: str, events: list[dict], commit: bo
     commit=False the caller can put this and the status change in ONE
     transaction, so either both happen or neither does."""
     db.query(Incident).filter(Incident.video_id == video_id).delete(synchronize_session=False)
-    db.add_all([Incident(video_id=video_id, **event) for event in events])
+    db.add_all([_row(video_id, event) for event in events])
     if commit:
         db.commit()
 

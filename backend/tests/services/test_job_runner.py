@@ -25,6 +25,7 @@ def _incident(track_id=1):
         "severity": "high", "is_persistent": False, "start_frame": 0, "end_frame": 30,
         "start_ts": 0.0, "end_ts": 2.0, "dwell_time_sec": 2.0, "max_penetration": 0.5,
         "avg_penetration": 0.4, "risk_score": 50.0, "zone_label": "z", "snapshot_path": None,
+        "confirmed_ts": 0.6,  # process_video returns it for evaluation; it must not reach the database
     }
 
 
