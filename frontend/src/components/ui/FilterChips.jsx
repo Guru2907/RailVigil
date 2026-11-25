@@ -20,8 +20,8 @@ export function FilterChips({ label, options, value, onChange, single = false })
             type="button"
             aria-pressed={on}
             onClick={() => toggle(key)}
-            className={`press inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium ${
-              on ? "border-accent/60 bg-accent/12 text-accent" : "border-line text-muted hover:border-muted/60 hover:text-ink"
+            className={`press inline-flex h-8 items-center gap-1.5 rounded-sm border px-3 text-xs font-medium ${
+              on ? "border-rule bg-surface font-semibold text-ink" : "border-line bg-surface text-muted hover:border-rule hover:text-ink"
             }`}
           >
             {on && <Check className="h-3 w-3" aria-hidden />}

@@ -200,7 +200,7 @@ export default function VideoAnalysis() {
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className={`cursor-pointer rounded-lg border-2 border-dashed p-16 text-center shadow-lg transition-colors duration-200 ${
+            className={`cursor-pointer rounded-sm border-2 border-dashed p-16 text-center transition-colors duration-200 ${
               dragging
                 ? "border-signal bg-sev-low/12 scale-[1.01]"
                 : "border-line bg-surface hover:border-signal"
@@ -229,7 +229,7 @@ export default function VideoAnalysis() {
         ) : (
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Video 60% */}
-            <div className="lg:col-span-3 rounded-lg border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+            <div className="lg:col-span-3 rounded-sm border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
                 <span>{drawing ? "DRAWING SAFETY ZONE" : "PREVIEW"}</span>
                 <span className="truncate max-w-[60%]">{file.name}</span>
@@ -319,7 +319,7 @@ export default function VideoAnalysis() {
             </div>
 
             {/* Details 40% */}
-            <div className="lg:col-span-2 rounded-lg bg-surface text-ink p-6 shadow-lg border border-line flex flex-col">
+            <div className="lg:col-span-2 rounded-sm bg-surface text-ink p-6 border border-line flex flex-col">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-semibold">Video details</h3>
                 <span className="text-xs font-mono text-sev-low">
@@ -330,7 +330,7 @@ export default function VideoAnalysis() {
                 {rows.map(([k, v]) => (
                   <div
                     key={k}
-                    className="flex items-center justify-between rounded-2xl bg-paper border border-line px-4 py-3"
+                    className="flex items-center justify-between rounded-sm bg-paper border border-line px-4 py-3"
                   >
                     <dt className="text-sm text-ink/60">{k}</dt>
                     <dd className="text-sm font-mono font-medium truncate max-w-[60%]">
@@ -362,7 +362,7 @@ export default function VideoAnalysis() {
                   <button
                     onClick={startDrawing}
                     disabled={previewFailed}
-                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-sm bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {points.length ? "Redraw zone" : "Draw safety zone"}
                   </button>
@@ -384,7 +384,7 @@ export default function VideoAnalysis() {
                     <button
                       onClick={finishZone}
                       disabled={points.length < 3}
-                      className="rounded-md bg-accent text-accent-ink font-semibold px-3 py-3 text-sm press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                      className="rounded-sm bg-accent text-accent-ink font-semibold px-3 py-3 text-sm press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                     >
                       Finish
                     </button>
@@ -400,7 +400,7 @@ export default function VideoAnalysis() {
                 </p>
 
                 {points.length > 0 && (
-                  <div className="mt-3 rounded-2xl bg-paper border border-line px-4 py-3 text-[11px] font-mono text-ink/60 leading-relaxed max-h-24 overflow-auto">
+                  <div className="mt-3 rounded-sm bg-paper border border-line px-4 py-3 text-[11px] font-mono text-ink/60 leading-relaxed max-h-24 overflow-auto">
                     {points.map((p, i) => (
                       <div key={i}>
                         P{i + 1}: {p.x.toFixed(3)}, {p.y.toFixed(3)}
@@ -445,12 +445,12 @@ export default function VideoAnalysis() {
                   <button
                     onClick={handleAssignZone}
                     disabled={!zoneReady || !meta || submitting}
-                    className="w-full rounded-md bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
+                    className="w-full rounded-sm bg-accent text-accent-ink font-semibold px-5 py-3 press transition-colors duration-200 disabled:opacity-40 disabled:hover:scale-100"
                   >
                     {submitting ? "Saving zone…" : "Save zone & start analysis"}
                   </button>
                 ) : (
-                  <div className="rounded-2xl bg-paper border border-line p-4">
+                  <div className="rounded-sm bg-paper border border-line p-4">
                     <div
                       className={`flex items-center mb-3 ${
                         finished ? "justify-between" : "justify-center"
@@ -554,7 +554,7 @@ export default function VideoAnalysis() {
                 ["Max risk score", Math.round(maxRisk)],
                 ["Video duration", meta ? formatDuration(meta.duration) : "--:--"],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-lg bg-surface text-ink p-6 shadow-lg border border-line">
+                <div key={label} className="rounded-sm bg-surface text-ink p-6 border border-line">
                   <div className="text-3xl font-semibold font-mono">{value}</div>
                   <div className="mt-1 text-sm text-ink/60">{label}</div>
                 </div>
@@ -563,7 +563,7 @@ export default function VideoAnalysis() {
 
             {/* 60/40: annotated video + evidence */}
             <div className="grid lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-3 rounded-lg border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
+              <div className="lg:col-span-3 rounded-sm border border-white/10 bg-black/40 overflow-hidden shadow-2xl">
                 <div className="px-5 py-3 border-b border-white/10 text-xs font-mono text-white/50">
                   ANNOTATED OUTPUT
                 </div>
@@ -572,7 +572,7 @@ export default function VideoAnalysis() {
 
               <div
                 ref={evidenceRef}
-                className="lg:col-span-2 rounded-lg bg-surface text-ink p-6 shadow-lg border border-line scroll-mt-24"
+                className="lg:col-span-2 rounded-sm bg-surface text-ink p-6 border border-line scroll-mt-24"
               >
                 <h3 className="font-semibold mb-4">Evidence</h3>
                 {!selected ? (
@@ -581,7 +581,7 @@ export default function VideoAnalysis() {
                   </p>
                 ) : (
                   <div>
-                    <div className="rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                    <div className="rounded-sm overflow-hidden bg-black aspect-video flex items-center justify-center">
                       <img
                         key={selected.id}
                         src={getIncidentSnapshotUrl(selected.id)}
@@ -605,7 +605,7 @@ export default function VideoAnalysis() {
                         ["Max penetration", fmtPct(selected.max_penetration)],
                         ["Risk score", Math.round(selected.risk_score)],
                       ].map(([k, v]) => (
-                        <div key={k} className="rounded-2xl bg-paper border border-line px-3 py-2">
+                        <div key={k} className="rounded-sm bg-paper border border-line px-3 py-2">
                           <dt className="text-[11px] text-ink/50">{k}</dt>
                           <dd className="font-mono font-medium truncate">{v}</dd>
                         </div>
@@ -617,7 +617,7 @@ export default function VideoAnalysis() {
             </div>
 
             {/* Incident table */}
-            <div className="rounded-lg bg-surface text-ink p-6 shadow-lg border border-line">
+            <div className="rounded-sm bg-surface text-ink p-6 border border-line">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Confirmed incidents</h3>
                 <span className="text-xs font-mono text-sev-low">{incidents.length} total · sorted by risk</span>
@@ -627,7 +627,7 @@ export default function VideoAnalysis() {
                   No confirmed incidents. Nothing stayed in the safety zone long enough to count.
                 </p>
               ) : (
-                <div className="max-h-96 overflow-auto rounded-2xl bg-paper border border-line">
+                <div className="max-h-96 overflow-auto rounded-sm bg-paper border border-line">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-paper text-left text-[11px] font-mono text-ink/50">
                       <tr>
@@ -671,7 +671,7 @@ export default function VideoAnalysis() {
         )}
 
         {error && (
-          <div className="mt-6 rounded-2xl bg-danger/15 text-danger text-sm font-mono px-5 py-3">
+          <div className="mt-6 rounded-sm bg-danger/15 text-danger text-sm font-mono px-5 py-3">
             {error}
           </div>
         )}

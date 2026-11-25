@@ -147,7 +147,7 @@ function Chip({ active, color, onClick, children, shape = "dot" }) {
 
 function Stat({ value, label, tone }) {
   return (
-    <div className={`rounded-md p-2 ${tone === "danger" ? "bg-rose-500/10" : tone === "info" ? "bg-sky-500/10" : "bg-white/5"}`}>
+    <div className={`rounded-sm p-2 ${tone === "danger" ? "bg-rose-500/10" : tone === "info" ? "bg-sky-500/10" : "bg-white/5"}`}>
       <div className={`text-2xl font-bold ${tone === "danger" ? "text-rose-400" : tone === "info" ? "text-sky-300" : "text-white"}`}>
         {value}
       </div>
@@ -241,7 +241,7 @@ export default function MapView() {
       <div className="pointer-events-none absolute inset-0 z-[400] rv-scanlines" />
 
       {/* HUD */}
-      <div className="absolute left-4 top-4 z-[500] w-72 rounded-lg border border-white/10 bg-black/75 p-4 font-mono text-white backdrop-blur-md">
+      <div className="absolute left-4 top-4 z-[500] w-72 rounded-sm border border-white/10 bg-black/75 p-4 font-mono text-white backdrop-blur-md">
         <div className="flex items-center gap-1.5 text-[11px] tracking-[0.2em] text-signal">
           <span className="h-1.5 w-1.5 rounded-full bg-signal" /> LIVE
         </div>
@@ -280,7 +280,7 @@ export default function MapView() {
       </div>
 
       {/* Filters and layers */}
-      <div className="absolute left-1/2 top-4 z-[500] flex max-w-[62%] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-black/70 px-3 py-2 backdrop-blur-md">
+      <div className="absolute left-1/2 top-4 z-[500] flex max-w-[62%] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-sm border border-white/10 bg-black/70 px-3 py-2 backdrop-blur-md">
         <Chip active={show.sites} onClick={() => toggle("sites")} color="#F8FAFC">
           Sites
         </Chip>
@@ -316,13 +316,13 @@ export default function MapView() {
       </div>
 
       {!error && lastSync && features.length === 0 && (
-        <div className="absolute bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-md border border-white/10 bg-black/70 px-4 py-2 font-mono text-xs text-white/70 backdrop-blur">
+        <div className="absolute bottom-6 left-1/2 z-[500] -translate-x-1/2 rounded-sm border border-white/10 bg-black/70 px-4 py-2 font-mono text-xs text-white/70 backdrop-blur">
           Nothing located yet. Upload photos with GPS or a map pin, or videos with a camera location.
         </div>
       )}
 
       {selected && (
-        <aside className="absolute right-4 top-4 z-[500] w-80 overflow-hidden rounded-lg border border-white/15 bg-black/80 text-white backdrop-blur-md">
+        <aside className="absolute right-4 top-4 z-[500] w-80 overflow-hidden rounded-sm border border-white/15 bg-black/80 text-white backdrop-blur-md">
           {isSite(selected) ? <SitePanel f={selected} onClose={() => setSelectedId(null)} /> : (
             <IntrusionPanel f={selected} onClose={() => setSelectedId(null)} />
           )}
@@ -341,7 +341,7 @@ function PanelHead({ code, title, onClose }) {
       </div>
       <button
         onClick={onClose}
-        className="press -mr-2 -mt-2 flex h-10 w-10 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+        className="press -mr-2 -mt-2 flex h-10 w-10 items-center justify-center rounded-sm text-white/60 hover:bg-white/10 hover:text-white"
         aria-label="Close panel"
       >
         <X className="h-4 w-4" aria-hidden />
@@ -360,7 +360,7 @@ function Row({ k, v }) {
 }
 
 const panelButton =
-  "block rounded-md bg-signal py-2 text-center text-sm font-semibold text-black transition-colors duration-200 hover:brightness-110";
+  "block rounded-sm bg-signal py-2 text-center text-sm font-semibold text-black transition-colors duration-200 hover:brightness-110";
 
 function SitePanel({ f, onClose }) {
   const p = f.properties;

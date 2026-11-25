@@ -6,13 +6,13 @@ export const menu = [
     group: null,
     items: [
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/map", label: "GIS Map", icon: Map },
+      { to: "/map", label: "GIS map", icon: Map },
     ],
   },
   {
     group: "Encroachment",
     items: [
-      { to: "/encroachment/upload", label: "Photo Analysis", icon: ImagePlus },
+      { to: "/encroachment/upload", label: "Photo analysis", icon: ImagePlus },
       { to: "/sites", label: "Sites", icon: MapPinned },
       { to: "/reports", label: "Reports", icon: FileText },
     ],
@@ -20,7 +20,7 @@ export const menu = [
   {
     group: "Intrusion",
     items: [
-      { to: "/upload", label: "Video Analysis", icon: Video },
+      { to: "/upload", label: "Video analysis", icon: Video },
       { to: "/incidents", label: "Incidents", icon: Siren },
     ],
   },

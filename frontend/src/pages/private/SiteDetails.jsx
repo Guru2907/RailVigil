@@ -17,7 +17,7 @@ import {
   statusBadge,
 } from "../../utils/encroachmentFormat.js";
 import { formatDateTime } from "../../utils/formatDate.js";
-import { DARK_BASE, RAILWAYS } from "../../utils/mapTiles.js";
+import { PLAN_BASE, RAILWAYS } from "../../utils/mapTiles.js";
 
 // The normal path of a case; false positive is an exit from it.
 const LIFECYCLE = ["reported", "under_review", "verified", "action_taken", "resolved"];
@@ -107,7 +107,7 @@ export default function SiteDetails() {
         }
         description={`First reported ${formatDateTime(site.first_reported_at)} · ${site.finding_count} finding(s)`}
         actions={
-          <div className="flex items-center gap-2 rounded-md bg-surface px-3 py-2">
+          <div className="flex items-center gap-2 rounded-sm bg-surface px-3 py-2">
             <span className={severityBadge(site.max_severity)}>{site.max_severity}</span>
             <span className={statusBadge(site.status)}>{STATUS_LABEL[site.status]}</span>
           </div>
@@ -122,8 +122,8 @@ export default function SiteDetails() {
             <FindingList findings={site.findings} showSite={false} />
           </Card>
           <Card title="Location" subtitle={`${site.latitude.toFixed(5)}, ${site.longitude.toFixed(5)}`} bodyClass="" className="overflow-hidden">
-            <MapContainer center={[site.latitude, site.longitude]} zoom={17} className="rv-map h-72 w-full" scrollWheelZoom={false}>
-              <TileLayer {...DARK_BASE} maxNativeZoom={DARK_BASE.maxZoom} maxZoom={19} />
+            <MapContainer center={[site.latitude, site.longitude]} zoom={17} className="rv-plan h-72 w-full" scrollWheelZoom={false}>
+              <TileLayer {...PLAN_BASE} maxNativeZoom={PLAN_BASE.maxZoom} maxZoom={19} />
               <TileLayer {...RAILWAYS} opacity={0.7} />
               <CircleMarker
                 center={[site.latitude, site.longitude]}

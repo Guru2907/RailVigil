@@ -9,7 +9,7 @@ import { Card, EmptyState, ErrorBanner, StatCard, btn } from "../ui/index.jsx";
 import { CLASS_LABEL, REASON_LABEL, SEVERITIES, SEVERITY_COLOR, STATUS_LABEL, shortSite } from "../../utils/encroachmentFormat.js";
 import { timeAgo } from "../../utils/formatDate.js";
 import { chartTheme } from "../../utils/preferences.js";
-import { DARK_BASE, RAILWAYS } from "../../utils/mapTiles.js";
+import { PLAN_BASE, RAILWAYS } from "../../utils/mapTiles.js";
 
 const TREND_DAYS = 14;
 
@@ -81,8 +81,8 @@ export default function EncroachmentDashboard() {
           }
           bodyClass=""
         >
-          <MapContainer key={features.length} center={center} zoom={features.length ? 13 : 4} className="rv-map h-80 w-full" scrollWheelZoom={false}>
-            <TileLayer {...DARK_BASE} maxNativeZoom={DARK_BASE.maxZoom} maxZoom={19} />
+          <MapContainer key={features.length} center={center} zoom={features.length ? 13 : 4} className="rv-plan h-80 w-full" scrollWheelZoom={false}>
+            <TileLayer {...PLAN_BASE} maxNativeZoom={PLAN_BASE.maxZoom} maxZoom={19} />
             <TileLayer {...RAILWAYS} opacity={0.7} />
             {features.map((f) => (
               <CircleMarker
@@ -177,7 +177,7 @@ export default function EncroachmentDashboard() {
           </div>
         </Card>
         <Card title="Sites by review status">
-          <dl className="divide-y divide-line rounded-md border border-line bg-paper text-sm">
+          <dl className="divide-y divide-line rounded-sm border border-line bg-paper text-sm">
             {Object.entries(STATUS_LABEL).map(([k, label]) => (
               <div key={k} className="flex items-center justify-between px-4 py-2.5">
                 <dt>{label}</dt>

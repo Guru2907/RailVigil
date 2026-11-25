@@ -131,7 +131,7 @@ export default function PhotoUpload() {
                 setDragging(false);
                 choose(e.dataTransfer.files);
               }}
-              className={`flex h-80 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed transition ${
+              className={`flex h-80 cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed transition ${
                 dragging ? "border-ink bg-surface-2" : "border-line bg-paper hover:border-ink/40"
               }`}
             >
@@ -148,7 +148,7 @@ export default function PhotoUpload() {
           <div>
             <span className={fieldLabel}>Photographs</span>
             {files.length ? (
-              <ul className="max-h-36 divide-y divide-line overflow-auto rounded-md border border-line bg-paper text-sm">
+              <ul className="max-h-36 divide-y divide-line overflow-auto rounded-sm border border-line bg-paper text-sm">
                 {files.map((f) => (
                   <li key={f.name} className="flex justify-between gap-3 px-3 py-2">
                     <span className="truncate">{f.name}</span>

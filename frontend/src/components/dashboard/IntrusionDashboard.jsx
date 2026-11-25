@@ -123,7 +123,7 @@ export default function IntrusionDashboard() {
           ) : recentVideos.length === 0 ? (
             <EmptyState>No videos analysed yet.</EmptyState>
           ) : (
-            <ul className="divide-y divide-line rounded-md border border-line bg-paper">
+            <ul className="divide-y divide-line rounded-sm border border-line bg-paper">
               {recentVideos.map((v) => (
                 <li key={v.id} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">

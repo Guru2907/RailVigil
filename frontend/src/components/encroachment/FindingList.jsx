@@ -11,7 +11,7 @@ export default function FindingList({ findings, showSite = true }) {
   return (
     <ul className="grid gap-3 sm:grid-cols-2">
       {findings.map((f, i) => (
-        <li key={f.id} className="flex gap-3 rounded-md border border-line bg-paper p-3">
+        <li key={f.id} className="flex gap-3 rounded-sm border border-line bg-paper p-3">
           {f.crop_url ? (
             <img src={fileUrl(f.crop_url)} alt={f.label} className="h-20 w-20 shrink-0 rounded bg-black object-contain" />
           ) : (

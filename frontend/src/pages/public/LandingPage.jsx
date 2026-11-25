@@ -62,7 +62,7 @@ function useLatestEvidence() {
 
 function EvidenceFrame({ evidence }) {
   return (
-    <figure className="overflow-hidden rounded-lg border border-canvas-line bg-black shadow-2xl shadow-black/40">
+    <figure className="overflow-hidden rounded-sm border border-canvas-line bg-black shadow-2xl shadow-black/40">
       <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">
         <span className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-danger" /> LATEST EVIDENCE
@@ -80,7 +80,7 @@ function EvidenceFrame({ evidence }) {
           </svg>
         )}
         {evidence && (
-          <figcaption className="absolute inset-x-3 bottom-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-black/80 px-3 py-2 font-mono text-[11px] text-white backdrop-blur">
+          <figcaption className="absolute inset-x-3 bottom-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-sm bg-black/80 px-3 py-2 font-mono text-[11px] text-white backdrop-blur">
             <span className="font-semibold uppercase">{classLabel(evidence.worst.cls)}</span>
             <span className="text-white/40">|</span>
             <span className="tabular">{(evidence.worst.confidence * 100).toFixed(1)}%</span>
@@ -170,7 +170,7 @@ export default function LandingPage() {
         </div>
         <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {pipeline.map(({ Icon, title, desc }, i) => (
-            <li key={title} className="relative rounded-lg border border-line bg-surface p-6 text-ink shadow-lg shadow-black/20">
+            <li key={title} className="relative rounded-sm border border-line bg-surface p-6 text-ink">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs font-semibold text-muted">0{i + 1}</span>
                 <Icon className="h-5 w-5" aria-hidden />
@@ -190,7 +190,7 @@ export default function LandingPage() {
         {modules.map(({ Icon, code, title, desc, points, to, cta }) => (
           <Card key={code} bodyClass="flex h-full flex-col p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-accent-ink">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-accent text-accent-ink">
                 <Icon className="h-5 w-5" aria-hidden />
               </div>
               <div>

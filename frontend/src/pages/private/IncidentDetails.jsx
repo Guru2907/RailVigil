@@ -8,7 +8,7 @@ import { fmtTime, fmtPct, sevClass, shortId } from "../../utils/incidentFormat.j
 
 function MediaFrame({ label, children }) {
   return (
-    <figure className="overflow-hidden rounded-lg border border-canvas-line bg-black shadow-lg shadow-black/30">
+    <figure className="overflow-hidden rounded-sm border border-canvas-line bg-black">
       <figcaption className="border-b border-white/10 px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">{label}</figcaption>
       {children}
     </figure>
@@ -52,7 +52,7 @@ export default function IncidentDetails() {
         title={<span className="font-mono">{shortId(incident.id)}</span>}
         description={`${incident.object_class} #${incident.track_id} · ${incident.event_type} · recorded ${formatDateTime(incident.created_at)}`}
         actions={
-          <span className="rounded-md bg-surface px-3 py-2">
+          <span className="rounded-sm bg-surface px-3 py-2">
             <span className={`px-2 py-0.5 text-xs font-bold ${sevClass(incident.severity)}`}>
               {incident.severity} · risk {Math.round(incident.risk_score)}
             </span>
