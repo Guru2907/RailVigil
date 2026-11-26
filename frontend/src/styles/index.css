@@ -3,15 +3,17 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens: the Land Plan. A survey sheet: paper ground, sheets ruled in
-   ink, deep navy for the shell and actions, brass as the one highlight, pink
+   ink, charcoal for the shell, coral as the one accent colour, pink
    wash for railway land.
 
    canvas*   : the paper, and text placed directly on it
    surface*  : sheets (cards, panels, tables) with `ink` / `muted` / `line`
    paper     : fields and inset areas inside a sheet
    rule      : the ink border of a sheet (stronger than `line`, the hairline)
-   accent    : deep navy: top bar, primary actions, links, focus
-   brass     : the one highlight: counts on the bar and the line under it
+   accent    : charcoal: the top bar, focus
+   pop       : coral, the accent colour: primary actions, link underlines, counts
+               on the bar, the key words of a headline. Fills, rules and large
+               type only; small text stays ink so it stays readable.
    wash      : railway land and the current selection, nothing else
    sev-*     : risk only: critical red, high amber, medium blue, low green
    info      : the intrusion layer on maps, neutral status
@@ -31,16 +33,17 @@
   --color-line: #c6cabd;
   --color-rule: #22241f;
 
-  --color-accent: #17254a;
-  --color-accent-hover: #0f1a36;
-  --color-brass: #d9a441;
+  --color-accent: #22241f;
+  --color-accent-hover: #000000;
+  --color-pop: #e5503a;
+  --color-pop-hover: #d2412c;
   --color-accent-ink: #ffffff;
 
   --color-wash: #f1d2ce;
   --color-wash-edge: #b8321f;
 
   --color-danger: #b8321f;
-  --color-signal: #17254a;
+  --color-signal: #22241f;
   --color-info: #22241f;
 
   --color-sev-critical: #b8321f;
@@ -71,7 +74,7 @@ body {
 }
 
 ::selection {
-  background: rgb(217 164 65 / 0.4);
+  background: rgb(229 80 58 / 0.3);
   color: var(--color-ink);
 }
 

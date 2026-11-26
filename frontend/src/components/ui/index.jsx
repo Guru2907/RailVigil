@@ -17,7 +17,7 @@ const btnBase =
 
 export const btn = {
   // The one main action of a view
-  primary: `${btnBase} bg-accent text-accent-ink hover:bg-accent-hover`,
+  primary: `${btnBase} bg-pop text-ink hover:bg-pop-hover`,
   // Any other action
   secondary: `${btnBase} border border-rule bg-surface text-ink hover:bg-canvas-2`,
   // Same look as secondary; kept so existing callers on the page background work
@@ -33,7 +33,7 @@ export const inputClass =
 export const selectClass =
   "h-10 rounded-sm border border-rule/50 bg-paper px-3 text-sm text-ink outline-none transition-colors focus:border-accent";
 
-export const linkClass = "font-medium text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent";
+export const linkClass = "font-medium text-ink underline decoration-pop decoration-2 underline-offset-4 hover:text-pop-hover";
 
 export function Card({ title, subtitle, action, children, className = "", bodyClass = "p-6" }) {
   return (
