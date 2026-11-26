@@ -29,7 +29,7 @@ export function Drawer({ open, onClose, title, children, footer, width = "max-w-
       {open && (
         <div className="fixed inset-0 z-[1200]">
           <motion.div
-            className="absolute inset-0 bg-canvas-2/70"
+            className="absolute inset-0 bg-ink/30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -43,7 +43,7 @@ export function Drawer({ open, onClose, title, children, footer, width = "max-w-
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className={`absolute inset-y-0 right-0 flex w-full ${width} flex-col border-l border-line bg-surface text-ink outline-none`}
+            className={`absolute inset-y-0 right-0 flex w-full ${width} flex-col border-l border-rule bg-surface text-ink outline-none`}
             initial={hidden}
             animate={shown}
             exit={hidden}
@@ -55,7 +55,7 @@ export function Drawer({ open, onClose, title, children, footer, width = "max-w-
                 type="button"
                 onClick={onClose}
                 aria-label="Close panel"
-                className="press -mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-ink"
+                className="press -mr-2 flex h-10 w-10 items-center justify-center rounded-sm text-muted hover:bg-canvas-2 hover:text-ink"
               >
                 <X className="h-4 w-4" aria-hidden />
               </button>

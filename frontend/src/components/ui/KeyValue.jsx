@@ -8,7 +8,7 @@ export function KeyValue({ rows, className = "" }) {
         .map(([label, value]) => (
           <div key={label} className="flex items-baseline justify-between gap-4 py-2.5">
             <dt className="shrink-0 text-muted">{label}</dt>
-            <dd className="tabular min-w-0 truncate text-right text-ink">{value}</dd>
+            <dd className="min-w-0 truncate text-right text-ink">{value}</dd>
           </div>
         ))}
     </dl>

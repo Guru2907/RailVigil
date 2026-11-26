@@ -1,247 +1,276 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Camera, ClipboardCheck, Layers, Map as MapIcon, ScanSearch, ShieldAlert, Video } from "lucide-react";
-import { fileUrl, getPhoto, getStatsSummary, listPhotos, listReports } from "../../api/encroachment.js";
-import { Card, StatCard, Table, btn, cellClass, rowClass } from "../../components/ui/index.jsx";
-import { REASON_LABEL, SEVERITIES, SEVERITY_COLOR, classLabel, shortSite } from "../../utils/encroachmentFormat.js";
-import { formatDateTime } from "../../utils/formatDate.js";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ImagePlus, Video } from "lucide-react";
+import { getSite, getStatsSummary, listReports, listSites } from "../../api/encroachment.js";
+import EvidencePlan from "../../components/encroachment/EvidencePlan.jsx";
+import PlanMap from "../../components/plan/PlanMap.jsx";
+import { SeverityBadge, Skeleton, btn } from "../../components/ui/index.jsx";
+import { CountUp, Reveal } from "../../components/ui/motion.jsx";
+import { REASON_LABEL, classLabel, shortSite } from "../../utils/encroachmentFormat.js";
+import { timeAgo } from "../../utils/formatDate.js";
 
+const OPEN = "reported,under_review,verified,action_taken";
+// The site shown on the first screen. Set VITE_FEATURED_SITE_ID to choose one;
+// otherwise it is the open site whose evidence the detector is most sure of.
+const FEATURED = import.meta.env.VITE_FEATURED_SITE_ID;
 
-const SEV_RANK = Object.fromEntries(SEVERITIES.map((s, i) => [s, i]));
-
-const pipeline = [
-  { Icon: Layers, title: "Upload", desc: "Track-side photo or CCTV video, with the right-of-way outlined once." },
-  { Icon: ScanSearch, title: "Detect", desc: "YOLOv8-family models locate structures, vegetation, dumps, vehicles and people." },
-  { Icon: ShieldAlert, title: "Score", desc: "Overlap with railway land and object category set the severity." },
-  { Icon: ClipboardCheck, title: "Review", desc: "Geolocated sites are verified, actioned or dismissed by an officer." },
+const STEPS = [
+  ["Photograph the track side", "Upload a photo and outline the railway land on it. The outline is the pink wash you see on every piece of evidence."],
+  ["The detector marks what stands there", "Structures, vegetation, dumped material and parked vehicles are boxed, and each box is measured against the outlined land."],
+  ["Findings become a site", "Findings of one kind within 25 m are one site, placed on the plan and given a numbered report."],
+  ["An officer reviews it", "The site moves through review, verification and action, with a note at each step kept in its history."],
 ];
 
-const modules = [
-  {
-    Icon: Camera,
-    code: "MODULE A",
-    title: "Physical encroachment",
-    desc: "Photographs of the corridor are checked for unauthorised structures, vegetation, waste, material dumps and parked vehicles on railway land.",
-    points: ["Six-class railway taxonomy", "Severity from overlap with the right-of-way", "Repeat findings within 25 m grouped into one site"],
-    to: "/encroachment/upload",
-    cta: "Open photo analysis",
-  },
-  {
-    Icon: Video,
-    code: "MODULE B",
-    title: "Track-zone intrusion",
-    desc: "CCTV video is checked for people and vehicles entering the safety zone, confirmed over time to avoid one-frame false alarms.",
-    points: ["YOLOv8 detection with ByteTrack", "Dwell-time confirmation", "Risk from depth, duration and object type"],
-    to: "/upload",
-    cta: "Open video analysis",
-  },
+// Results measured on the project's own test sets (docs/EVALUATION.md, 26 Nov 2026).
+const RESULTS = [
+  ["13 of 13", "intrusions caught on 15 labelled test clips, at the setting the app runs with. It also raised 17 repeat alerts on those intrusions and 1 alert on nothing"],
+  ["1.16 s", "average time from entering the track zone to the alert, at that setting"],
+  ["0.160 vs 0.001", "box AP50 on shacks and stalls: the model trained here against the pretrained detectors"],
+  ["0.48", "agreement between two people labelling the same photos, which is the ceiling for any model on them"],
 ];
 
-// Latest analysed photo with its most severe finding, used as the hero visual.
-function useLatestEvidence() {
-  const [evidence, setEvidence] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    listPhotos({ status: "done", limit: 10 })
-      .then((photos) => Promise.all(photos.map((p) => getPhoto(p.id))))
-      .then((details) => {
-        // Most severe evidence first; more findings breaks a tie.
-        const score = (d) => Math.min(...d.findings.map((f) => SEV_RANK[f.severity])) * 100 - d.findings.length;
-        return details.filter((d) => d.findings.length && d.annotated_url).sort((a, b) => score(a) - score(b))[0] || null;
-      })
-      .then((d) => !cancelled && setEvidence(d))
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  if (!evidence) return null;
-  const worst = [...evidence.findings].sort((a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity])[0];
-  return { photo: evidence, worst };
-}
-
-function EvidenceFrame({ evidence }) {
+function Section({ title, lede, children }) {
   return (
-    <figure className="overflow-hidden rounded-lg border border-canvas-line bg-black shadow-2xl shadow-black/40">
-      <div className="flex items-center justify-between border-b border-white/10 bg-black px-4 py-2 font-mono text-[11px] tracking-widest text-white/60">
-        <span className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-danger" /> LATEST EVIDENCE
-        </span>
-        <span className="truncate pl-4">{evidence ? evidence.photo.original_filename : "AWAITING DATA"}</span>
-      </div>
-      <div className="relative aspect-[4/3]">
-        {evidence ? (
-          <img src={fileUrl(evidence.photo.annotated_url)} alt="Latest analysed photo with detections" className="h-full w-full object-cover" />
-        ) : (
-          <svg viewBox="0 0 400 300" className="h-full w-full" aria-hidden>
-            <rect width="400" height="300" fill="#05100c" />
-            <polygon points="60,300 180,60 220,60 340,300" fill="rgba(225,29,72,0.12)" stroke="#E11D48" strokeDasharray="6 5" />
-            <path d="M150 300 L195 60 M250 300 L205 60" stroke="#34D399" strokeWidth="2" opacity="0.7" />
-          </svg>
-        )}
-        {evidence && (
-          <figcaption className="absolute inset-x-3 bottom-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-black/80 px-3 py-2 font-mono text-[11px] text-white backdrop-blur">
-            <span className="font-semibold uppercase">{classLabel(evidence.worst.cls)}</span>
-            <span className="text-white/40">|</span>
-            <span className="tabular">{(evidence.worst.confidence * 100).toFixed(1)}%</span>
-            <span className="text-white/40">|</span>
-            <span className="tabular">ON RAILWAY LAND {Math.round(evidence.worst.overlap_ratio * 100)}%</span>
-            <span
-              className="ml-auto rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black"
-              style={{ background: SEVERITY_COLOR[evidence.worst.severity] }}
-            >
-              {evidence.worst.severity}
-            </span>
-          </figcaption>
-        )}
-      </div>
-    </figure>
+    <section className="border-t-2 border-rule py-14">
+      <Reveal>
+        <h2 className="max-w-[24ch] text-[34px] font-bold leading-[1.05] tracking-tight">{title}</h2>
+        {lede && <p className="mt-3 max-w-[62ch] text-[17px] leading-relaxed text-canvas-muted">{lede}</p>}
+      </Reveal>
+      <div className="mt-8">{children}</div>
+    </section>
   );
 }
 
+// The front door. Its first screen shows the product doing its job on real data:
+// one photograph drawn as a land plan, and the same site as a mark on the plan.
 export default function LandingPage() {
-  const navigate = useNavigate();
-  const evidence = useLatestEvidence();
   const [stats, setStats] = useState(null);
-  const [reports, setReports] = useState([]);
+  const [site, setSite] = useState(null);
+  const [reports, setReports] = useState(null);
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getStatsSummary(), listReports({ limit: 5 })])
-      .then(([s, r]) => {
-        if (cancelled) return;
-        setStats(s);
-        setReports(r);
-      })
+    getStatsSummary()
+      .then((s) => !cancelled && setStats(s))
       .catch(() => !cancelled && setOffline(true));
+    listReports({ limit: 5 })
+      .then((r) => !cancelled && setReports(r))
+      .catch(() => !cancelled && setReports([]));
+    const fallback = () => listSites({ status: OPEN, severity: "critical,high", limit: 1 }).then((list) => (list[0] ? getSite(list[0].id) : null));
+    (FEATURED ? getSite(FEATURED).catch(fallback) : fallback())
+      .then((s) => !cancelled && setSite(s || false))
+      .catch(() => !cancelled && setSite(false));
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // The photograph holding the site's most severe finding, with every finding of the site on it.
+  const onPhoto = useMemo(() => {
+    const ranked = [...(site?.findings || [])].sort((a, b) => b.severity_score - a.severity_score);
+    return ranked.filter((f) => f.media_id === ranked[0]?.media_id);
+  }, [site]);
+  const located = site && site.latitude != null && site.longitude != null;
   const enc = stats?.encroachment;
-  const loading = !stats && !offline;
-  const v = (x) => (offline ? "—" : x ?? 0);
+  const figures = [
+    ["Photographs analysed", enc?.photos_by_status?.done],
+    ["Open sites", enc?.sites_open],
+    ["Critical sites awaiting review", enc?.critical_open_sites],
+    ["Intrusion incidents recorded", stats?.intrusion?.incidents_total],
+  ];
 
   return (
-    <div className="space-y-16">
-      {/* Hero */}
-      <section className="grid items-center gap-10 pt-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-signal">Railway right-of-way monitoring</div>
-          <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-canvas-ink md:text-5xl">
-            Intelligent Railway Track-Side Encroachment Detection
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-canvas-muted md:text-lg">
-            YOLOv8 analysis of track-side photographs and CCTV video, scored against spatial safety corridors and tracked as
-            geolocated cases for officer review.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/dashboard" className={`${btn.primary} px-5 py-3 ring-1 ring-canvas-line`}>
-              Open command dashboard <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/map" className={`${btn.outline} px-5 py-3`}>
-              <MapIcon className="h-4 w-4" /> View GIS map
-            </Link>
-          </div>
-          {offline && (
-            <p className="mt-6 font-mono text-xs text-rose-300">Backend offline: start the API server to load live data.</p>
+    <>
+      <section className="pb-12 pt-6 text-center sm:pt-10">
+        <h1 className="mx-auto max-w-[20ch] text-[40px] font-bold leading-[1.02] tracking-tight sm:text-[60px]">
+          See what stands on railway land, and who steps onto the track.
+        </h1>
+        <p className="mx-auto mt-5 max-w-[60ch] text-[17px] leading-relaxed text-canvas-muted">
+          RailVigil reads track-side photographs for structures, vegetation and vehicles on railway land, and CCTV video for people, vehicles and animals
+          inside the track zone. Each detection becomes a case with its evidence, for an officer to review.
+        </p>
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <Link to="/dashboard" className={`${btn.primary} !h-12 px-6 text-base`}>
+            Open the dashboard
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+          <Link to="/encroachment/upload" className={`${btn.secondary} !h-12 px-6 text-base`}>
+            <ImagePlus className="h-4 w-4" aria-hidden />
+            Analyse a photo
+          </Link>
+          <Link to="/upload" className={`${btn.secondary} !h-12 px-6 text-base`}>
+            <Video className="h-4 w-4" aria-hidden />
+            Analyse a video
+          </Link>
+        </div>
+        {offline && <p className="mt-4 text-sm font-semibold text-sev-critical">The backend is not running, so live figures and evidence cannot be shown.</p>}
+
+        <dl className="mx-auto mt-10 grid max-w-5xl grid-cols-2 border-2 border-rule bg-surface text-left lg:grid-cols-4">
+          {figures.map(([label, value]) => (
+            <div key={label} className="border-b border-r border-line px-5 py-4">
+              <dd className="text-[34px] font-bold leading-none tracking-tight">
+                <CountUp value={value} />
+              </dd>
+              <dt className="mt-1.5 text-sm text-muted">{label}</dt>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-xs text-canvas-muted">Counted live from this installation's database.</p>
+      </section>
+
+      {/* The mechanism, on real data: a photograph as a land plan, and its mark on the plan */}
+      <section aria-label="A site from the register" className="grid grid-cols-1 border-2 border-rule bg-surface lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="min-w-0 border-b-2 border-rule p-4 lg:border-b-0 lg:border-r-2">
+          {site === null ? <Skeleton className="aspect-[16/9] w-full !rounded-none" /> : site ? <EvidencePlan findings={onPhoto} /> : <EmptyHero />}
+        </div>
+        <div className="flex min-w-0 flex-col">
+          {site ? (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+                <div>
+                  <p className="text-lg font-bold tracking-tight">{shortSite(site.id)}</p>
+                  <p className="text-sm text-muted">
+                    {classLabel(site.cls)} · {site.finding_count} {site.finding_count === 1 ? "finding" : "findings"} · {Math.round((onPhoto[0]?.overlap_ratio || 0) * 100)} % on railway land
+                  </p>
+                </div>
+                <SeverityBadge value={site.max_severity} />
+              </div>
+              {located && (
+                <PlanMap
+                  compact
+                  className="h-[240px] !border-0"
+                  marks={[{ id: site.id, number: 1, lat: site.latitude, lon: site.longitude, severity: site.max_severity, label: shortSite(site.id) }]}
+                  selectedId={site.id}
+                  focusId={site.id}
+                  onSelect={() => {}}
+                />
+              )}
+              <div className="mt-auto border-t border-line p-4">
+                <Link to={`/sites/${site.id}`} className={`${btn.secondary} w-full`}>
+                  Open this case file
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </div>
+            </>
+          ) : (
+            site === null && <Skeleton className="m-5 h-40" />
           )}
         </div>
-        <EvidenceFrame evidence={evidence} />
       </section>
+      <p className="mt-2 text-xs text-canvas-muted">A site from the register, as an officer sees it. Pink wash: railway land outlined on the photo. Boxes: findings.</p>
 
-      {/* KPIs */}
-      <section aria-label="Current status" className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-        <StatCard label="Photos analysed" value={v(enc?.photos_by_status?.done)} loading={loading} />
-        <StatCard label="Open sites" value={v(enc?.sites_open)} loading={loading} />
-        <StatCard label="Critical open sites" value={v(enc?.critical_open_sites)} tone="danger" loading={loading} />
-        <StatCard label="Intrusion incidents" value={v(stats?.intrusion?.incidents_total)} loading={loading} />
-      </section>
+      <div className="mt-14">
+        <Section title="From a photograph to a case, in four steps">
+          <ol className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map(([title, text], i) => (
+              <Reveal key={title} delay={i * 0.06}>
+                <li className="border-t border-rule pt-4">
+                  <span className="text-sm font-bold text-accent">Step {i + 1}</span>
+                  <h3 className="mt-1 text-lg font-bold leading-snug tracking-tight">{title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-canvas-muted">{text}</p>
+                </li>
+              </Reveal>
+            ))}
+          </ol>
+        </Section>
 
-      {/* Methodology */}
-      <section aria-labelledby="method">
-        <div className="mb-6 flex items-end justify-between gap-4 border-b border-canvas-line pb-4">
-          <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-signal">Methodology</div>
-            <h2 id="method" className="mt-2 text-2xl font-semibold tracking-tight">From evidence to action</h2>
+        <Section title="Two modules, one register" lede="Both work on footage you already have. Neither needs new cameras or sensors.">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Reveal>
+              <article className="flex h-full flex-col border-2 border-rule bg-surface p-6">
+                <ImagePlus className="h-6 w-6 text-accent" aria-hidden />
+                <h3 className="mt-3 text-2xl font-bold tracking-tight">Encroachment, from photographs</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                  Permanent and temporary structures, vegetation, dumped material and parked vehicles on railway land. Severity comes from how much of the
+                  object sits on the outlined land. Sites carry a review stage, a history and numbered reports.
+                </p>
+                <div className="mt-auto flex flex-wrap gap-3 pt-5">
+                  <Link to="/encroachment/upload" className={btn.primary}>
+                    Analyse a photo
+                  </Link>
+                  <Link to="/sites" className={btn.secondary}>
+                    Open the sites
+                  </Link>
+                </div>
+              </article>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <article className="flex h-full flex-col border-2 border-rule bg-surface p-6">
+                <Video className="h-6 w-6 text-accent" aria-hidden />
+                <h3 className="mt-3 text-2xl font-bold tracking-tight">Intrusion, from video</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                  People, vehicles and animals inside a track zone you draw on the video. An incident is recorded once the object has stayed in the zone,
+                  with a risk score from how long and how deep, a saved frame and the clip.
+                </p>
+                <div className="mt-auto flex flex-wrap gap-3 pt-5">
+                  <Link to="/upload" className={btn.primary}>
+                    Analyse a video
+                  </Link>
+                  <Link to="/incidents" className={btn.secondary}>
+                    Open the incidents
+                  </Link>
+                </div>
+              </article>
+            </Reveal>
           </div>
-        </div>
-        <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {pipeline.map(({ Icon, title, desc }, i) => (
-            <li key={title} className="relative rounded-lg border border-line bg-surface p-6 text-ink shadow-lg shadow-black/20">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-semibold text-muted">0{i + 1}</span>
-                <Icon className="h-5 w-5" aria-hidden />
-              </div>
-              <h3 className="mt-4 font-semibold">{title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted">{desc}</p>
-              {i < pipeline.length - 1 && (
-                <ArrowRight className="absolute -right-5 top-1/2 hidden h-4 w-4 -translate-y-1/2 text-canvas-muted lg:block" aria-hidden />
-              )}
-            </li>
-          ))}
-        </ol>
-      </section>
+        </Section>
 
-      {/* Modules */}
-      <section aria-label="Modules" className="grid gap-6 lg:grid-cols-2">
-        {modules.map(({ Icon, code, title, desc, points, to, cta }) => (
-          <Card key={code} bodyClass="flex h-full flex-col p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-accent-ink">
-                <Icon className="h-5 w-5" aria-hidden />
-              </div>
-              <div>
-                <div className="font-mono text-[11px] font-semibold tracking-widest text-muted">{code}</div>
-                <h3 className="text-lg font-semibold">{title}</h3>
-              </div>
-            </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted">{desc}</p>
-            <ul className="mt-4 flex-1 space-y-2 text-sm">
-              {points.map((p) => (
-                <li key={p} className="flex gap-2.5">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-sm bg-signal" aria-hidden />
-                  {p}
+        <Section
+          title="Measured, not claimed"
+          lede="Every figure below was produced by the evaluation scripts in the repository, on test photos labelled without seeing any model's output and on labelled test clips. The sets are small, and the write-up says so."
+        >
+          <dl className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            {RESULTS.map(([figure, text], i) => (
+              <Reveal key={figure} delay={i * 0.06}>
+                <div className="border-t border-rule pt-4">
+                  <dd className="text-[32px] font-bold leading-none tracking-tight">{figure}</dd>
+                  <dt className="mt-2 text-[15px] leading-relaxed text-canvas-muted">{text}</dt>
+                </div>
+              </Reveal>
+            ))}
+          </dl>
+          <p className="mt-6 max-w-[80ch] text-sm leading-relaxed text-canvas-muted">
+            Evaluation of 26 November 2026. The detector was trained and tested on 561 photographs from India and 13 other countries, 66 of them
+            held back and labelled by hand for the test, and on 15 test clips. The figures at the top of this page count only what has been
+            analysed through this installation.
+          </p>
+        </Section>
+
+        <Section title="Latest reports">
+          {reports === null ? (
+            <Skeleton className="h-40 w-full" />
+          ) : reports.length === 0 ? (
+            <p className="text-canvas-muted">No report has been issued yet. One is raised when an analysed photo creates a site or shows a critical finding.</p>
+          ) : (
+            <ul className="border-2 border-rule bg-surface">
+              {reports.map((r) => (
+                <li key={r.report_no} className="border-b border-line last:border-b-0">
+                  <Link to={`/reports/${r.report_no}`} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-3.5 transition-colors hover:bg-canvas-2">
+                    <span className="font-bold">{r.report_no}</span>
+                    <span className="text-sm text-muted">
+                      {REASON_LABEL[r.reason] || r.reason}
+                      {r.site_id ? ` · ${shortSite(r.site_id)}` : ""} · {timeAgo(r.created_at)}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
-            <div className="mt-6">
-              <Link to={to} className={btn.primary}>
-                {cta} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </Card>
-        ))}
-      </section>
-
-      {/* Public register */}
-      <Card
-        title="Register of latest encroachment reports"
-        subtitle="Issued automatically for a new site, a re-encroached site or a critical finding"
-        action={
-          <Link to="/reports" className={`${btn.secondary} ${btn.small}`}>
-            Full register
+          )}
+          <Link to="/reports" className={`${btn.secondary} mt-5`}>
+            Open the report register
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
-        }
-        bodyClass=""
-      >
-        {reports.length ? (
-          <Table head={["Report no.", "Reason", "Site", "Issued"]}>
-            {reports.map((r) => (
-              <tr key={r.report_no} className={rowClass} onClick={() => r.site_id && navigate(`/sites/${r.site_id}`)}>
-                <td className={`${cellClass} font-mono font-semibold`}>{r.report_no}</td>
-                <td className={cellClass}>{REASON_LABEL[r.reason] || r.reason}</td>
-                <td className={`${cellClass} font-mono text-xs`}>{r.site_id ? shortSite(r.site_id) : "No location"}</td>
-                <td className={`${cellClass} font-mono text-xs text-muted`}>{formatDateTime(r.created_at)}</td>
-              </tr>
-            ))}
-          </Table>
-        ) : (
-          <p className="px-6 py-8 text-center text-sm text-muted">{offline ? "Backend offline." : "No reports issued yet."}</p>
-        )}
-      </Card>
+        </Section>
+      </div>
+    </>
+  );
+}
+
+function EmptyHero() {
+  return (
+    <div className="grid aspect-[16/9] place-items-center bg-canvas-2 p-8 text-center text-sm text-muted">
+      <span className="max-w-[44ch]">No critical site is open at the moment. Analyse a photo to see its findings drawn on the railway land here.</span>
     </div>
   );
 }

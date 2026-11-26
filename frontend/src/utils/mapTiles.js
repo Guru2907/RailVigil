@@ -3,6 +3,13 @@
 
 const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
 
+// The plan: a light base that takes the survey-sheet tint.
+export const PLAN_BASE = {
+  url: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+  attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+  maxZoom: 16,
+};
+
 export const DARK_BASE = {
   url: `${ESRI}/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
   attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",

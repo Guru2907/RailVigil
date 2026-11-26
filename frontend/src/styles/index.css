@@ -1,48 +1,53 @@
 @import "tailwindcss";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/schibsted-grotesk";
 
 /* ---------------------------------------------------------------------------
-   Design tokens: one dark theme. Navy 60 % · steel 30 % · teal 10 %.
+   Design tokens: the Land Plan. A survey sheet: paper ground, sheets ruled in
+   ink, survey green for the shell and actions, pink wash for railway land.
 
-   canvas*   : page and sidebar, and text placed directly on them
-   surface*  : cards, panels, tables, inputs (with `ink` / `muted` / `line`)
-   paper     : inset areas inside a card (table bodies, list items, fields)
-   accent    : primary actions, current selection, links, focus ring
-   signal    : live status (same hue as accent)
-   danger    : errors and breaches
-   sev-*     : risk levels only, never decoration
+   canvas*   : the paper, and text placed directly on it
+   surface*  : sheets (cards, panels, tables) with `ink` / `muted` / `line`
+   paper     : fields and inset areas inside a sheet
+   rule      : the ink border of a sheet (stronger than `line`, the hairline)
+   accent    : survey green: top bar, primary actions, links, focus
+   wash      : railway land and the current selection, nothing else
+   sev-*     : risk only: critical red, high amber, medium blue, low green
    info      : the intrusion layer on maps, neutral status
    ------------------------------------------------------------------------ */
 @theme {
-  --color-canvas: #0b1b2b;
-  --color-canvas-2: #081522;
-  --color-canvas-ink: #e6edf3;
-  --color-canvas-muted: #8fa3b5;
-  --color-canvas-line: #1e2f40;
+  --color-canvas: #eceee6;
+  --color-canvas-2: #e2e5da;
+  --color-canvas-ink: #22241f;
+  --color-canvas-muted: #5c6055;
+  --color-canvas-line: #c6cabd;
 
-  --color-surface: #12263a;
-  --color-surface-2: #1a3148;
-  --color-paper: #0f2133;
-  --color-ink: #e6edf3;
-  --color-muted: #8fa3b5;
-  --color-line: #2a3f54;
+  --color-surface: #f7f8f3;
+  --color-surface-2: #eceee6;
+  --color-paper: #fdfdfb;
+  --color-ink: #22241f;
+  --color-muted: #5c6055;
+  --color-line: #c6cabd;
+  --color-rule: #22241f;
 
-  --color-accent: #2dd4bf;
-  --color-accent-hover: #5eead4;
-  --color-accent-ink: #06231f;
+  --color-accent: #2f6b45;
+  --color-accent-hover: #25573a;
+  --color-accent-ink: #ffffff;
 
-  --color-danger: #f43f5e;
-  --color-signal: #2dd4bf;
-  --color-info: #38bdf8;
+  --color-wash: #f1d2ce;
+  --color-wash-edge: #b8321f;
 
-  --color-sev-critical: #fb7185;
-  --color-sev-high: #fb923c;
-  --color-sev-medium: #facc15;
-  --color-sev-low: #34d399;
+  --color-danger: #b8321f;
+  --color-signal: #2f6b45;
+  --color-info: #22241f;
 
-  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --color-sev-critical: #b8321f;
+  --color-sev-high: #955a00;
+  --color-sev-medium: #2a5c86;
+  --color-sev-low: #2f6b45;
+
+  --font-sans: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Identifiers and figures use the same face with tabular numerals: no monospace costume. */
+  --font-mono: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -50,7 +55,7 @@
 
 html {
   background: var(--color-canvas);
-  color-scheme: dark;
+  color-scheme: light;
   scrollbar-color: var(--color-line) transparent;
 }
 
@@ -63,7 +68,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: rgb(47 107 69 / 0.22);
   color: var(--color-ink);
 }
 
@@ -97,10 +102,10 @@ select option {
 
 /* Skeleton loader: a slow sweep, no layout movement. */
 .skeleton {
-  background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-line) 50%, var(--color-surface-2) 75%);
+  background: linear-gradient(90deg, var(--color-canvas-2) 25%, var(--color-canvas-line) 50%, var(--color-canvas-2) 75%);
   background-size: 200% 100%;
   animation: rv-skeleton 1.4s linear infinite;
-  border-radius: 0.375rem;
+  border-radius: 2px;
 }
 @keyframes rv-skeleton {
   to {
@@ -122,109 +127,51 @@ select option {
   }
 }
 
-/* --- GIS map (always dark, whatever the theme) --- */
-.rv-map {
-  background: #05070a;
-}
-
-.rv-pin {
+/* --- Marks on the GIS map: flat, ink-ringed, no glow and no pulse --- */
+.rv-dot,
+.rv-square {
   position: relative;
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+  background: var(--c);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1.5px var(--color-rule);
+  transition: transform 160ms var(--ease-out);
 }
-
-.rv-pin::before,
-.rv-pin::after {
-  content: "";
-  position: absolute;
+.rv-dot {
   border-radius: 9999px;
 }
-
-.rv-pin::before {
-  inset: 5px;
-  background: var(--c);
-  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
+.rv-square {
+  width: 14px;
+  height: 14px;
 }
-
-.rv-pin::after {
-  inset: 0;
-  border: 2px solid var(--c);
-  animation: rv-pulse 2s ease-out infinite;
+.rv-dot-selected {
+  transform: scale(1.35);
+  box-shadow: 0 0 0 3px var(--color-rule);
 }
-
-.rv-pin-selected::before {
-  inset: 3px;
-  outline: 2px solid #fff;
-}
-
-@keyframes rv-pulse {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-.rv-scanlines {
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0px, rgba(0, 0, 0, 0.12) 1px, transparent 1px, transparent 3px);
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.8);
-}
-
-.rv-tooltip {
-  background: rgba(0, 0, 0, 0.88);
-  color: #fff;
-  border: 1px solid var(--color-signal);
-}
-
-.rv-map .leaflet-control-layers {
-  background: rgba(0, 0, 0, 0.78);
-  color: #e5e7eb;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-}
-
-.rv-map .leaflet-control-attribution {
-  background: rgba(0, 0, 0, 0.6);
-  color: #9ca3af;
-}
-
-.rv-map .leaflet-control-attribution a {
-  color: var(--color-signal);
-}
-
-/* Marker clusters: bubble coloured by the worst severity inside. */
 .rv-cluster {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  border: 2px solid var(--c);
-  background: color-mix(in srgb, var(--c) 30%, rgba(0, 0, 0, 0.75));
-  box-shadow: 0 0 12px var(--c), inset 0 0 8px rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font: 700 12px var(--font-mono);
-}
-
-/* Intrusion incidents: glowing diamond, distinct from site dots. */
-.rv-diamond {
-  display: block;
-  width: 12px;
-  height: 12px;
-  margin: 2px;
-  transform: rotate(45deg);
   background: var(--c);
-  box-shadow: 0 0 8px var(--c), 0 0 16px var(--c);
-  animation: rv-blink 1.6s ease-in-out infinite;
+  color: #fff;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1.5px var(--color-rule);
+  font: 700 12px/1 var(--font-sans);
 }
-
-@keyframes rv-blink {
-  50% {
-    opacity: 0.55;
-  }
+.leaflet-tooltip.rv-tooltip {
+  background: var(--color-ink);
+  color: var(--color-surface);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font: 500 12px/1.3 var(--font-sans);
+  padding: 5px 8px;
+}
+.leaflet-tooltip.rv-tooltip::before {
+  border-top-color: var(--color-ink);
 }
 
 /* Paragraphs avoid a lone last word; headings balance their lines. */
@@ -235,4 +182,71 @@ h1,
 h2,
 h3 {
   text-wrap: balance;
+}
+
+
+/* --- The plan: a map drawn as a survey sheet --- */
+.rv-plan {
+  background: var(--color-surface);
+}
+/* The base map is drained to line work on the sheet colour; the track is redrawn in ink. */
+.rv-plan {
+  font-family: var(--font-sans);
+}
+.rv-plan .rv-plan-base {
+  filter: grayscale(1) contrast(1.15);
+}
+.rv-plan .rv-plan-track {
+  filter: grayscale(1) brightness(0.55) contrast(1.3);
+}
+.rv-plan .leaflet-control-scale-line {
+  border: 1.5px solid var(--color-rule);
+  border-top: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: 600 11px/1.4 var(--font-sans);
+}
+/* On a narrow plan the scale would sit under the attribution line. */
+@media (max-width: 640px) {
+  .rv-plan .leaflet-control-scale {
+    margin-bottom: 24px;
+  }
+}
+.rv-plan .leaflet-control-attribution {
+  background: rgb(247 248 243 / 0.9);
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.rv-plan .leaflet-control-attribution a {
+  color: var(--color-accent);
+}
+.rv-plan .leaflet-bar a {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+  border-radius: 0 !important;
+}
+.rv-plan .leaflet-bar {
+  border: 1px solid var(--color-rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* A numbered mark: a site on the plan and the same number in the register. */
+.rv-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--c);
+  color: #fff;
+  font: 700 14px/1 var(--font-sans);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1.5px var(--color-rule);
+  transition: transform 160ms var(--ease-out);
+}
+.rv-mark-selected {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 3.5px var(--color-rule);
 }

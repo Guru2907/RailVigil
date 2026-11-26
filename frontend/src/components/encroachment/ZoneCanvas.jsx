@@ -15,20 +15,20 @@ export default function ZoneCanvas({ src, points, onChange }) {
   const svgPoints = points.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
 
   return (
-    <div ref={boxRef} onClick={addPoint} className="relative cursor-crosshair select-none overflow-hidden rounded-md bg-black">
+    <div ref={boxRef} onClick={addPoint} className="relative cursor-crosshair select-none overflow-hidden rounded-sm bg-black">
       <img src={src} alt="Photo to mark" className="block w-full" draggable={false} />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full">
         {points.length >= 3 && (
-          <polygon points={svgPoints} fill="rgba(34,211,238,0.22)" stroke="#22D3EE" strokeWidth="0.4" />
+          <polygon points={svgPoints} fill="var(--color-wash)" fillOpacity="0.5" stroke="var(--color-wash-edge)" strokeWidth="0.5" strokeDasharray="1.6 1" vectorEffect="non-scaling-stroke" />
         )}
         {points.length > 0 && points.length < 3 && (
-          <polyline points={svgPoints} fill="none" stroke="#22D3EE" strokeWidth="0.4" />
+          <polyline points={svgPoints} fill="none" stroke="var(--color-wash-edge)" strokeWidth="0.5" />
         )}
       </svg>
       {points.map(([x, y], i) => (
         <span
           key={i}
-          className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-cyan-400"
+          className="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-wash-edge"
           style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
         />
       ))}

@@ -6,7 +6,7 @@ import { format, formatDistanceToNow } from "date-fns";
 export function formatDateTime(value) {
   if (!value) return "—";
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy, HH:mm");
+  return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy HH:mm");
 }
 
 export function formatDate(value) {

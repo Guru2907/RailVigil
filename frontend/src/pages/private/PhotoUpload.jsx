@@ -81,7 +81,7 @@ export default function PhotoUpload() {
     }
   }
 
-  const fieldLabel = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted";
+  const fieldLabel = "mb-1.5 block text-[11px] font-semibold text-muted";
 
   return (
     <>
@@ -131,7 +131,7 @@ export default function PhotoUpload() {
                 setDragging(false);
                 choose(e.dataTransfer.files);
               }}
-              className={`flex h-80 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed transition ${
+              className={`flex h-80 cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed transition ${
                 dragging ? "border-ink bg-surface-2" : "border-line bg-paper hover:border-ink/40"
               }`}
             >
@@ -148,7 +148,7 @@ export default function PhotoUpload() {
           <div>
             <span className={fieldLabel}>Photographs</span>
             {files.length ? (
-              <ul className="max-h-36 divide-y divide-line overflow-auto rounded-md border border-line bg-paper text-sm">
+              <ul className="max-h-36 divide-y divide-line overflow-auto rounded-sm border border-line bg-paper text-sm">
                 {files.map((f) => (
                   <li key={f.name} className="flex justify-between gap-3 px-3 py-2">
                     <span className="truncate">{f.name}</span>
@@ -194,7 +194,7 @@ export default function PhotoUpload() {
 
       {results.length > 0 && (
         <section aria-label="Results" className="mt-10 space-y-6">
-          <h2 className="border-b border-canvas-line pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-canvas-muted">
+          <h2 className="border-b border-canvas-line pb-3 font-mono text-[11px] text-canvas-muted">
             Results · {results.length} photograph(s)
           </h2>
           {results.map((r) => (

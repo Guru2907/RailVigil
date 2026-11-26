@@ -13,31 +13,31 @@ export { Pagination } from "./Pagination.jsx";
 export { KeyValue } from "./KeyValue.jsx";
 
 const btnBase =
-  "press inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-semibold disabled:pointer-events-none disabled:opacity-50";
+  "press inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-4 text-sm font-semibold disabled:pointer-events-none disabled:opacity-50";
 
 export const btn = {
   // The one main action of a view
   primary: `${btnBase} bg-accent text-accent-ink hover:bg-accent-hover`,
   // Any other action
-  secondary: `${btnBase} border border-line bg-surface-2 text-ink hover:border-muted/60`,
+  secondary: `${btnBase} border border-rule bg-surface text-ink hover:bg-canvas-2`,
   // Same look as secondary; kept so existing callers on the page background work
-  outline: `${btnBase} border border-line bg-surface-2 text-ink hover:border-muted/60`,
+  outline: `${btnBase} border border-rule bg-surface text-ink hover:bg-canvas-2`,
   // Low-emphasis action inside dense areas
-  ghost: `${btnBase} text-muted hover:bg-surface-2 hover:text-ink`,
+  ghost: `${btnBase} text-muted hover:bg-canvas-2 hover:text-ink`,
   small: "h-8 px-3 text-xs",
 };
 
 export const inputClass =
-  "h-10 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink placeholder:text-muted/70 outline-none transition-colors focus:border-accent";
+  "h-10 w-full rounded-sm border border-rule/50 bg-paper px-3 text-sm text-ink placeholder:text-muted/80 outline-none transition-colors focus:border-accent";
 
 export const selectClass =
-  "h-10 rounded-lg border border-line bg-paper px-3 text-sm text-ink outline-none transition-colors focus:border-accent";
+  "h-10 rounded-sm border border-rule/50 bg-paper px-3 text-sm text-ink outline-none transition-colors focus:border-accent";
 
 export const linkClass = "font-medium text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent";
 
 export function Card({ title, subtitle, action, children, className = "", bodyClass = "p-6" }) {
   return (
-    <section className={`min-w-0 rounded-lg border border-line bg-surface text-ink ${className}`}>
+    <section className={`min-w-0 border-2 border-rule bg-surface text-ink ${className}`}>
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4">
           <div>
@@ -73,7 +73,7 @@ export function PageHeader({ crumbs = [], title, description, actions, meta }) {
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-balance text-2xl font-semibold tracking-tight text-canvas-ink">{title}</h1>
+          <h1 className="text-balance text-[32px] font-bold leading-none tracking-tight text-canvas-ink">{title}</h1>
           {description && <p className="mt-1.5 max-w-[68ch] text-sm text-canvas-muted">{description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -88,7 +88,7 @@ export function PageHeader({ crumbs = [], title, description, actions, meta }) {
 export function StatCard({ label, value, hint, tone = "default", loading }) {
   const alert = tone === "danger" && Number(value) > 0;
   return (
-    <div className="rounded-lg border border-line bg-surface p-5 text-ink">
+    <div className="border border-rule bg-surface p-5 text-ink">
       <div className="text-xs font-medium text-muted">{label}</div>
       <div className={`tabular mt-2 text-3xl font-semibold tracking-tight ${alert ? "text-sev-critical" : ""}`}>
         {loading ? <span className="skeleton inline-block h-8 w-16 align-middle" aria-label="Loading" /> : value}
@@ -111,7 +111,7 @@ export function EmptyState({ icon: Icon, title, children, action }) {
 
 export function ErrorBanner({ children }) {
   return (
-    <div role="alert" className="mb-6 flex items-start gap-3 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-sev-critical">
+    <div role="alert" className="mb-6 flex items-start gap-3 rounded-sm border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-sev-critical">
       <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
       <div className="min-w-0">{children}</div>
     </div>
@@ -123,7 +123,7 @@ export function Table({ head, children, className = "" }) {
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table className="w-full text-sm">
-        <thead className="border-b border-line text-left">
+        <thead className="border-b border-rule text-left">
           <tr>
             {head.map((h) => (
               <th key={h} scope="col" className="whitespace-nowrap px-4 py-3 text-xs font-medium text-muted">
@@ -138,13 +138,13 @@ export function Table({ head, children, className = "" }) {
   );
 }
 
-export const rowClass = "cursor-pointer transition-colors hover:bg-surface-2";
+export const rowClass = "cursor-pointer transition-colors hover:bg-canvas-2";
 export const cellClass = "whitespace-nowrap px-4 py-3";
 
 // A two-or-three way switch.
 export function Segmented({ options, value, onChange, label }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex rounded-lg border border-line bg-paper p-0.5">
+    <div role="group" aria-label={label} className="inline-flex border border-rule bg-surface">
       {options.map(([key, text]) => {
         const active = key === value;
         return (
@@ -153,8 +153,8 @@ export function Segmented({ options, value, onChange, label }) {
             type="button"
             aria-pressed={active}
             onClick={() => onChange(key)}
-            className={`press h-8 rounded-md px-3.5 text-sm font-medium ${
-              active ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"
+            className={`press h-9 px-3.5 text-sm font-semibold ${
+              active ? "bg-ink text-surface" : "text-ink hover:bg-canvas-2"
             }`}
           >
             {text}

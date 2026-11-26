@@ -4,7 +4,7 @@ import { STATUS_LABEL } from "../../utils/encroachmentFormat.js";
 
 // Risk and status are never shown by colour alone: every badge has an icon and a word.
 
-const base = "inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium";
+const base = "inline-flex items-center gap-1 whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium";
 
 const SEVERITY_ICON = { critical: OctagonAlert, high: TriangleAlert, medium: CircleAlert, low: Info };
 
@@ -40,5 +40,5 @@ export function StatusBadge({ value, className = "" }) {
 
 // Neutral label (a class, a reason, a count).
 export function Badge({ children, className = "" }) {
-  return <span className={`${base} bg-surface-2 text-muted ring-1 ring-inset ring-line ${className}`}>{children}</span>;
+  return <span className={`${base} bg-canvas-2 text-muted ring-1 ring-inset ring-line ${className}`}>{children}</span>;
 }
