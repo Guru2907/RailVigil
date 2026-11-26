@@ -39,6 +39,16 @@ function More({ to, children }) {
   );
 }
 
+function Waiting() {
+  return (
+    <div className="space-y-3 p-5">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-4/5" />
+      <Skeleton className="h-4 w-3/5" />
+    </div>
+  );
+}
+
 // Counts as ruled rows with a bar: label, bar to scale, figure.
 function Bars({ rows, colour = "var(--color-ink)" }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
@@ -140,70 +150,66 @@ export default function Dashboard() {
         ))}
       </section>
 
-      {/* Needs attention: the two modules side by side */}
+      {/* Needs attention: the two modules as equal halves, row for row */}
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
         <Sheet title="Encroachment: critical sites awaiting action" aside={<More to="/sites?severity=critical">All critical sites</More>}>
           {critical === null ? (
-            <div className="space-y-3 p-5">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-3/5" />
-            </div>
+            <Waiting />
           ) : sites.length === 0 ? (
             <p className="p-5 text-sm text-muted">No critical site is open. New ones appear here as photographs are analysed.</p>
           ) : (
-            <>
-              <PlanMap compact className="h-[230px] !border-0" marks={marks} selectedId={chosen} focusId={chosen} onSelect={setChosen} onFitAll={() => setChosen(null)} />
-              <ul className="divide-y divide-line border-t border-line">
-                {sites.map((s) => (
-                  <li key={s.id} className={`flex items-center gap-3 px-5 py-2.5 text-sm ${chosen === s.id ? "bg-wash" : ""}`}>
-                    <button type="button" onClick={() => setChosen(s.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left" aria-label={`Show ${shortSite(s.id)} on the plan`}>
-                      <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-bold text-white" style={{ background: SEVERITY_COLOR.critical }} aria-hidden>
-                        {s.number}
+            <ul className="divide-y divide-line">
+              {sites.map((s) => (
+                <li key={s.id} className={`flex min-h-[62px] items-center gap-3 px-5 text-sm ${chosen === s.id ? "bg-wash" : ""}`}>
+                  <button type="button" onClick={() => setChosen(s.id)} className="flex min-w-0 flex-1 items-center gap-3 self-stretch text-left" aria-label={`Show ${shortSite(s.id)} on the plan below`}>
+                    <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-bold text-white" style={{ background: SEVERITY_COLOR.critical }} aria-hidden>
+                      {s.number}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">
+                        {shortSite(s.id)} <span className="font-normal">· {classLabel(s.cls)}</span>
                       </span>
-                      <span className="font-semibold">{shortSite(s.id)}</span>
-                      <span className="truncate text-muted">
-                        {classLabel(s.cls)} · {STATUS_LABEL[s.status]} · {timeAgo(s.last_reported_at)}
+                      <span className="block text-xs text-muted">
+                        {STATUS_LABEL[s.status]} · {s.finding_count} {s.finding_count === 1 ? "finding" : "findings"} · last seen {timeAgo(s.last_reported_at)}
                       </span>
-                    </button>
-                    <Link to={`/sites/${s.id}`} className={`${btn.secondary} ${btn.small}`}>
-                      Open case
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
+                    </span>
+                  </button>
+                  <SeverityBadge value={s.max_severity} />
+                  <Link to={`/sites/${s.id}`} className={`${btn.secondary} ${btn.small}`}>
+                    Open case
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </Sheet>
 
         <Sheet title="Intrusion: highest-risk incidents" aside={<More to="/incidents">All incidents</More>}>
           {incidents === null ? (
-            <div className="space-y-3 p-5">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-3/5" />
-            </div>
+            <Waiting />
           ) : risky.length === 0 ? (
             <p className="p-5 text-sm text-muted">No incident has been recorded. Analyse a video to look for entries into a track zone.</p>
           ) : (
             <ul className="divide-y divide-line">
               {risky.map((i) => (
-                <li key={i.id}>
-                  <button type="button" onClick={() => navigate(`/incidents/${i.id}`)} className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm transition-colors hover:bg-canvas-2">
-                    <span className="w-[5.5rem] shrink-0 font-semibold">{shortId(i.id)}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate">{eventLabel(i.event_type)}</span>
-                      <span className="block text-xs text-muted">
-                        {i.dwell_time_sec.toFixed(1)} s in the zone · {timeAgo(i.created_at)}
-                      </span>
+                <li key={i.id} className="flex min-h-[62px] items-center gap-3 px-5 text-sm">
+                  <span className="flex w-24 shrink-0 items-center gap-2">
+                    <span className="tabular w-6 text-right font-bold">{Math.round(i.risk_score)}</span>
+                    <span className="h-1.5 flex-1 bg-canvas-2" aria-hidden>
+                      <span className="block h-full" style={{ width: `${Math.min(100, i.risk_score)}%`, background: SEVERITY_COLOR[normaliseSeverity(i.severity)] }} />
                     </span>
-                    <span className="flex w-28 shrink-0 items-center gap-2">
-                      <span className="tabular w-7 text-right font-bold">{Math.round(i.risk_score)}</span>
-                      <span className="h-1.5 flex-1 bg-canvas-2" aria-hidden>
-                        <span className="block h-full" style={{ width: `${Math.min(100, i.risk_score)}%`, background: SEVERITY_COLOR[normaliseSeverity(i.severity)] }} />
-                      </span>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">
+                      {shortId(i.id)} <span className="font-normal">· {eventLabel(i.event_type)}</span>
                     </span>
-                    <SeverityBadge value={i.severity} />
+                    <span className="block text-xs text-muted">
+                      {i.dwell_time_sec.toFixed(1)} s in the zone · processed {timeAgo(i.created_at)}
+                    </span>
+                  </span>
+                  <SeverityBadge value={i.severity} />
+                  <button type="button" onClick={() => navigate(`/incidents/${i.id}`)} className={`${btn.secondary} ${btn.small}`}>
+                    Open incident
                   </button>
                 </li>
               ))}
@@ -211,6 +217,20 @@ export default function Dashboard() {
           )}
         </Sheet>
       </div>
+
+      {marks.length > 0 && (
+        <div className="mt-5">
+          <PlanMap
+            className="h-[320px]"
+            marks={marks}
+            selectedId={chosen || marks[0].id}
+            focusId={chosen}
+            onSelect={setChosen}
+            onFitAll={() => setChosen(null)}
+            sheet={{ page: 1, pages: 1, total: marks.length, onSheet: sites.length }}
+          />
+        </div>
+      )}
 
       {/* Where things stand */}
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">

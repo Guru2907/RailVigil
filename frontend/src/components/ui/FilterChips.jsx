@@ -11,7 +11,7 @@ export function FilterChips({ label, options, value, onChange, single = false })
   };
   return (
     <div role="group" aria-label={label} className="flex flex-wrap items-center gap-1.5">
-      <span className="mr-1 text-xs text-muted">{label}</span>
+      {label && <span className="mr-1 text-xs text-muted">{label}</span>}
       {options.map(([key, text]) => {
         const on = selected.includes(key);
         return (

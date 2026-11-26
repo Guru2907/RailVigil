@@ -207,7 +207,8 @@ export default function PlanMap({ marks, others = [], selectedId, focusId, onSel
               <div className="text-[13px] font-bold tracking-tight">Site plan</div>
               {sheet && (
                 <div className="text-muted">
-                  Sheet {sheet.page} of {sheet.pages} · {sheet.total} sites
+                  {sheet.pages > 1 ? `Sheet ${sheet.page} of ${sheet.pages} · ` : ""}
+                  {sheet.total} sites
                 </div>
               )}
             </div>
