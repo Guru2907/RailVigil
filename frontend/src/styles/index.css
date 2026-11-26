@@ -3,13 +3,15 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens: the Land Plan. A survey sheet: paper ground, sheets ruled in
-   ink, survey green for the shell and actions, pink wash for railway land.
+   ink, deep navy for the shell and actions, brass as the one highlight, pink
+   wash for railway land.
 
    canvas*   : the paper, and text placed directly on it
    surface*  : sheets (cards, panels, tables) with `ink` / `muted` / `line`
    paper     : fields and inset areas inside a sheet
    rule      : the ink border of a sheet (stronger than `line`, the hairline)
-   accent    : survey green: top bar, primary actions, links, focus
+   accent    : deep navy: top bar, primary actions, links, focus
+   brass     : the one highlight: counts on the bar and the line under it
    wash      : railway land and the current selection, nothing else
    sev-*     : risk only: critical red, high amber, medium blue, low green
    info      : the intrusion layer on maps, neutral status
@@ -29,15 +31,16 @@
   --color-line: #c6cabd;
   --color-rule: #22241f;
 
-  --color-accent: #2f6b45;
-  --color-accent-hover: #25573a;
+  --color-accent: #17254a;
+  --color-accent-hover: #0f1a36;
+  --color-brass: #d9a441;
   --color-accent-ink: #ffffff;
 
   --color-wash: #f1d2ce;
   --color-wash-edge: #b8321f;
 
   --color-danger: #b8321f;
-  --color-signal: #2f6b45;
+  --color-signal: #17254a;
   --color-info: #22241f;
 
   --color-sev-critical: #b8321f;
@@ -68,7 +71,7 @@ body {
 }
 
 ::selection {
-  background: rgb(47 107 69 / 0.22);
+  background: rgb(217 164 65 / 0.4);
   color: var(--color-ink);
 }
 
