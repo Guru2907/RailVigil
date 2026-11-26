@@ -8,15 +8,15 @@ import { Seal } from "./Seal.jsx";
 
 const COUNT_REFRESH_MS = 60000;
 
-// Live backend status: a dot, a word and the round-trip time. Never colour alone.
+// Backend status, shown only while the backend cannot be reached.
 export function SystemStatus({ className = "" }) {
-  const { online, ms } = useHealth();
-  const down = online === false;
+  const { online } = useHealth();
+  // Said only when something is wrong: a working backend needs no label.
+  if (online !== false) return null;
   return (
-    <div className={`flex items-center gap-2 whitespace-nowrap text-[13px] ${className}`} role="status" aria-live="polite">
-      <span className={`h-2 w-2 rounded-full ${down ? "border border-ink" : online ? "bg-sev-low" : "bg-line"}`} aria-hidden />
-      <span className={down ? "font-semibold" : ""}>{online === null ? "Connecting" : down ? "Backend offline" : "Online"}</span>
-      {ms != null && <span className="hidden 2xl:inline">{ms} ms</span>}
+    <div className={`flex items-center gap-2 whitespace-nowrap text-[13px] font-semibold text-sev-critical ${className}`} role="status" aria-live="polite">
+      <span className="h-2 w-2 rounded-full bg-sev-critical" aria-hidden />
+      Backend offline
     </div>
   );
 }
@@ -109,7 +109,7 @@ export default function TopBar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <SystemStatus className="mr-2 hidden text-muted sm:flex" />
+          <SystemStatus className="mr-2 hidden sm:flex" />
           <Link to="/upload" className={action} aria-label="Analyse a video" title="Analyse a video">
             <Video className="h-4 w-4" aria-hidden />
             <span className="hidden min-[1400px]:inline">Analyse video</span>
@@ -153,7 +153,7 @@ export default function TopBar() {
               ))}
             </div>
           ))}
-          <SystemStatus className="px-3 pt-4 text-muted" />
+          <SystemStatus className="px-3 pt-4" />
         </nav>
       )}
       </div>
