@@ -3,14 +3,14 @@
 
 /* ---------------------------------------------------------------------------
    Design tokens: the Land Plan. A survey sheet: paper ground, sheets ruled in
-   ink, charcoal for the shell, coral as the one accent colour, pink
+   ink, teal for the shell, coral as the one accent colour, pink
    wash for railway land.
 
    canvas*   : the paper, and text placed directly on it
    surface*  : sheets (cards, panels, tables) with `ink` / `muted` / `line`
    paper     : fields and inset areas inside a sheet
    rule      : the ink border of a sheet (stronger than `line`, the hairline)
-   accent    : charcoal: the top bar, focus
+   accent    : teal: the top bar, icons, focus
    pop       : coral, the accent colour: primary actions, link underlines, counts
                on the bar, the key words of a headline. Fills, rules and large
                type only; small text stays ink so it stays readable.
@@ -33,8 +33,8 @@
   --color-line: #c6cabd;
   --color-rule: #22241f;
 
-  --color-accent: #22241f;
-  --color-accent-hover: #000000;
+  --color-accent: #147684;
+  --color-accent-hover: #0f5f6b;
   --color-pop: #e5503a;
   --color-pop-hover: #d2412c;
   --color-accent-ink: #ffffff;
@@ -43,7 +43,7 @@
   --color-wash-edge: #b8321f;
 
   --color-danger: #b8321f;
-  --color-signal: #22241f;
+  --color-signal: #147684;
   --color-info: #22241f;
 
   --color-sev-critical: #b8321f;
