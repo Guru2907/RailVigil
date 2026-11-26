@@ -6,6 +6,7 @@ from app.controllers import video_controller
 from app.db.database import get_db
 from app.db.repositories import video_repository
 from app.db.schemas.video import VideoDetailOut, VideoOut, ZoneAssignIn
+from app.utils.file_utils import find_output_file
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 
@@ -45,4 +46,7 @@ def get_annotated_video(video_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Video not found")
     if video.status != "done" or not video.output_video_path:
         raise HTTPException(status_code=409, detail=f"Video is '{video.status}', not ready yet")
-    return FileResponse(video.output_video_path, media_type="video/mp4")
+    path = find_output_file(video.output_video_path, video.id)
+    if path is None:
+        raise HTTPException(status_code=404, detail="The annotated video is no longer on the server")
+    return FileResponse(path, media_type="video/mp4")

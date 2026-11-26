@@ -3,7 +3,7 @@ keeps this logic out of both the route and the service."""
 
 import logging
 import uuid
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from fastapi import UploadFile
 
@@ -24,6 +24,32 @@ def raw_video_path(filename: str) -> Path:
     stored in the database, so this is the single place that knows the
     folder."""
     return raw_dir() / filename
+
+
+def find_output_file(stored_path: str | None, video_id: str) -> Path | None:
+    """The file behind an output path stored in the database, or None if it
+    is not on disk.
+
+    Rows store the full path as it was when the video was processed. After
+    the project folder is moved (another drive, another machine) that path
+    points nowhere, although the file still sits in this installation's
+    outputs folder. So when the stored path is missing, the part below the
+    video's own folder is looked up under OUTPUTS_DIR/<video id>/."""
+    if not stored_path:
+        return None
+    stored = Path(stored_path)
+    if stored.is_file():
+        return stored
+    # PureWindowsPath splits on both kinds of slash, so a path written on
+    # Windows is still understood on Linux and the other way round.
+    parts = PureWindowsPath(stored_path).parts
+    if video_id not in parts:
+        return None
+    below = parts[len(parts) - parts[::-1].index(video_id):]
+    if not below or ".." in below:
+        return None
+    moved = Path(config.OUTPUTS_DIR, video_id, *below)
+    return moved if moved.is_file() else None
 
 
 def check_extension(original_name: str | None) -> str:
