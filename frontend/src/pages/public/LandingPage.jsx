@@ -84,7 +84,7 @@ export default function LandingPage() {
     <>
       <section className="pb-12 pt-6 text-center sm:pt-10">
         <h1 className="mx-auto max-w-[20ch] text-[40px] font-bold leading-[1.02] tracking-tight sm:text-[60px]">
-          See what stands on railway land, and who steps onto the track.
+          See what stands on <span className="text-pop">railway land</span>, and who steps onto <span className="text-pop">the track</span>.
         </h1>
         <p className="mx-auto mt-5 max-w-[60ch] text-[17px] leading-relaxed text-canvas-muted">
           RailVigil reads track-side photographs for structures, vegetation and vehicles on railway land, and CCTV video for people, vehicles and animals
@@ -179,7 +179,7 @@ export default function LandingPage() {
           <div className="grid gap-5 lg:grid-cols-2">
             <Reveal>
               <article className="flex h-full flex-col border-2 border-rule bg-surface p-6">
-                <ImagePlus className="h-6 w-6 text-accent" aria-hidden />
+                <ImagePlus className="h-6 w-6 text-pop" aria-hidden />
                 <h3 className="mt-3 text-2xl font-bold tracking-tight">Encroachment, from photographs</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-muted">
                   Permanent and temporary structures, vegetation, dumped material and parked vehicles on railway land. Severity comes from how much of the
@@ -197,7 +197,7 @@ export default function LandingPage() {
             </Reveal>
             <Reveal delay={0.06}>
               <article className="flex h-full flex-col border-2 border-rule bg-surface p-6">
-                <Video className="h-6 w-6 text-accent" aria-hidden />
+                <Video className="h-6 w-6 text-pop" aria-hidden />
                 <h3 className="mt-3 text-2xl font-bold tracking-tight">Intrusion, from video</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-muted">
                   People, vehicles and animals inside a track zone you draw on the video. An incident is recorded once the object has stayed in the zone,

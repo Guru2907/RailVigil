@@ -12,13 +12,13 @@ import { SEVERITIES, SEVERITY_COLOR, SEVERITY_LABEL, normaliseSeverity } from ".
 //   others:  [{ id, lat, lon }]   sites in the register that are not on this sheet
 //   focusId: the site the reader chose (the plan moves in on it); null shows the whole listed set
 
-const INK = "#22241F";
+const INK = "#111111";
 const SITE_ZOOM = 16;
 const SITE_RADIUS_M = 25; // findings of one kind within 25 m form a site
 const FAN_PX = 34; // how far a fanned mark sits from its true position
 const NEAR_PX = 22; // marks closer than this on screen would hide each other
 const LOCAL_KM = 50; // a sheet shows one locality; listed sites further away are named, not squeezed in
-const SURFACE = "#F7F8F3";
+const SURFACE = "#FAF7F0";
 
 // Recorded positions, compared as stored (5 decimals is about a metre).
 const spot = (m) => `${m.lat.toFixed(5)},${m.lon.toFixed(5)}`;

@@ -111,7 +111,7 @@ function JobStatus({ job }) {
       </ol>
       {job?.status === "processing" && (
         <div className="mt-4 h-1.5 bg-canvas-2" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Analysis progress">
-          <div className="h-full origin-left bg-accent transition-transform duration-500" style={{ transform: `scaleX(${percent / 100})` }} />
+          <div className="h-full origin-left bg-pop transition-transform duration-500" style={{ transform: `scaleX(${percent / 100})` }} />
         </div>
       )}
       {failed && <p className="mt-3 break-words text-sm text-sev-critical">{(job.error || "Processing failed").split("\n")[0]}</p>}

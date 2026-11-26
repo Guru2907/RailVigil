@@ -22,7 +22,7 @@ export function Tabs({ tabs, value, onChange, label }) {
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(key)}
             className={`-mb-px flex h-10 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors ${
-              active ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
+              active ? "border-pop text-ink" : "border-transparent text-muted hover:text-ink"
             }`}
           >
             {Icon && <Icon className="h-4 w-4" aria-hidden />}
