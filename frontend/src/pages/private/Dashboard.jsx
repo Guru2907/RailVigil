@@ -55,7 +55,7 @@ function Bars({ rows, colour = "var(--color-ink)" }) {
   return (
     <dl className="divide-y divide-line/70 px-5 py-1 text-sm">
       {rows.map((r) => (
-        <div key={r.label} className="grid grid-cols-[9.5rem_1fr_2.5rem] items-center gap-3 py-2">
+        <div key={r.label} className="grid grid-cols-[9.5rem_1fr_2.5rem] items-center sm:grid-cols-[13.5rem_1fr_2.5rem] gap-3 py-2">
           <dt className="truncate">{r.label}</dt>
           <dd className="h-2 bg-canvas-2" aria-hidden>
             <span className="block h-full" style={{ width: `${(r.value / max) * 100}%`, background: r.colour || colour }} />
@@ -98,7 +98,13 @@ export default function Dashboard() {
       listIncidents().then(guard(setIncidents)),
       listReports({ limit: 500 }).then(guard(setReports)),
       listVideos().then(guard(setVideos)),
-    ]).catch((e) => !cancelled && setError(e.message));
+    ]).catch((e) => {
+      if (cancelled) return;
+      setError(e.message);
+      // Whatever did not arrive is shown as empty, not as a skeleton that never ends.
+      setCritical((v) => v ?? []);
+      setIncidents((v) => v ?? []);
+    });
     return () => {
       cancelled = true;
     };
@@ -160,8 +166,8 @@ export default function Dashboard() {
           ) : (
             <ul className="divide-y divide-line">
               {sites.map((s) => (
-                <li key={s.id} className={`flex min-h-[62px] items-center gap-3 px-5 text-sm ${chosen === s.id ? "bg-wash" : ""}`}>
-                  <button type="button" onClick={() => setChosen(s.id)} className="flex min-w-0 flex-1 items-center gap-3 self-stretch text-left" aria-label={`Show ${shortSite(s.id)} on the plan below`}>
+                <li key={s.id} className={`flex min-h-[62px] flex-wrap items-center gap-x-3 gap-y-2 px-5 py-2.5 text-sm sm:flex-nowrap sm:py-0 ${chosen === s.id ? "bg-wash" : ""}`}>
+                  <button type="button" onClick={() => setChosen(s.id)} className="flex min-w-0 flex-1 basis-full items-center gap-3 self-stretch text-left sm:basis-0" aria-label={`Show ${shortSite(s.id)} on the plan below`}>
                     <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-bold text-white" style={{ background: SEVERITY_COLOR.critical }} aria-hidden>
                       {s.number}
                     </span>
@@ -192,18 +198,19 @@ export default function Dashboard() {
           ) : (
             <ul className="divide-y divide-line">
               {risky.map((i) => (
-                <li key={i.id} className="flex min-h-[62px] items-center gap-3 px-5 text-sm">
-                  <span className="flex w-24 shrink-0 items-center gap-2">
+                <li key={i.id} className="flex min-h-[62px] flex-wrap items-center gap-x-3 gap-y-2 px-5 py-2.5 text-sm sm:flex-nowrap sm:py-0">
+                  <span className="hidden w-24 shrink-0 items-center gap-2 sm:flex">
                     <span className="tabular w-6 text-right font-bold">{Math.round(i.risk_score)}</span>
                     <span className="h-1.5 flex-1 bg-canvas-2" aria-hidden>
                       <span className="block h-full" style={{ width: `${Math.min(100, i.risk_score)}%`, background: SEVERITY_COLOR[normaliseSeverity(i.severity)] }} />
                     </span>
                   </span>
-                  <span className="min-w-0 flex-1">
+                  <span className="min-w-0 flex-1 basis-full sm:basis-0">
                     <span className="block truncate font-semibold">
                       {shortId(i.id)} <span className="font-normal">· {eventLabel(i.event_type)}</span>
                     </span>
                     <span className="block text-xs text-muted">
+                      <span className="sm:hidden">Risk {Math.round(i.risk_score)} · </span>
                       {i.dwell_time_sec.toFixed(1)} s in the zone · processed {timeAgo(i.created_at)}
                     </span>
                   </span>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Download, FileText } from "lucide-react";
 import { listReports } from "../../api/encroachment.js";
-import { Badge, EmptyState, ErrorBanner, FilterChips, Pagination, SkeletonRows, Table, btn, cellClass, inputClass, linkClass } from "../../components/ui/index.jsx";
+import { EmptyState, ErrorBanner, FilterChips, Pagination, SkeletonRows, Table, btn, cellClass, inputClass, linkClass } from "../../components/ui/index.jsx";
 import { REASON_LABEL, shortSite } from "../../utils/encroachmentFormat.js";
 import { formatDateTime, timeAgo } from "../../utils/formatDate.js";
 
@@ -133,7 +133,7 @@ export default function Reports() {
                         </Link>
                       </td>
                       <td className={cellClass}>
-                        <Badge>{REASON_LABEL[r.reason] || r.reason}</Badge>
+                        {REASON_LABEL[r.reason] || r.reason}
                       </td>
                       <td className={cellClass}>
                         {r.site_id ? (

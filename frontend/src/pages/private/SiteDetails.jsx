@@ -36,7 +36,7 @@ function Lifecycle({ status }) {
               <span className={`h-0.5 flex-1 ${i === 0 ? "opacity-0" : done || active ? "bg-ink" : "bg-line"}`} />
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
-                  done ? "border-ink bg-ink text-surface" : active ? "border-ink bg-wash text-ink" : "border-line bg-surface text-muted"
+                  done ? "border-ink bg-ink text-surface" : active ? "border-ink bg-surface text-ink outline outline-2 outline-offset-2 outline-ink" : "border-line bg-surface text-muted"
                 }`}
               >
                 {done ? <Check className="h-4 w-4" aria-hidden /> : i + 1}

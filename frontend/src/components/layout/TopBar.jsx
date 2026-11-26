@@ -14,7 +14,7 @@ export function SystemStatus({ className = "" }) {
   const down = online === false;
   return (
     <div className={`flex items-center gap-2 whitespace-nowrap text-[13px] ${className}`} role="status" aria-live="polite">
-      <span className={`h-2 w-2 rounded-full ${down ? "bg-wash" : online ? "bg-white" : "bg-white/50"}`} aria-hidden />
+      <span className={`h-2 w-2 rounded-full ${down ? "border border-white" : online ? "bg-white" : "bg-white/50"}`} aria-hidden />
       <span className={down ? "font-semibold" : ""}>{online === null ? "Connecting" : down ? "Backend offline" : "Online"}</span>
       {ms != null && <span className="hidden 2xl:inline">{ms} ms</span>}
     </div>
@@ -83,7 +83,7 @@ export default function TopBar() {
                     key={to}
                     to={to}
                     className={({ isActive }) =>
-                      `flex h-10 items-center gap-1.5 whitespace-nowrap rounded-t-sm px-3 text-[14.5px] transition-colors ${
+                      `flex h-10 items-center gap-1.5 whitespace-nowrap rounded-t-sm px-3 text-[14.5px] -outline-offset-2 transition-colors focus-visible:outline-white ${
                         isActive ? "bg-canvas font-semibold text-canvas-ink" : "font-medium text-white/90 hover:bg-white/10 hover:text-white"
                       }`
                     }
@@ -107,11 +107,11 @@ export default function TopBar() {
 
         <div className="ml-auto flex items-center gap-2">
           <SystemStatus className="mr-2 hidden text-white/90 sm:flex" />
-          <Link to="/upload" className={action} aria-label="Analyse a video">
+          <Link to="/upload" className={action} aria-label="Analyse a video" title="Analyse a video">
             <Video className="h-4 w-4" aria-hidden />
             <span className="hidden min-[1400px]:inline">Analyse video</span>
           </Link>
-          <Link to="/encroachment/upload" className={action} aria-label="Analyse a photo">
+          <Link to="/encroachment/upload" className={action} aria-label="Analyse a photo" title="Analyse a photo">
             <ImagePlus className="h-4 w-4" aria-hidden />
             <span className="hidden min-[1400px]:inline">Analyse photo</span>
           </Link>

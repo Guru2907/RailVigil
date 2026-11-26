@@ -23,7 +23,7 @@ const STEPS = [
 
 // Results measured on the project's own test sets (docs/EVALUATION.md, 26 Nov 2026).
 const RESULTS = [
-  ["13 of 13", "intrusions caught on 15 labelled test clips, at the setting the app runs with"],
+  ["13 of 13", "intrusions caught on 15 labelled test clips, at the setting the app runs with. It also raised 17 repeat alerts on those intrusions and 1 alert on nothing"],
   ["1.16 s", "average time from entering the track zone to the alert, at that setting"],
   ["0.160 vs 0.001", "box AP50 on shacks and stalls: the model trained here against the pretrained detectors"],
   ["0.48", "agreement between two people labelling the same photos, which is the ceiling for any model on them"],
@@ -98,6 +98,10 @@ export default function LandingPage() {
           <Link to="/encroachment/upload" className={`${btn.secondary} !h-12 px-6 text-base`}>
             <ImagePlus className="h-4 w-4" aria-hidden />
             Analyse a photo
+          </Link>
+          <Link to="/upload" className={`${btn.secondary} !h-12 px-6 text-base`}>
+            <Video className="h-4 w-4" aria-hidden />
+            Analyse a video
           </Link>
         </div>
         {offline && <p className="mt-4 text-sm font-semibold text-sev-critical">The backend is not running, so live figures and evidence cannot be shown.</p>}
@@ -227,8 +231,8 @@ export default function LandingPage() {
             ))}
           </dl>
           <p className="mt-6 max-w-[80ch] text-sm leading-relaxed text-canvas-muted">
-            Evaluation of 26 November 2026. The detector was trained and tested on 561 photographs from India and 13 other countries (412 for
-            training, 75 for validation, 66 held back for the test) and 15 test clips. The figures at the top of this page count only what has been
+            Evaluation of 26 November 2026. The detector was trained and tested on 561 photographs from India and 13 other countries, 66 of them
+            held back and labelled by hand for the test, and on 15 test clips. The figures at the top of this page count only what has been
             analysed through this installation.
           </p>
         </Section>

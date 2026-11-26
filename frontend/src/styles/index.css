@@ -38,7 +38,7 @@
 
   --color-danger: #b8321f;
   --color-signal: #2f6b45;
-  --color-info: #2a5c86;
+  --color-info: #22241f;
 
   --color-sev-critical: #b8321f;
   --color-sev-high: #955a00;
@@ -68,7 +68,7 @@ body {
 }
 
 ::selection {
-  background: var(--color-wash);
+  background: rgb(47 107 69 / 0.22);
   color: var(--color-ink);
 }
 
@@ -205,6 +205,12 @@ h3 {
   background: var(--color-surface);
   color: var(--color-ink);
   font: 600 11px/1.4 var(--font-sans);
+}
+/* On a narrow plan the scale would sit under the attribution line. */
+@media (max-width: 640px) {
+  .rv-plan .leaflet-control-scale {
+    margin-bottom: 24px;
+  }
 }
 .rv-plan .leaflet-control-attribution {
   background: rgb(247 248 243 / 0.9);

@@ -36,9 +36,8 @@ export default function AppRouter() {
         <Route path="/sites/:id" element={<SiteDetails />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/reports/:reportNo" element={<ReportDetails />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
-
-      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -129,7 +129,7 @@ export default function ReportDetails() {
                 {finding.notes?.length > 0 && (
                   <div className="py-2 text-sm sm:col-span-2">
                     <dt className="text-xs text-muted">Notes for the reviewer</dt>
-                    <dd className="mt-0.5 font-medium text-sev-high">{finding.notes.join(" · ")}</dd>
+                    <dd className="mt-0.5 font-semibold text-ink">{finding.notes.join(" · ")}</dd>
                   </div>
                 )}
               </dl>

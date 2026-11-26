@@ -192,11 +192,10 @@ export default function Incidents() {
                         key={i.id}
                         onClick={() => setChosenId(i.id)}
                         onDoubleClick={() => navigate(`/incidents/${i.id}`)}
-                        aria-selected={on}
                         className={`cursor-pointer transition-colors ${on ? "bg-wash" : "hover:bg-canvas-2"}`}
                       >
                         <td className={`${cellClass} font-semibold`}>
-                          <button type="button" onClick={() => setChosenId(i.id)} aria-label={`Select ${shortId(i.id)}`}>
+                          <button type="button" onClick={() => setChosenId(i.id)} aria-pressed={on} aria-label={`Select ${shortId(i.id)}`}>
                             {shortId(i.id)}
                           </button>
                         </td>

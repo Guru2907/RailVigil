@@ -14,7 +14,7 @@ export const SEVERITY_COLOR = {
 export const SEVERITY_LABEL = { critical: "Critical", high: "High", medium: "Medium", low: "Low" };
 
 // The intrusion layer on maps and charts.
-export const INFO_COLOR = "#2A5C86";
+export const INFO_COLOR = "#22241F";
 
 export function normaliseSeverity(sev) {
   const s = String(sev || "").toLowerCase();

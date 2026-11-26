@@ -46,9 +46,9 @@ function Timeline({ incident, others, duration }) {
           style={{ left: pct(incident.start_ts), width: width(incident.start_ts, incident.end_ts), background: SEVERITY_COLOR[normaliseSeverity(incident.severity)] }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between text-xs text-muted">
+      <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-muted">
         <span>00:00</span>
-        <span>
+        <span className="order-last basis-full sm:order-none sm:basis-auto">
           This incident {fmtTime(incident.start_ts)} to {fmtTime(incident.end_ts)} · grey: {others.length} other {others.length === 1 ? "incident" : "incidents"} in this video
         </span>
         <span>{fmtTime(duration)}</span>
