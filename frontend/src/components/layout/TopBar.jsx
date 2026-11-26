@@ -61,8 +61,8 @@ export default function TopBar() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-[1000] bg-accent text-accent-ink print:hidden">
-      <div className="flex h-[68px] items-stretch gap-1 px-4 md:px-8">
+    <header className="sticky top-0 z-[1000] border-b-[3px] border-brass bg-accent text-accent-ink print:hidden">
+      <div className="flex h-[65px] items-stretch gap-1 px-4 md:px-8">
         <Link to="/" className="mr-4 flex items-center gap-2.5 self-center" aria-label="RailVigil home">
           <Seal size="h-9 w-9" onAccent />
           <span className="text-xl font-bold tracking-tight">RailVigil</span>
@@ -92,7 +92,7 @@ export default function TopBar() {
                       <>
                         {label}
                         {counts[to] != null && (
-                          <span className={`tabular rounded-sm px-1.5 text-xs font-semibold leading-5 ${isActive ? "bg-ink text-surface" : "bg-white/15 text-white"}`}>
+                          <span className={`tabular rounded-sm px-1.5 text-xs font-semibold leading-5 ${isActive ? "bg-ink text-surface" : "bg-brass text-ink"}`}>
                             {counts[to]}
                           </span>
                         )}
