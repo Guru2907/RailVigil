@@ -224,7 +224,7 @@ export default function MapView() {
   );
 
   return (
-    <div className="relative flex h-[calc(100vh-60px)] min-h-[520px]">
+    <div className="relative flex h-[calc(100vh-68px)] min-h-[520px]">
       <aside className="hidden w-[300px] shrink-0 overflow-y-auto border-r-2 border-rule bg-surface lg:block">{filters}</aside>
 
       <div className="relative min-w-0 flex-1">

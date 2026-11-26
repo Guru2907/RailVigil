@@ -10,6 +10,9 @@ import { REASON_LABEL, classLabel, shortSite } from "../../utils/encroachmentFor
 import { timeAgo } from "../../utils/formatDate.js";
 
 const OPEN = "reported,under_review,verified,action_taken";
+// The site shown on the first screen. Set VITE_FEATURED_SITE_ID to choose one;
+// otherwise it is the open site whose evidence the detector is most sure of.
+const FEATURED = import.meta.env.VITE_FEATURED_SITE_ID;
 
 const STEPS = [
   ["Photograph the track side", "Upload a photo and outline the railway land on it. The outline is the pink wash you see on every piece of evidence."],
@@ -54,8 +57,8 @@ export default function LandingPage() {
     listReports({ limit: 5 })
       .then((r) => !cancelled && setReports(r))
       .catch(() => !cancelled && setReports([]));
-    listSites({ status: OPEN, severity: "critical", limit: 1 })
-      .then((list) => (list[0] ? getSite(list[0].id) : null))
+    const fallback = () => listSites({ status: OPEN, severity: "critical,high", limit: 1 }).then((list) => (list[0] ? getSite(list[0].id) : null));
+    (FEATURED ? getSite(FEATURED).catch(fallback) : fallback())
       .then((s) => !cancelled && setSite(s || false))
       .catch(() => !cancelled && setSite(false));
     return () => {
@@ -151,7 +154,7 @@ export default function LandingPage() {
           )}
         </div>
       </section>
-      <p className="mt-2 text-xs text-canvas-muted">A critical site from the register, as an officer sees it. Pink wash: railway land outlined on the photo. Boxes: findings.</p>
+      <p className="mt-2 text-xs text-canvas-muted">A site from the register, as an officer sees it. Pink wash: railway land outlined on the photo. Boxes: findings.</p>
 
       <div className="mt-14">
         <Section title="From a photograph to a case, in four steps">
@@ -223,7 +226,11 @@ export default function LandingPage() {
               </Reveal>
             ))}
           </dl>
-          <p className="mt-6 text-sm text-canvas-muted">Evaluation of 26 November 2026: 66 test photographs, 15 test clips.</p>
+          <p className="mt-6 max-w-[80ch] text-sm leading-relaxed text-canvas-muted">
+            Evaluation of 26 November 2026. The detector was trained and tested on 561 photographs from India and 13 other countries (412 for
+            training, 75 for validation, 66 held back for the test) and 15 test clips. The figures at the top of this page count only what has been
+            analysed through this installation.
+          </p>
         </Section>
 
         <Section title="Latest reports">
